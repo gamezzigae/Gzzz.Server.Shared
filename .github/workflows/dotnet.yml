@@ -30,8 +30,7 @@ jobs:
 
 
     - name: Pack
-      run: dotnet pack --configuration Release --output ./nupkg
-      working-directory: ./src/Gzzz.Server.Shared
+      run: dotnet pack Gzzz.Server.Shared/Gzzz.Server.Shared.csproj--configuration Release --no-build --output ./nupkg
 
     - name: Sleep for 3 seconds
       run: sleep 3s
