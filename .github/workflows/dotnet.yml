@@ -26,7 +26,8 @@ jobs:
       run: dotnet test --no-build --verbosity normal
 
     - name: Pack
-      run: dotnet pack Gzzz.Server.Shared/Gzzz.Server.Shared.csproj --configuration Release --no-build --output ./nupkg
+      run: dotnet pack --configuration Release --no-build --output ./nupkg
+        working-directory: ./src/Gzzz.Server.Shared
 
     - name: Sleep for 3 seconds
       run: sleep 3s
