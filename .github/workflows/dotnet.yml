@@ -1,8 +1,8 @@
-name: .NET
+name: NUGET DEPLOYMENT
 
 on:
   push:
-    branches: [ "main", "feature/nugetDeploy" ]
+    branches: [ "main" ]
 
 jobs:
   build:
