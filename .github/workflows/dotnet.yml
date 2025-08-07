@@ -9,7 +9,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      ProjectFile: ./Gzzz.Server.Shared/Gzzz.Server.Shared.csproj
+      ProjectFile: ./src/Gzzz.Server.Shared
     defaults:
       run : 
         working-directory: ./src
