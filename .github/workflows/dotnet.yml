@@ -23,7 +23,7 @@ jobs:
       run: dotnet build ./src --configuration Release --no-restore
 
     - name: Test
-      run: dotnet Test ./src --configuration Release --no-restore
+      run: dotnet test ./src --configuration Release --no-restore
 
     - name: Pack (no build)
       run: dotnet pack ./src/Gzzz.Server.Shared/Gzzz.Server.Shared.csproj --configuration Release --no-build --output ./nupkg
