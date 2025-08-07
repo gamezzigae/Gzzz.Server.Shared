@@ -2,14 +2,14 @@ name: .NET
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "feature/nugetDeploy" ]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      ProjectFile: ./src/Gzzz.Server.Shared/Gzzz.Server.Shared.csproj
     defaults:
       run : 
         working-directory: ./src
@@ -26,3 +26,11 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+      
+    - name: Publish to NuGet
+      uses: brandedoutcast/publish-nuget@v2
+      with:
+        PROJECT_FILE_PATH: ${{ env.ProjectFile }}
+        VERSION_REGEX: '^\s*<Version>(.*)<\/Version>\s*$'
+        TAG_FORMAT: '*'
+        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
