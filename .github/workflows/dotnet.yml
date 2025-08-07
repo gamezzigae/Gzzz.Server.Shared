@@ -17,16 +17,16 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore
-      run: dotnet restore ./src/Gzzz.Server.Shared/Gzzz.Server.Shared.csproj
+      run: dotnet restore ./src
 
     - name: Build
-      run: dotnet build ./src/Gzzz.Server.Shared/Gzzz.Server.Shared.csproj --configuration Release --no-restore
+      run: dotnet build ./src --configuration Release --no-restore
 
     - name: Test
-      run: dotnet Test ./src/Gzzz.Server.Shared/Gzzz.Server.Shared.csproj --configuration Release --no-restore
+      run: dotnet Test ./src --configuration Release --no-restore
 
     - name: Pack (no build)
-      run: dotnet pack ./src --configuration Release --no-build --output ./nupkg
+      run: dotnet pack ./src/Gzzz.Server.Shared/Gzzz.Server.Shared.csproj --configuration Release --no-build --output ./nupkg
 
     - name: Push to NuGet
       run: dotnet nuget push ./**/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
