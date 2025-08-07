@@ -1,9 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36401.2 d17.14
+VisualStudioVersion = 17.14.36401.2
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ggzz.Server.Shared", "Ggzz.Server.Shared\Ggzz.Server.Shared.csproj", "{9EBF8B74-FAA0-49CB-97E3-CEAE0311C92C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ggzz.Server.Shared.Tests", "Ggzz.Server.Shared.Tests\Ggzz.Server.Shared.Tests.csproj", "{4361A4BF-557A-4A8D-AEDE-2AD591ABA155}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9EBF8B74-FAA0-49CB-97E3-CEAE0311C92C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EBF8B74-FAA0-49CB-97E3-CEAE0311C92C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EBF8B74-FAA0-49CB-97E3-CEAE0311C92C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EBF8B74-FAA0-49CB-97E3-CEAE0311C92C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4361A4BF-557A-4A8D-AEDE-2AD591ABA155}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4361A4BF-557A-4A8D-AEDE-2AD591ABA155}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4361A4BF-557A-4A8D-AEDE-2AD591ABA155}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4361A4BF-557A-4A8D-AEDE-2AD591ABA155}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
