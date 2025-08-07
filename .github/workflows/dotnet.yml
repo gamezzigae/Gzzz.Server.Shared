@@ -8,8 +8,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    env:
-      ProjectFile: ./src/Gzzz.Server.Shared
     defaults:
       run : 
         working-directory: ./src
@@ -30,7 +28,7 @@ jobs:
     - name: Publish to NuGet
       uses: brandedoutcast/publish-nuget@v2
       with:
-        PROJECT_FILE_PATH: ${{ env.ProjectFile }}
+        PROJECT_FILE_PATH:./src/Gzzz.Server.Shared/Gzzz.Server.Shared.csproj
         VERSION_REGEX: '^\s*<Version>(.*)<\/Version>\s*$'
         TAG_FORMAT: '*'
         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
