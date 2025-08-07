@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36401.2
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ggzz.Server.Shared", "Ggzz.Server.Shared\Ggzz.Server.Shared.csproj", "{9EBF8B74-FAA0-49CB-97E3-CEAE0311C92C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gzzz.Server.Shared", "Gzzz.Server.Shared\Gzzz.Server.Shared.csproj", "{9EBF8B74-FAA0-49CB-97E3-CEAE0311C92C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ggzz.Server.Shared.Tests", "Ggzz.Server.Shared.Tests\Ggzz.Server.Shared.Tests.csproj", "{4361A4BF-557A-4A8D-AEDE-2AD591ABA155}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gzzz.Server.Shared.Tests", "Gzzz.Server.Shared.Tests\Gzzz.Server.Shared.Tests.csproj", "{4361A4BF-557A-4A8D-AEDE-2AD591ABA155}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
