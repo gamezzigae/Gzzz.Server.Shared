@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 
-namespace Gzzz.Server.Shared;
+namespace Gzzz;
 
 public static class DefaultConfig
 {

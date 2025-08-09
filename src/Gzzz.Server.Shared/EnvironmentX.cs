@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Gzzz.Server.Shared;
+namespace Gzzz;
 
 public static class EnvironmentX
 {

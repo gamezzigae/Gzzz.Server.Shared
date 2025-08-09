@@ -9,5 +9,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
+		<PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.404" />
+		<PackageReference Include="StackExchange.Redis" Version="2.8.22" />
 	</ItemGroup>
 </Project>
