@@ -15,6 +15,7 @@ public sealed class RedisService
 	}
 
 	public IDatabase GetDatabase() => _connectionMultiplexer.GetDatabase();
+	public ITransaction CreateTransaction() => GetDatabase().CreateTransaction();
 }
 
 public record RedisConfig(string Endpoint, string User=null, string Password = null);

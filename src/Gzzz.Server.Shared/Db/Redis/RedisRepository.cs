@@ -62,7 +62,6 @@ public class RedisRepository<T>
 
 	public async Task<long> PutItemAsync(string sortKey, T item, long nextTimestamp, long checkTimestamp = 0)
     {
-        var db = _redisService.GetDatabase();
 		var redisKey = _partitionKey+sortKey;
 
 		if (checkTimestamp == nextTimestamp)
@@ -72,15 +71,19 @@ public class RedisRepository<T>
 
 		var serializedItem = _textSerializer.Serialize(item);
 
-        var transaction = db.CreateTransaction();
-        if (checkTimestamp > 0)
+        var transaction = _redisService.CreateTransaction();
+
+
+		if (checkTimestamp > 0)
         {
             transaction.AddCondition(Condition.SortedSetEqual(_sortedSetKey, sortKey, checkTimestamp));
-        }
+			transaction.AddCondition(Condition.KeyExists(redisKey));
+		}
         else
         {
             transaction.AddCondition(Condition.SortedSetNotContains(_sortedSetKey, sortKey));
-        }
+			transaction.AddCondition(Condition.KeyNotExists(redisKey));
+		}
         var sortedSetAddTask = transaction.SortedSetAddAsync(_sortedSetKey, sortKey, nextTimestamp);
         var setAddTask = transaction.StringSetAsync(redisKey, serializedItem);
         bool committed = await transaction.ExecuteAsync();

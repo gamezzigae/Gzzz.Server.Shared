@@ -1,6 +1,6 @@
 using Amazon.DynamoDBv2.Model;
 
-namespace Gzzz.DynamoDb;
+namespace Gzzz.Db.DynamoDb;
 
 public class DynamoDbRepository<T>
 {
@@ -16,7 +16,7 @@ public class DynamoDbRepository<T>
 		_partitionKeyAttributeValue = new AttributeValue(partitionKey);
 		_sortKeyFieldName = sortKeyFieldName;
 	}
-	public async ValueTask<OptimisticRecord<T>> GetItemOrDefaultAsync(string sortKey)
+	public async Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string sortKey)
 	{
 		var attributeMap = await _dynamoDbService.GetAttirubtesAsync(_partitionKey, sortKey);
 		if (attributeMap==default)
@@ -28,14 +28,14 @@ public class DynamoDbRepository<T>
 
 		return record;
 	}
-	public async ValueTask<long> PutItemAsync(T item, DateTime now, long checkTimestamp, DynamoDbCondition dynamoDbCondition = DynamoDbCondition.Update)
+	public async Task<long> PutItemAsync(T item, DateTime now, long checkTimestamp = 0)
 	{
 		var attributeMap = AttributeMap.ConvertFrom(item);
 		attributeMap.Add("PK", _partitionKeyAttributeValue);
 		attributeMap.Add("SK", attributeMap[_sortKeyFieldName]);
 		var nextTimestamp = now.ToTimescore();
 		attributeMap.Add("TS", new AttributeValue { N = nextTimestamp.ToString() });
-		await _dynamoDbService.PutItemAsync(attributeMap, new AttributeValue() { N= checkTimestamp .ToString() }, dynamoDbCondition);
+		await _dynamoDbService.PutItemAsync(attributeMap, checkTimestamp==0? null: new AttributeValue() { N= checkTimestamp .ToString() });
 		return nextTimestamp;
 	}
 }

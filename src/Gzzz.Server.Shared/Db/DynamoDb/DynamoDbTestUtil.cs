@@ -3,19 +3,15 @@ using Amazon.DynamoDBv2;
 using Amazon.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Gzzz.DynamoDb;
+namespace Gzzz.Db.DynamoDb;
 
 public static class DynamoDbTestUtil
 {
-	public static IServiceCollection UseMockDynamoDb(this IServiceCollection services, string tableName) =>
-		services.AddSingleton<AWSCredentials>(new BasicAWSCredentials("DUMMYACCESSKEYDUMMYY", "44nPdvh6gW+EXjh1P6jLXFzmmp4K2F1dUSQx7R4+"))
-				.AddTransient<AmazonDynamoDBClient>()
-				.AddSingleton<DynamoDbService>()
-				.AddSingleton<DynamoDbConfiguration>(new DynamoDbConfiguration(tableName));
-
-	public static async Task CreateTableAsync(DynamoDbService db)
-	{
-		var tableName = db.TableName;
+    public static async Task CreateTableAsync(DynamoDbService db, DynamoDbConfig dynamoDbConfig)
+    {
+        if (dynamoDbConfig.ServiceURL == default)
+            throw new Exception("테스트용 ServiceURL이 없습니다.");
+        var tableName = db.TableName;
 		var dynamodb = db.GetClient();
 		_ = await dynamodb.CreateTableAsync(
 			new CreateTableRequest()
@@ -35,8 +31,6 @@ public static class DynamoDbTestUtil
 		await WaitTableCreation(dynamodb, tableName);
 	}
 
-
-	public static Task CreateTableAsync(IServiceProvider services) => CreateTableAsync(services.GetRequiredService<DynamoDbService>());
     public static async Task WaitTableCreation(AmazonDynamoDBClient dynamodb, string tableName)
     {
         for (int i = 0; i < 10; i++)
@@ -58,9 +52,10 @@ public static class DynamoDbTestUtil
     }
 
 
-    public static async Task DeleteTableAsync(IServiceProvider services)
+    public static async Task DeleteTableAsync(DynamoDbService db, DynamoDbConfig dynamoDbConfig)
     {
-        var db = services.GetRequiredService<DynamoDbService>();
+        if (dynamoDbConfig.ServiceURL == default)
+            throw new Exception("테스트용 ServiceURL이 없습니다.");
         var tableName = db.TableName;
         var dynamodb = db.GetClient();
         try

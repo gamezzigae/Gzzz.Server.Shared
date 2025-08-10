@@ -58,9 +58,6 @@ public static class Extensions
     public static long ToUnixTimeSeconds(this DateTime time) => new DateTimeOffset(time).ToUnixTimeSeconds();
 	public static long ToUnixTimeMilliseconds(this DateTime time) => new DateTimeOffset(time).ToUnixTimeMilliseconds();
 
-	static readonly DateTime _ttt = new DateTime(2025, 6, 30);
-	public static long ToTimescore(this DateTime time) => (time - _ttt).Ticks;
-	public static DateTime ToTimescore(this long timescore) => _ttt.AddTicks(timescore);
 
 	public static DateTime FloorSeconds(this DateTime datetime) => new DateTime(datetime.Year, datetime.Month, datetime.Day, datetime.Hour, datetime.Minute, 0, 0, datetime.Kind);
 

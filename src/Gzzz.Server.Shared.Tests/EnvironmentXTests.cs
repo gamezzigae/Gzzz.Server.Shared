@@ -1,6 +1,6 @@
 ﻿namespace Gzzz.Server.Shared.Tests;
 
-public class EnvironmentXTests
+class EnvironmentXTests
 {
     [Test]
     public void GetRequiredValueNotExsistTest()
