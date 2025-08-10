@@ -47,6 +47,6 @@ class DynamoDbServiceTests : DynamoDbFixture
         var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), TS = RandomX.GetRandom(), Age = RandomX.GetRandom() };
         var attributeMap = AttributeMap.ConvertFrom(item);
         var exception = Assert.ThrowsAsync<ArgumentException>(() => _dynamoDbService.PutItemAsync(attributeMap, attributeMap["TS"]));
-        Assert.That(exception.Message, Is.EqualTo("before/after timestamp가 같음"));
+        Assert.That(exception.Message, Is.EqualTo("before/after timestamp is equals"));
     }
 }

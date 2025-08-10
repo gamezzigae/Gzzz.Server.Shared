@@ -61,7 +61,7 @@ public class DynamoDbService
 		{
 			if(attributeMap["TS"].N == checkTimestamp.N)
             {
-                throw new ArgumentException("before/after timestamp°¡ °°À½");
+                throw new ArgumentException("before/after timestamp is equals");
             }
             request.ExpressionAttributeValues = new Dictionary<string, AttributeValue>() { { ":uat", checkTimestamp } };
 		}
