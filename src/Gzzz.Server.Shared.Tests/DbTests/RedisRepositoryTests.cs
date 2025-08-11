@@ -3,25 +3,27 @@ using StackExchange.Redis;
 
 namespace Gzzz.Server.Shared.Tests.DbTests;
 
-class RedisRepositoryTests
+public class TestRedisRepository : RedisOptimisicRepository<TestEntity>
 {
-	readonly RedisConfig _redisConfig = new RedisConfig("127.0.0.1,defaultDatabase=1,allowAdmin=true");
-	RedisRepository<TestEntity> _repository;
-
-	public RedisRepositoryTests()
+	static readonly RedisConfig _redisConfig = new RedisConfig("127.0.0.1,defaultDatabase=1,allowAdmin=true");
+	public TestRedisRepository() : base(new RedisService(_redisConfig), RandomX.GetRandomText())
 	{
-		var partitionKey = RandomX.GetRandomText();
-		var redisService = new RedisService(_redisConfig);
-		_repository = new RedisRepository<TestEntity>(redisService, partitionKey);
 	}
 
-	[OneTimeSetUp]
-	public async Task SetupAsync()
+	public async Task FlushAsync()
 	{
 		var connectionMultiplexer = ConnectionMultiplexer.Connect(_redisConfig.Endpoint);
 		var endpoint = connectionMultiplexer.GetEndPoints()[0];
 		await connectionMultiplexer.GetServer(endpoint).FlushDatabaseAsync();
 	}
+}
+
+class RedisRepositoryTests
+{
+	TestRedisRepository _repository = new TestRedisRepository();
+
+	[OneTimeSetUp]
+	public Task SetupAsync()=>_repository.FlushAsync();
 
 	[Test]
 	public async Task InsertItemTestAsync()

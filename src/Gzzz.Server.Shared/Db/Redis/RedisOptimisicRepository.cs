@@ -2,14 +2,15 @@ using StackExchange.Redis;
 
 namespace Gzzz.Db.Redis;
 
-public class RedisRepository<T>
+public class RedisOptimisicRepository<T> : IOptimisticRepository<T>
+	where T : class
 {
 	readonly string _sortedSetKey;
 	readonly string _partitionKey;
 	readonly RedisService _redisService;
 	readonly ITextSerializer<T> _textSerializer;
 
-	public RedisRepository(RedisService redisService, string partitionKey, bool useCompression=true)
+	public RedisOptimisicRepository(RedisService redisService, string partitionKey, bool useCompression=true)
 	{
 		_partitionKey = partitionKey+":";
 		_sortedSetKey = _partitionKey + "_Timestamps";

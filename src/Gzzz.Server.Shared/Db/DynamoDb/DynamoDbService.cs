@@ -10,14 +10,16 @@ public class DynamoDbService
 {
 	public AmazonDynamoDBClient GetClient() => _client;
 	protected readonly AmazonDynamoDBClient _client;
+	protected readonly DynamoDbConfig _dynamoDbConfig;
 	public readonly string TableName;
 
-	public DynamoDbService(AWSCredentials awsCredentials, DynamoDbConfig dynamoDbConfiguration)
+	public DynamoDbService(AWSCredentials awsCredentials, DynamoDbConfig dynamoDbConfig)
 	{
-		this.TableName = dynamoDbConfiguration.TableName;
-		this._client = dynamoDbConfiguration.ServiceURL == default
+		this._dynamoDbConfig = dynamoDbConfig;
+		this.TableName = dynamoDbConfig.TableName;
+		this._client = dynamoDbConfig.ServiceURL == default
 		? new(awsCredentials)
-		: new(awsCredentials, new AmazonDynamoDBConfig() { ServiceURL = dynamoDbConfiguration.ServiceURL });
+		: new(awsCredentials, new AmazonDynamoDBConfig() { ServiceURL = dynamoDbConfig.ServiceURL });
 	}
 
 

@@ -2,14 +2,15 @@ using Amazon.DynamoDBv2.Model;
 
 namespace Gzzz.Db.DynamoDb;
 
-public class DynamoDbRepository<T>
+public class DynamoDbOptimisicRepository<T>
+	where T : class
 {
 	readonly DynamoDbService _dynamoDbService;
 	readonly string _partitionKey;
 	readonly AttributeValue _partitionKeyAttributeValue;
 	readonly string _sortKeyFieldName;
 
-	public DynamoDbRepository(DynamoDbService dynamoDbService, string partitionKey, string sortKeyFieldName)
+	public DynamoDbOptimisicRepository(DynamoDbService dynamoDbService, string partitionKey, string sortKeyFieldName)
 	{
 		_dynamoDbService = dynamoDbService;
 		_partitionKey = partitionKey;

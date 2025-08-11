@@ -1,24 +1,23 @@
 using Amazon.DynamoDBv2.Model;
+using Gzzz.Db.DynamoDb;
 using Gzzz.Server.Shared.Tests.Db;
 using Newtonsoft.Json;
 
 namespace Gzzz.Server.Shared.Tests.DbTests;
-class DynamoDbRepositoryTests : DynamoDbFixture
+
+
+
+class DynamoDbRepositoryTests
 {
-	class TestRepository : DynamoDbRepository<TestEntity>
-	{
-		public TestRepository(DynamoDbService dynamoDbService, string partitionKey) : base(dynamoDbService, partitionKey, nameof(TestEntity.UserId)) { }
-	}
-	readonly TestRepository _testRepository;
-	readonly string _partitionKey;
+	[OneTimeSetUp] public Task SetupFixtureAsync() => _dynamoDbService.CreateTableAsync();
+	[OneTimeTearDown] public Task TearDownFixtureAsync() => _dynamoDbService.DeleteTableAsync();
+
+	readonly TestDynamoDbRepository _testRepository;
+	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
 	public DynamoDbRepositoryTests()
 	{
-		_partitionKey = RandomX.GetRandomText();
-		_testRepository = new TestRepository(_dynamoDbService, _partitionKey);
+		_testRepository = new TestDynamoDbRepository(_dynamoDbService);
 	}
-
-	
-
 	
 
 	[Test]

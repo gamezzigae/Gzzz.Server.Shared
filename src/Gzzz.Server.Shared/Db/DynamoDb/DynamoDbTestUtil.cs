@@ -10,7 +10,7 @@ public static class DynamoDbTestUtil
     public static async Task CreateTableAsync(DynamoDbService db, DynamoDbConfig dynamoDbConfig)
     {
         if (dynamoDbConfig.ServiceURL == default)
-            throw new Exception("Å×½ºÆ®¿ë ServiceURLÀÌ ¾ø½À´Ï´Ù.");
+            throw new Exception("í…ŒìŠ¤íŠ¸ìš© ServiceURLì´ ì—†ìŠµë‹ˆë‹¤.");
         var tableName = db.TableName;
 		var dynamodb = db.GetClient();
 		_ = await dynamodb.CreateTableAsync(
@@ -55,7 +55,7 @@ public static class DynamoDbTestUtil
     public static async Task DeleteTableAsync(DynamoDbService db, DynamoDbConfig dynamoDbConfig)
     {
         if (dynamoDbConfig.ServiceURL == default)
-            throw new Exception("Å×½ºÆ®¿ë ServiceURLÀÌ ¾ø½À´Ï´Ù.");
+            throw new Exception("í…ŒìŠ¤íŠ¸ìš© ServiceURLì´ ì—†ìŠµë‹ˆë‹¤.");
         var tableName = db.TableName;
         var dynamodb = db.GetClient();
         try

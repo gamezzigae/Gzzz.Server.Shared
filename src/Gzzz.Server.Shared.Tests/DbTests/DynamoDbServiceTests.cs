@@ -1,12 +1,23 @@
 using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2.Model.Internal.MarshallTransformations;
+using Gzzz.Server.Shared.Tests.DbTests;
 
 namespace Gzzz.Server.Shared.Tests.Db;
 
-class DynamoDbServiceTests : DynamoDbFixture
+class DynamoDbServiceTests
 {
-
-    [Test]
+	MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
+	[OneTimeSetUp]
+	public async Task OneTimeSetUpAsync()
+	{
+		await _dynamoDbService.CreateTableAsync();
+	}
+	[OneTimeTearDown]
+	public async Task OneTimeTearDownAsync()
+	{
+		await _dynamoDbService.DeleteTableAsync();
+	}
+	[Test]
     public async Task InsertItemTestAsync()
     {
         var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), TS= RandomX.GetRandom(), Age = RandomX.GetRandom() };

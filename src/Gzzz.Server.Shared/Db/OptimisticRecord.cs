@@ -1,4 +1,4 @@
-namespace Gzzz;
+namespace Gzzz.Db;
 
 public record OptimisticRecord<T>(
     string Key,
