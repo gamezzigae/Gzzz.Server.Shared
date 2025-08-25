@@ -1,9 +1,16 @@
-// See https://aka.ms/new-console-template for more information
-using Gzzz.Db.DynamoDb;
-using Microsoft.Extensions.DependencyInjection;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Engines;
+using BenchmarkDotNet.Environments;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Running;
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text.Json;
+using Gzzz;
+using BenchmarkDotNet.Attributes;
 
-Console.WriteLine("Hello, World!");
+Console.WriteLine(	);
+//var summary = BenchmarkRunner.Run<DecodeBenchmark>();
 
-var serviceProvider = new ServiceCollection()
-	.AddSingleton()
-	.BuildServiceProvider()
+

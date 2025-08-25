@@ -1,4 +1,4 @@
-namespace Gzzz.Db.Redis;
+namespace Gzzz.Serialize;
 
 public interface ITextSerializer<T>
 {

@@ -4,11 +4,20 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <PackageReference Include="Gzzz.Server.Shared" Version="0.0.11" />
+  </ItemGroup>-->
+
+  <ItemGroup>
+	  <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
+	  <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.15.2" />
+	  <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gzzz.Server.Shared\Gzzz.Server.Shared.csproj" />
   </ItemGroup>
 
 </Project>

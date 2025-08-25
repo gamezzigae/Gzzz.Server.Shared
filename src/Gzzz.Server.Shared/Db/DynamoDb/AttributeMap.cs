@@ -1,10 +1,10 @@
 using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2.DocumentModel;
-using Microsoft.Extensions.DependencyInjection;
 using Amazon.DynamoDBv2;
 using Amazon.Runtime;
 using Amazon;
 using System.Diagnostics.CodeAnalysis;
+using Gzzz.Serialize;
 
 namespace Gzzz.Db.DynamoDb;
 

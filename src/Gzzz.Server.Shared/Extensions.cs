@@ -1,3 +1,5 @@
+using Gzzz.Serialize;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,7 +13,14 @@ namespace Gzzz;
 
 public static class Extensions
 {
-    public static string ToISO8601(this DateTime time) => time.ToString(DefaultConfig.DateTimeFormat);
+	public static IServiceProvider ValidatedBuild(this IServiceCollection services)
+		=> services.BuildServiceProvider(new ServiceProviderOptions()
+		{
+			ValidateOnBuild = true,
+			ValidateScopes = true,
+		});
+
+	public static string ToISO8601(this DateTime time) => time.ToString(DefaultConfig.DateTimeFormat);
     public static int GetIntervalSeconds(this DateTime time1, DateTime time2) => (int)((time2 - time1).TotalSeconds);
     public static bool IsBetween(this DateTime time, DateTime startTime, DateTime endTime)
         => startTime <= time && time <= endTime;

@@ -1,3 +1,4 @@
+using Gzzz.Serialize;
 using System.Text.RegularExpressions;
 
 namespace Gzzz;
@@ -13,7 +14,7 @@ public static class EnvironmentX
     {
         var result = Environment.GetEnvironmentVariable(name);
         if (string.IsNullOrEmpty(result))
-            throw new StartUpException("필수 환경변수 누락:" + name);
+			throw new Exception("필수 환경변수 누락:" + name);
         return result;
     }
     public static T GetRequiredObject<T>(string name)

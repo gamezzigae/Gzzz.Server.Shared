@@ -1,29 +1,7 @@
 using System.Text;
 using System.IO.Compression;
 
-namespace Gzzz;
-
-
-public static class GZipJson
-{
-    public static string SerializeToBase64<T>(T obj)
-    {
-        var json = Json.Serialize(obj);
-        var bytes = DefaultConfig.Encoding.GetBytes(json);
-        var compressed = GZip.Compress(bytes);
-        return Convert.ToBase64String(compressed);
-    }
-
-    public static T DeserializeFromBase64<T>(string base64)
-    {
-        var compressed = Convert.FromBase64String(base64);
-        var decompressed = GZip.Decompress(compressed);
-        var json = DefaultConfig.Encoding.GetString(decompressed);
-        return Json.Deserialize<T>(json);
-    }
-}
-
-
+namespace Gzzz.Serialize;
 
 public static class GZip
 {
@@ -33,6 +11,7 @@ public static class GZip
 
 		using (var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal))
 		{
+			
 			gzipStream.Write(bytes, 0, bytes.Length);
 		}
 

@@ -1,10 +1,10 @@
-namespace Gzzz;
+namespace Gzzz.Serialize;
 
 public static class Base64Converter
 {
 	public static byte[] Deserialize(string base64)
 	{
-		int padding = base64.Length % 4;
+		var padding = base64.Length % 4;
 		if (padding > 0)
 		{
 			base64 += new string('=', 4 - padding);

@@ -1,3 +1,4 @@
+using Gzzz.Serialize;
 using StackExchange.Redis;
 
 namespace Gzzz.Db.Redis;
