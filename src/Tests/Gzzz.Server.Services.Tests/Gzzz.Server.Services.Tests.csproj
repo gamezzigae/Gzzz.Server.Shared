@@ -17,8 +17,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Gzzz.Server.Shared\Gzzz.Server.Shared.csproj" />
+	  <ProjectReference Include="..\..\Gzzz.Server.Services\Gzzz.Server.Services.csproj" />
 	</ItemGroup>
+
 
 	<ItemGroup>
 		<Using Include="NUnit.Framework" />

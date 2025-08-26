@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+
 namespace Gzzz;
 
 public static class RandomX
@@ -8,7 +10,15 @@ public static class RandomX
 
     public static int GetRandom(int min =0, int max=int.MaxValue)=>Random.Shared.Next(min,max);
 
-    public static string GetRandomText(int size = 32)
+	public static string CreateRandomBase64String(int byteLength)
+	{
+		Span<byte> bytes = stackalloc byte[byteLength];
+		RandomNumberGenerator.Fill(bytes);
+		return Convert.ToBase64String(bytes);
+	}
+
+
+	public static string GetRandomText(int size = 32)
     {
         var builder = new System.Text.StringBuilder(size);
 

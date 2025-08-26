@@ -10,7 +10,7 @@ public static class EnvironmentX
 		Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process);
 	}
 
-    public static string GetRequiredValue(string name)
+	public static string GetRequiredValue(string name)
     {
         var result = Environment.GetEnvironmentVariable(name);
         if (string.IsNullOrEmpty(result))

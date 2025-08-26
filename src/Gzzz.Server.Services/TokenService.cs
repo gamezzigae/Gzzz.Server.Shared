@@ -8,10 +8,10 @@ public class TokenService
 {
 	readonly HMACSHA256 _hmac;
 	readonly int _signatureLength;
-	public TokenService()
+	public TokenService(string hashKey)
 	{
-		var key = "2iLNjT9Bol95r05aEI/TKUsC/u8VvM4gnTZkGnZSMdIYi6hgoAKCo6cdRoJwmva77wB8BPNkfsX5xODEjDv98g==";
-		var bytesKey = Convert.FromBase64String(key);
+		
+		var bytesKey = Convert.FromBase64String(hashKey);
 		_hmac = new HMACSHA256(bytesKey);
 		_signatureLength = _hmac.HashSize / 8;
 	}
@@ -68,5 +68,13 @@ public class TokenService
 		var length = source.Length;
 		source.CopyTo(dest.Slice(destCursor, length));
 		destCursor += length;
+	}
+}
+
+public class AuthenticationService
+{
+	public AuthenticationService(TokenService tokenService)
+	{
+
 	}
 }

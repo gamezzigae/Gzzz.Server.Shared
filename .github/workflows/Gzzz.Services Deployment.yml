@@ -1,0 +1,45 @@
+name: Gzzz.Base Deployment
+
+on:
+  push:
+    branches: [ "main", "feature/0.0.13"]
+    paths:
+      - "src/Gzzz.Server.Services/**"
+
+env:
+    NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    PROJECT_PATH: ./src/Gzzz.Server.Services/Gzzz.Server.Services.csproj
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+        source-url: https://nuget.pkg.github.com/gamezzigae/index.json
+
+        
+    - name: Set up Docker Compose
+      run: sudo apt-get install docker-compose
+
+    - name : Run Docker Images
+      run: docker-compose -f ./docker-compose.yml up -d
+      
+    - name: Restore
+      run: dotnet restore ./src
+
+    - name: Build
+      run: dotnet build ./src --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test ./src --configuration Release --no-restore
+
+    - name: Pack (no build)
+      run: dotnet pack $PROJECT_PATH --configuration Release --no-build --output ./nupkg
+
+    - name: Push to NuGet
+      run: dotnet nuget push ./**/*.nupkg --skip-duplicate --no-symbols --api-key ${{ secrets.GITHUB_TOKEN }}
