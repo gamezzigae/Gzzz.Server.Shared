@@ -1,4 +1,5 @@
 using Gzzz.Serialize;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Gzzz;
@@ -17,11 +18,11 @@ public static class EnvironmentX
 			throw new Exception("필수 환경변수 누락:" + name);
         return result;
     }
-    public static T GetRequiredObject<T>(string name)
+    public static T GetRequiredObject<T>(string name, JsonSerializerOptions jsonSerializerOptions)
     {
         var json = GetRequiredValue(name);
-        return Json.Deserialize<T>(json);
-    }
+		return JsonSerializer.Deserialize<T>(json, jsonSerializerOptions);
+	}
     public static string GetValueOrDefault(string name, string defaultValue = null)
     {
         var result = Environment.GetEnvironmentVariable(name);
