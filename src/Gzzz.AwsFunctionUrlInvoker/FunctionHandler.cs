@@ -85,7 +85,7 @@ public class FunctionHandler(IServiceProvider services)
 			}
 			catch (Exception)
 			{
-				return FunctionUrlResponseHelper.Error(403, "authentication required", 0);
+				return FunctionUrlResponseHelper.Error(401, "authentication required", 0);
 			}
 		}
 		//

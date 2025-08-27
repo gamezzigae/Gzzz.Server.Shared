@@ -7,10 +7,30 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.Json;
-using Gzzz;
 using BenchmarkDotNet.Attributes;
 
 Console.WriteLine(	);
-//var summary = BenchmarkRunner.Run<DecodeBenchmark>();
+BenchmarkRunner.Run<TryCatchBenchmark>();
+//
+//
+//
+//
 
 
+[MemoryDiagnoser]
+public class TryCatchBenchmark
+{
+
+
+	[Benchmark]
+	public void TryCatchNoException()
+	{
+		try
+		{
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+}

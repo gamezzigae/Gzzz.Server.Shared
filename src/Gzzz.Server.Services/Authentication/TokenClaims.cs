@@ -1,9 +1,6 @@
 namespace Gzzz.Services.Authentication;
 
-public record TokenClaims(byte Type, DateTime CreatedAt, byte Lifetime, string UserId)
-{
-	public DateTime GetExpireAt()=>CreatedAt.AddMinutes(Lifetime * Type);
-}
+public record TokenClaims(byte Type, DateTime ExpireAt, string UserId);
 
 public enum TokenType : byte
 {

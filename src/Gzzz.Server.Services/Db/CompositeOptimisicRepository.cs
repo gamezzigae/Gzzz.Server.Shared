@@ -2,10 +2,12 @@ using Gzzz.Db.DynamoDb;
 using Gzzz.Db.Redis;
 
 namespace Gzzz.Db;
-public class CompositeOptimisicRepository<T, TRedisRepository, TDynamoDbRepository>
+
+public class CompositeOptimisicRepository<T, TRedisRepository, TDynamoDbRepository> : IOptimisticRepository<T>
 	where TRedisRepository : RedisOptimisicRepository<T>
 	where TDynamoDbRepository : DynamoDbOptimisicRepository<T>
 	where T : class
+
 {
 	readonly TRedisRepository _redisRepository;
 	readonly TDynamoDbRepository _dynamoDbRepository;
@@ -17,7 +19,8 @@ public class CompositeOptimisicRepository<T, TRedisRepository, TDynamoDbReposito
 	}
 
 
-	public async Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string key, bool flushCache = false)
+	public Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string key)=> GetItemOrDefaultAsync(key, false);
+	public async Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string key, bool flushCache)
 	{
 		if (flushCache)
 		{
@@ -42,13 +45,14 @@ public class CompositeOptimisicRepository<T, TRedisRepository, TDynamoDbReposito
 	}
 
 
-	public async Task PutItemAsync(string key, T value, DateTime now, long checkTimestamp=0, bool isPersistent=false)
-	{
-		await _redisRepository.PutItemAsync(key, value, now, checkTimestamp);
+	public Task<long> PutItemAsync(string key, T value, DateTime now, long checkTimestamp = 0)=> checkTimestamp == 0
+		? PersistentPutItemAsync( key,  value,  now)
+		: _redisRepository.PutItemAsync(key, value, now, checkTimestamp);
 
-		if (isPersistent || checkTimestamp == 0)
-		{
-			await _dynamoDbRepository.PutItemAsync(value, now, checkTimestamp);
-		}
+	public async Task<long> PersistentPutItemAsync(string key, T value, DateTime now, long checkTimestamp = 0)
+	{
+		var result = await _redisRepository.PutItemAsync(key, value, now, checkTimestamp);
+		await _dynamoDbRepository.PutItemAsync(value, now, checkTimestamp);
+		return result;
 	}
 }

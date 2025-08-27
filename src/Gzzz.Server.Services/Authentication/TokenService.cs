@@ -33,6 +33,11 @@ public class TokenService
 		var payloadSpan = tokenSpan.Slice(1, payloadLength);
 		var tokenSignature = tokenSpan.Slice(1 + payloadLength);
 		//
+		if (tokenSignature.Length != _signatureLength)
+		{
+			result = null!;
+			return false;
+		}
 		Span<byte> computedSignature = stackalloc byte[_signatureLength];
 		SignTo(payloadSpan, computedSignature);
 		//
@@ -54,16 +59,14 @@ public class TokenService
 	TokenClaims FromSpan(Span<byte> span)=> new (
 		span[0],
 		DateTime.FromBinary(BitConverter.ToInt64(span.Slice(1))),
-		span[9],
-		Convert.ToBase64String(span.Slice(10))
+		Convert.ToBase64String(span.Slice(9))
 	);
 	
 	int CopyTo(TokenClaims claims, Span<byte> span)
 	{
 		var cursor = 0;
 		span[cursor++] = claims.Type;
-		WriteTo(BitConverter.GetBytes(claims.CreatedAt.ToBinary()), span, ref cursor);
-		span[cursor++] = claims.Lifetime;
+		WriteTo(BitConverter.GetBytes(claims.ExpireAt.ToBinary()), span, ref cursor);
 		WriteTo(Convert.FromBase64String(claims.UserId), span, ref cursor);
 		return cursor;
 	}
@@ -74,15 +77,3 @@ public class TokenService
 		destCursor += length;
 	}
 }
-
-//public class AuthenticationService
-//{
-//	readonly TokenService _tokenService;
-
-//	public AuthenticationService()
-//	{
-//		_tokenService = tokenService;
-//	}
-
-//	public 
-//}

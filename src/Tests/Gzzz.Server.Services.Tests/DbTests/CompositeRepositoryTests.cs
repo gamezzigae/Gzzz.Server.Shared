@@ -101,7 +101,7 @@ class CompositeRepositoryTests
 		await _repository.PutItemAsync(item.UserId, item, now);
 
 		item.Level = RandomX.GetRandom();
-		await _repository.PutItemAsync(item.UserId, item, now.AddTicks(1), now.ToTimescore(), true);
+		await _repository.PersistentPutItemAsync(item.UserId, item, now.AddTicks(1), now.ToTimescore());
 
 		await EqualsAsync(item,true,true);
 	}
@@ -114,7 +114,7 @@ class CompositeRepositoryTests
 		await _repository.PutItemAsync(item.UserId, item, now);
 
 		item.Level = RandomX.GetRandom();
-		await _repository.PutItemAsync(item.UserId, item, now.AddTicks(1), now.ToTimescore(), false);
+		await _repository.PutItemAsync(item.UserId, item, now.AddTicks(1), now.ToTimescore());
 
 		await EqualsAsync(item,true,false);
 	}

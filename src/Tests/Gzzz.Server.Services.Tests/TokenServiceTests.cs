@@ -52,40 +52,39 @@ public class AuthenticationServiceTests
 		Assert.That(_tokenService.VerifyToken(accessToken, out var claims), Is.True);
 		Assert.That(claims.Type, Is.EqualTo((byte)TokenType.Access));
 		Assert.That(claims.UserId, Is.EqualTo(_userId));
-		Assert.That(claims.Lifetime, Is.EqualTo(_authenticationConfig.AccessTokenLIfetime));
-		Assert.That(claims.CreatedAt, Is.EqualTo(_now));
+		Assert.That(claims.ExpireAt, Is.EqualTo(_now.AddMinutes(_authenticationConfig.AccessTokenLIfetime)));
 
-		var context = new ApiContext() { RequestTime = claims.GetExpireAt() }; //만료시간 딱 맞춰서
+		var context = new ApiContext() { RequestTime = claims.ExpireAt }; //만료시간 딱 맞춰서
 		await _authenticationService.ValidateAccessTokenAsync(accessToken, context, _services);
 		Assert.That(context.UserId, Is.EqualTo(_userId));
 	}
 
 	[Test]
-	public void CreateAccessTokenAndExpiredTest()
+	public async Task CreateAccessTokenAndExpiredTestAsync()
 	{
 		var accessToken = _authenticationService.CreateAccessToken(_userId, _now);
 		Assert.That(_tokenService.VerifyToken(accessToken, out var claims), Is.True);
 
 		//1ms만 늦어도 exception
-		var context = new ApiContext() { RequestTime = claims.GetExpireAt().AddMilliseconds(1) };
-		var exception = Assert.ThrowsAsync<HttpException>(() => _authenticationService.ValidateAccessTokenAsync(accessToken, context, _services));
+		var context = new ApiContext() { RequestTime = claims.ExpireAt.AddMilliseconds(1) };
+		var result = await _authenticationService.ValidateAccessTokenAsync(accessToken, context, _services);
+		Assert.That(result.IsSuccess, Is.False);
+		Assert.That(result.ErrorMessage, Is.EqualTo(AuthenticationResult.ExpiredToken.ErrorMessage));
 		Assert.That(context.UserId, Is.EqualTo(_userId));
 	}
 
 	[Test]
-	public void CreateRefreshTokenAndVerifyFailTest()
+	public async Task CreateRefreshTokenAndVerifyFailTestAsync()
 	{
 		var refreshToken = _authenticationService.CreateRefreshToken(_userId, _now);
 		Assert.That(_tokenService.VerifyToken(refreshToken, out var claims), Is.True);
 		Assert.That(claims.Type, Is.EqualTo((byte)TokenType.Refresh));
 		Assert.That(claims.UserId, Is.EqualTo(_userId));
-		Assert.That(claims.Lifetime, Is.EqualTo(_authenticationConfig.RefreshTokenLifetime));
-		Assert.That(claims.CreatedAt, Is.EqualTo(_now));
+		Assert.That(claims.ExpireAt, Is.EqualTo(_now.AddMinutes(_authenticationConfig.RefreshTokenLifetime)));
 
 		var context = new ApiContext() { RequestTime = _now };
-		var exception = Assert.ThrowsAsync<HttpException>(() => _authenticationService.ValidateAccessTokenAsync(refreshToken, context, _services));
+		var result = await _authenticationService.ValidateAccessTokenAsync(refreshToken, context, _services);
 		Assert.That(context.UserId, Is.Null);
-		Assert.That(exception.StatusCode, Is.EqualTo(401));
-		Assert.That(exception.Message, Is.EqualTo("no acctkn"));
+		Assert.That(result.ErrorMessage, Is.EqualTo(AuthenticationResult.InvalidTokenType.ErrorMessage));
 	}
 }
