@@ -1,26 +1,23 @@
 using System.Security.Cryptography;
 
-namespace Gzzz.Services;
-
-public record TokenClaims(byte Type, long CreatedAt, long ExpireAt, string UserId);
+namespace Gzzz.Services.Authentication;
 
 public class TokenService
 {
 	readonly HMACSHA256 _hmac;
 	readonly int _signatureLength;
-	public TokenService(string hashKey)
+	public TokenService(AuthenticationConfig authenticationConfig)
 	{
-		
-		var bytesKey = Convert.FromBase64String(hashKey);
+		var bytesKey = Convert.FromBase64String(authenticationConfig.HashKey);
 		_hmac = new HMACSHA256(bytesKey);
 		_signatureLength = _hmac.HashSize / 8;
 	}
 
-	public string Encode(TokenClaims claims)
+	public string CreateToken(TokenClaims claims)
 	{
 		Span<byte> result = stackalloc byte[256];
-
 		var payloadLength = CopyTo(claims, result.Slice(1)); //0은 length
+
 		result[0] = (byte)payloadLength;
 		var payload = result.Slice(1, payloadLength);
 		SignTo(payload, result.Slice(1 + payloadLength));
@@ -28,7 +25,7 @@ public class TokenService
 		return Convert.ToBase64String(result.Slice(0, payloadLength + _signatureLength + 1));
 	}
 
-	public TokenClaims Decode(string token)
+	public bool VerifyToken(string token, out TokenClaims result)
 	{
 		var tokenSpan = Convert.FromBase64String(token).AsSpan();
 		//
@@ -41,9 +38,11 @@ public class TokenService
 		//
 		if (tokenSignature.SequenceEqual(computedSignature) == false)
 		{
-			return null;
+			result = null!;
+			return false;
 		}
-		return FromSpan(payloadSpan);
+		result = FromSpan(payloadSpan);
+		return true;
 	}
 
 	void SignTo(Span<byte> payload, Span<byte> destination)
@@ -52,14 +51,19 @@ public class TokenService
 			throw new InvalidOperationException("Hash computation failed");
 	}
 
-	TokenClaims FromSpan(Span<byte> span)=> new (span[0], BitConverter.ToInt64(span.Slice(1)), BitConverter.ToInt64(span.Slice(9)), Convert.ToBase64String(span.Slice(17)));
+	TokenClaims FromSpan(Span<byte> span)=> new (
+		span[0],
+		DateTime.FromBinary(BitConverter.ToInt64(span.Slice(1))),
+		span[9],
+		Convert.ToBase64String(span.Slice(10))
+	);
 	
 	int CopyTo(TokenClaims claims, Span<byte> span)
 	{
 		var cursor = 0;
 		span[cursor++] = claims.Type;
-		WriteTo(BitConverter.GetBytes(claims.CreatedAt), span, ref cursor);
-		WriteTo(BitConverter.GetBytes(claims.ExpireAt), span, ref cursor);
+		WriteTo(BitConverter.GetBytes(claims.CreatedAt.ToBinary()), span, ref cursor);
+		span[cursor++] = claims.Lifetime;
 		WriteTo(Convert.FromBase64String(claims.UserId), span, ref cursor);
 		return cursor;
 	}
@@ -71,10 +75,14 @@ public class TokenService
 	}
 }
 
-public class AuthenticationService
-{
-	public AuthenticationService(TokenService tokenService)
-	{
+//public class AuthenticationService
+//{
+//	readonly TokenService _tokenService;
 
-	}
-}
+//	public AuthenticationService()
+//	{
+//		_tokenService = tokenService;
+//	}
+
+//	public 
+//}
