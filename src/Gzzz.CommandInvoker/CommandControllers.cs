@@ -35,7 +35,7 @@ public static class  CommandInvokerExtensions
 					if (attr == default) continue;
 					if (commands.TryGetValue(attr.Path, out var exists))
 					{
-						throw new Exception($"INPUT_TYPEDuplicatedINPUT_TYPE INPUT_TYPECommandINPUT_TYPE INPUT_TYPEPathINPUT_TYPE : {attr.Path},{methodInfo.DeclaringType.FullName}/{methodInfo.Name}");
+						throw new Exception($"COMMAND PATH DUPLICATED : {attr.Path},{methodInfo.DeclaringType.FullName}/{methodInfo.Name}");
 					}
 					commands.Add(attr.Path, new CommandInfo(methodInfo, attr));
 				}

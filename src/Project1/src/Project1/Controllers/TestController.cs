@@ -1,0 +1,25 @@
+using Gzzz;
+using Gzzz.CommandInvoker;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Project1.Controllers;
+
+
+[Controller]
+public class TestController
+{
+	[Command("/echo")]
+	public Task<string> EchoAsync(string input) => Task.FromResult("echo:" + input);
+
+	[Command("/int")]
+	public Task<int> GetUserInfoAsync() => Task.FromResult(33);
+}
+
+[Controller]
+public class UserController
+{
+	[Command("/exception")]
+	public Task ExceptionAsync() => throw new HttpException(555, "Test exception from UserController.GetUserInfoAsync()");
+	[Command("/unhandledexception")]
+	public Task UnhandledExceptionAsync() => throw new Exception("Test exception from UserController.GetUserInfoAsync()");
+}

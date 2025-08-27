@@ -38,6 +38,7 @@ public class AuthenticationServiceTests
 			.AddSingleton(new AuthenticationConfig() { AccessTokenLIfetime = 15, RefreshTokenLifetime = 255, HashKey = RandomX.CreateRandomBase64String(256) })
 			.AddSingleton<TokenService>()
 			.AddSingleton<AuthenticationService>()
+			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
 			.ValidatedBuild();
 
 		_authenticationService = _services.GetRequiredService<AuthenticationService>();

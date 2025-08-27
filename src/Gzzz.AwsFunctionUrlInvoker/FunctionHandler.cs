@@ -3,6 +3,7 @@ using Gzzz.AwsFunctionUrlInvoker.Models;
 using Gzzz.AwsFunctionUrlInvoker.Serializer;
 using Gzzz.AwsFunctionUrlInvoker.Services;
 using Gzzz.CommandInvoker;
+using Gzzz.Services.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -19,6 +20,8 @@ public class FunctionHandler(IServiceProvider services)
 	readonly TimeService _timeService = services.GetRequiredService<TimeService>();
 	readonly IContextSerializer _contextSerializer = services.GetRequiredService<IContextSerializer>();
 	readonly JsonLogger _logger = services.GetRequiredService<JsonLogger>();
+	readonly AuthenticationService _authenticationService = services.GetRequiredService<AuthenticationService>();
+
 	bool _isColdStart = true;
 
 
@@ -79,13 +82,10 @@ public class FunctionHandler(IServiceProvider services)
 		//
 		if (command.AuthenticationRequired)
 		{
-			try
+			var authenticationResult = await _authenticationService.ValidateAccessTokenAsync(request.Headers.AccessToken, context, services);
+			if(authenticationResult.IsSuccess ==false)
 			{
-				context.UserId = await GetUserIdAsync(request.Headers.AccessSignature);
-			}
-			catch (Exception)
-			{
-				return FunctionUrlResponseHelper.Error(401, "authentication required", 0);
+				return FunctionUrlResponseHelper.Error(401, authenticationResult.ErrorMessage, 0);
 			}
 		}
 		//

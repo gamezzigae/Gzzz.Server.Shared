@@ -23,7 +23,7 @@ public class AuthenticationService
 		return _tokenService.CreateToken(claims);
 	}
 
-	public virtual Task<AuthenticationResult> ValidateAccessTokenAsync(string token, ApiContext context, IServiceProvider _)
+	public virtual Task<AuthenticationResult> ValidateAccessTokenAsync(string token, ApiContext context, IServiceProvider services)
 	{
 		if (string.IsNullOrEmpty(token))
 			return AuthenticationResult.MissingTokenTask;
@@ -41,7 +41,8 @@ public class AuthenticationService
 		if(now > claims.ExpireAt)
 			return AuthenticationResult.ExpiredTokenTask;
 
-		return AuthenticationResult.SuccessTask;
+		var accountRepository = services.GetRequiredService<IAccountScopedRepository>();
+		return accountRepository.ValidateClaimsAsync(claims);
 	}
 }
 
@@ -69,3 +70,4 @@ public class AuthenticationResult
 	public bool IsSuccess { get; set; }
 	public string ErrorMessage { get; set; }
 }
+

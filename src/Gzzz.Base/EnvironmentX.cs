@@ -11,17 +11,17 @@ public static class EnvironmentX
 		Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process);
 	}
 
-	public static string GetRequiredValue(string name)
+	public static string GetValue(string name)
     {
         var result = Environment.GetEnvironmentVariable(name);
         if (string.IsNullOrEmpty(result))
 			throw new Exception("필수 환경변수 누락:" + name);
         return result;
     }
-    public static T GetRequiredObject<T>(string name, JsonSerializerOptions jsonSerializerOptions)
+    public static T GetRequiredObject<T>(string name)
     {
-        var json = GetRequiredValue(name);
-		return JsonSerializer.Deserialize<T>(json, jsonSerializerOptions);
+        var json = GetValue(name);
+		return JsonSerializer.Deserialize<T>(json);
 	}
     public static string GetValueOrDefault(string name, string defaultValue = null)
     {

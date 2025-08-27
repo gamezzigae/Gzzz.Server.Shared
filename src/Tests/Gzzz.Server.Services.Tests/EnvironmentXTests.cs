@@ -9,7 +9,7 @@ class EnvironmentXTests
     {
         var key = RandomX.GetRandomText();
 
-        var exception = Assert.Throws<Exception>(() => EnvironmentX.GetRequiredValue(key), "예외가 발생해야 합니다.");
+        var exception = Assert.Throws<Exception>(() => EnvironmentX.GetValue(key), "예외가 발생해야 합니다.");
         Assert.That(exception.Message, Does.Contain(":"+key), "예외 메시지에 필수 환경변수 누락이 포함되어야 합니다.");
     }
 

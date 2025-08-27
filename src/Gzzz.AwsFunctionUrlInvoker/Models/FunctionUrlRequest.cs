@@ -51,8 +51,6 @@ public class FunctionUrlHeaders
 	[JsonPropertyName("zz-req-id")]
 	public string RequestId { get; init; }
 
-	[JsonPropertyName("zz-accpl")]
-	public string AccessPayload { get; init; }
-	[JsonPropertyName("zz-accasign")]
-	public string AccessSignature { get; init; }
+	[JsonPropertyName("zz-atkn")]
+	public string AccessToken { get; init; }
 }
