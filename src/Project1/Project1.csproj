@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AWSProjectType>Lambda</AWSProjectType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <PublishAot>true</PublishAot>
+    <StripSymbols>true</StripSymbols>
+    <TrimMode>partial</TrimMode>
+	<!--<IsAotCompatible>true</IsAotCompatible>-->
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="deploy-release-arm64.cmd" />
+    <None Remove="deploy-release-x86_64.cmd" />
+    <None Remove="nuget.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.13.2" />
+    <PackageReference Include="Amazon.Lambda.Core" Version="2.7.0" />
+    <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Gzzz.AwsFunctionUrlInvoker\Gzzz.AwsFunctionUrlInvoker.csproj" />
+  </ItemGroup>
+</Project>

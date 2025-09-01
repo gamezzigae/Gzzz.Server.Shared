@@ -1,10 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using System.Windows.Input;
+
 namespace Gzzz.CommandInvoker;
 
 public class CommandInfo
 {
+	public LoggingType LoggingType { get; set; }
 	public bool AuthenticationRequired { get; }
 	public bool ParameterRequired { get; }
 	public Type ControllerType { get; }
@@ -16,6 +17,7 @@ public class CommandInfo
 	public CommandInfo(MethodInfo methodInfo, CommandAttribute commandAttribute)
 	{
 		this.AuthenticationRequired = (commandAttribute is AnonymousCommandAttribute) == false;
+		this.LoggingType= commandAttribute.LoggingType;
 		var parameters = methodInfo.GetParameters();
 
         if(parameters.Length > 1)

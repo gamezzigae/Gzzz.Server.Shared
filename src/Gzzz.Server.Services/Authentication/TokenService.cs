@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Gzzz.Services.Authentication;
+namespace Gzzz.Authentication;
 
 public class TokenService
 {
@@ -27,7 +27,14 @@ public class TokenService
 
 	public bool VerifyToken(string token, out TokenClaims result)
 	{
-		var tokenSpan = Convert.FromBase64String(token).AsSpan();
+		Span<byte> tokenSpan = stackalloc byte[token.Length];
+		if(Convert.TryFromBase64String(token, tokenSpan, out var bytesWritten) == false)
+		{
+			result = null;
+			return false;
+		}
+
+		tokenSpan = tokenSpan.Slice(0, bytesWritten);
 		//
 		var payloadLength = tokenSpan[0];
 		var payloadSpan = tokenSpan.Slice(1, payloadLength);

@@ -1,7 +1,7 @@
+using Gzzz.Authentication;
 using Gzzz.AwsFunctionUrlInvoker.Models;
 using Gzzz.AwsFunctionUrlInvoker.Services;
 using Gzzz.CommandInvoker;
-using Gzzz.Services.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using System.Text.Json;
@@ -59,13 +59,4 @@ public class FunctionHandlerBuilder
 		return AddEnvironmentObject<AuthenticationConfig>("ZZ_AUTHENTICATION_CONFIG"); 
 	}
 
-}
-
-public interface IMiddleware
-{
-	public Task NextAsync(IServiceProvider services, FunctionUrlRequest request, ApiContext context);
-}
-
-public interface IAuthenticationMiddleware : IMiddleware
-{
 }

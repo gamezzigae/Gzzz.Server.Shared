@@ -5,9 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Project1.Controllers;
-using Gzzz.Services.Authentication;
 using Gzzz;
 using Gzzz.Controllers;
+using Gzzz.Authentication;
 namespace Project1;
 
 public static class Function
@@ -19,7 +19,6 @@ public static class Function
 			.UseCommandInvokers(assemblies)
 			.UseAuthentication<AuthenticationService>()
 			.ConfigureServices(services => services
-				.AddCommandInvokers(assemblies)
 				.AddSingleton<IContextSerializer, JsonContextSerializer>()
 			).BuildFunctionHandler()
 			.RunAsync();

@@ -1,12 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using System.Buffers;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Windows.Input;
 
 namespace Gzzz.CommandInvoker;
 
@@ -26,18 +21,20 @@ public static class  CommandInvokerExtensions
 				if (controllerType.GetCustomAttribute<ControllerAttribute>() == null)
 					continue;
 
-				var controllerAttr = controllerType.GetCustomAttribute<ControllerAttribute>();
-				services.Add(new ServiceDescriptor(controllerType, controllerType, controllerAttr.ServiceLifetime));
+				var controllerAttribute = controllerType.GetCustomAttribute<ControllerAttribute>();
+				services.Add(new ServiceDescriptor(controllerType, controllerType, controllerAttribute.ServiceLifetime));
 
 				foreach (var methodInfo in controllerType.GetMethods())
 				{
 					var attr = methodInfo.GetCustomAttribute<CommandAttribute>();
 					if (attr == default) continue;
-					if (commands.TryGetValue(attr.Path, out var exists))
+
+					var path = controllerAttribute.Path + attr.Path;
+					if (commands.TryGetValue(path, out var exists))
 					{
-						throw new Exception($"COMMAND PATH DUPLICATED : {attr.Path},{methodInfo.DeclaringType.FullName}/{methodInfo.Name}");
+						throw new Exception($"COMMAND PATH DUPLICATED : Controller:{controllerType}, Command:{methodInfo}");
 					}
-					commands.Add(attr.Path, new CommandInfo(methodInfo, attr));
+					commands.Add(path, new CommandInfo(methodInfo, attr));
 				}
 			}
 		}

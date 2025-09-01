@@ -1,4 +1,4 @@
-namespace Gzzz.Services.Authentication;
+namespace Gzzz.Authentication;
 
 public record TokenClaims(byte Type, DateTime ExpireAt, string UserId);
 

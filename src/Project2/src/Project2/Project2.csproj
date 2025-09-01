@@ -17,16 +17,8 @@
     <TrimMode>partial</TrimMode>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="deploy-release-arm64.cmd" />
-    <None Remove="deploy-release-x86_64.cmd" />
-    <None Remove="nuget.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.12.0" />
-    <PackageReference Include="Amazon.Lambda.Core" Version="2.5.0" />
+    <PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.13.1" />
+    <PackageReference Include="Amazon.Lambda.Core" Version="2.7.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Gzzz.AwsFunctionUrlInvoker\Gzzz.AwsFunctionUrlInvoker.csproj" />
   </ItemGroup>
 </Project>

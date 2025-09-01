@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Gzzz.Services.Authentication;
+namespace Gzzz.Authentication;
 public class AuthenticationService
 {
 	readonly AuthenticationConfig _authenticationConfig;
@@ -23,7 +23,8 @@ public class AuthenticationService
 		return _tokenService.CreateToken(claims);
 	}
 
-	public virtual Task<AuthenticationResult> ValidateAccessTokenAsync(string token, ApiContext context, IServiceProvider services)
+
+	public virtual Task<AuthenticationResult> ValidateTokenAsync(TokenType tokenType, string token, ApiContext context, IAccountScopedRepository accountRepository)
 	{
 		if (string.IsNullOrEmpty(token))
 			return AuthenticationResult.MissingTokenTask;
@@ -31,7 +32,7 @@ public class AuthenticationService
 		if (_tokenService.VerifyToken(token, out var claims)==false)
 			return AuthenticationResult.InvalidTokenTask;
 
-		if (claims.Type != (byte)TokenType.Access)
+		if (claims.Type != (byte)tokenType)
 			return AuthenticationResult.InvalidTokenTypeTask;
 
 		context.UserId = claims.UserId;
@@ -40,8 +41,6 @@ public class AuthenticationService
 
 		if(now > claims.ExpireAt)
 			return AuthenticationResult.ExpiredTokenTask;
-
-		var accountRepository = services.GetRequiredService<IAccountScopedRepository>();
 		return accountRepository.ValidateClaimsAsync(claims);
 	}
 }

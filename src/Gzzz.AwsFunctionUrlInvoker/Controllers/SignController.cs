@@ -1,5 +1,5 @@
+using Gzzz.Authentication;
 using Gzzz.CommandInvoker;
-using Gzzz.Services.Authentication;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,10 +23,8 @@ public class SignController
 		_apiContext = apiContext;
 	}
 
-	[AnonymousCommand("/sign/guest")]
-	public async Task<SignResponse> GuestSignInAsync()
+	async Task<SignResponse> CreateTokensAsync(string userId)
 	{
-		var userId = RandomX.CreateRandomBase64String(18);
 		var accessToken = _authenticationService.CreateAccessToken(userId, _apiContext.RequestTime);
 		var refreshToken = _authenticationService.CreateRefreshToken(userId, _apiContext.RequestTime);
 
@@ -37,6 +35,17 @@ public class SignController
 			AccessToken = accessToken,
 			RefreshToken = refreshToken,
 		};
+	}
+
+	[AnonymousCommand("/sign/guest")]	public Task<SignResponse> GuestSignInAsync()=>CreateTokensAsync(RandomX.CreateRandomBase64String(18));
+	[AnonymousCommand("/sign/impersonate")]	public Task<SignResponse> ImpersonateSignInAsync(string userId)=>CreateTokensAsync(userId);
+
+
+	[AnonymousCommand("/sign/refresh")]
+	public async Task<SignResponse> SignInByRefreshTokenAsync(string refreshToken)
+	{
+		await _authenticationService.ValidateTokenAsync(TokenType.Refresh, refreshToken, _apiContext, _accountScopedRepository);
+		return await CreateTokensAsync(_apiContext.UserId);
 	}
 }
 

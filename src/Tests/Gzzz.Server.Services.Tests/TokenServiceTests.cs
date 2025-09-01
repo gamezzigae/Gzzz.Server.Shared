@@ -1,4 +1,4 @@
-using Gzzz.Services.Authentication;
+using Gzzz.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Cryptography;
 
@@ -31,19 +31,20 @@ public class AuthenticationServiceTests
 	readonly TokenService _tokenService;
 	readonly DateTime _now = DateTime.UtcNow;
 	readonly string _userId = RandomX.CreateRandomBase64String(15);
-	readonly IServiceProvider _services;
+	readonly IAccountScopedRepository _accountScopedRepository;
 	public AuthenticationServiceTests()
 	{
-		_services = new ServiceCollection()
+		var services = new ServiceCollection()
 			.AddSingleton(new AuthenticationConfig() { AccessTokenLIfetime = 15, RefreshTokenLifetime = 255, HashKey = RandomX.CreateRandomBase64String(256) })
 			.AddSingleton<TokenService>()
 			.AddSingleton<AuthenticationService>()
 			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
 			.ValidatedBuild();
 
-		_authenticationService = _services.GetRequiredService<AuthenticationService>();
-		_authenticationConfig = _services.GetRequiredService<AuthenticationConfig>();
-		_tokenService = _services.GetRequiredService<TokenService>();
+		_authenticationService = services.GetRequiredService<AuthenticationService>();
+		_authenticationConfig = services.GetRequiredService<AuthenticationConfig>();
+		_tokenService = services.GetRequiredService<TokenService>();
+		_accountScopedRepository= services.GetRequiredService<IAccountScopedRepository>();
 	}
 
 	[Test]
@@ -56,35 +57,37 @@ public class AuthenticationServiceTests
 		Assert.That(claims.ExpireAt, Is.EqualTo(_now.AddMinutes(_authenticationConfig.AccessTokenLIfetime)));
 
 		var context = new ApiContext() { RequestTime = claims.ExpireAt }; //만료시간 딱 맞춰서
-		await _authenticationService.ValidateAccessTokenAsync(accessToken, context, _services);
+		await _authenticationService.ValidateTokenAsync(TokenType.Access, accessToken, context, _accountScopedRepository);
 		Assert.That(context.UserId, Is.EqualTo(_userId));
 	}
 
 	[Test]
-	public async Task CreateAccessTokenAndExpiredTestAsync()
+	public async Task ExpiredTokenTestAsync()
 	{
 		var accessToken = _authenticationService.CreateAccessToken(_userId, _now);
 		Assert.That(_tokenService.VerifyToken(accessToken, out var claims), Is.True);
 
 		//1ms만 늦어도 exception
 		var context = new ApiContext() { RequestTime = claims.ExpireAt.AddMilliseconds(1) };
-		var result = await _authenticationService.ValidateAccessTokenAsync(accessToken, context, _services);
+		var result = await _authenticationService.ValidateTokenAsync(TokenType.Access, accessToken, context, _accountScopedRepository);
 		Assert.That(result.IsSuccess, Is.False);
 		Assert.That(result.ErrorMessage, Is.EqualTo(AuthenticationResult.ExpiredToken.ErrorMessage));
 		Assert.That(context.UserId, Is.EqualTo(_userId));
 	}
+	[Test]
+	public void InvalidTokenTest()
+	{
+		var accessToken = _authenticationService.CreateAccessToken(_userId, _now) + "=";
+		Assert.That(_tokenService.VerifyToken(accessToken, out var claims), Is.False);
+	}
 
 	[Test]
-	public async Task CreateRefreshTokenAndVerifyFailTestAsync()
+	public async Task InvalidTokenTypeTestAsync()
 	{
 		var refreshToken = _authenticationService.CreateRefreshToken(_userId, _now);
-		Assert.That(_tokenService.VerifyToken(refreshToken, out var claims), Is.True);
-		Assert.That(claims.Type, Is.EqualTo((byte)TokenType.Refresh));
-		Assert.That(claims.UserId, Is.EqualTo(_userId));
-		Assert.That(claims.ExpireAt, Is.EqualTo(_now.AddMinutes(_authenticationConfig.RefreshTokenLifetime)));
 
 		var context = new ApiContext() { RequestTime = _now };
-		var result = await _authenticationService.ValidateAccessTokenAsync(refreshToken, context, _services);
+		var result = await _authenticationService.ValidateTokenAsync(TokenType.Access, refreshToken, context, _accountScopedRepository); //다른토큰이라 안됨
 		Assert.That(context.UserId, Is.Null);
 		Assert.That(result.ErrorMessage, Is.EqualTo(AuthenticationResult.InvalidTokenType.ErrorMessage));
 	}

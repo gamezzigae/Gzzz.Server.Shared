@@ -8,6 +8,10 @@ public class ApiContext
 	[JsonPropertyName("cold")]
 	public bool IsColdStart { get; set; }
 
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	[JsonPropertyName("memory_size")]
+	public int MemorySize { get; set; }
+
 	[JsonPropertyName("subject")]
 	public string Subject { get; } = "API";
 
@@ -57,4 +61,31 @@ public class ApiContext
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("exception")]
 	public string Exception { get; set; }
+
+
+	[JsonIgnore]
+	public bool SkipLogging { get; set; }
+
+	public void TrimSuccess(LoggingType loggingType)
+	{
+		switch (loggingType)
+		{
+			case LoggingType.Ignored:
+				SkipLogging = true;
+				return;
+			case LoggingType.Simple:
+				RequestModel = default;
+				ResponseModel = default;
+				return;
+			case LoggingType.IgnoreRequestBody:
+				RequestModel = default;
+				return;
+			case LoggingType.IgnoreResponseBody:
+				ResponseModel = default;
+				return;
+			default:
+				return;
+		}
+	}
+
 }

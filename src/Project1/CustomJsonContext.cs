@@ -1,7 +1,7 @@
 using Gzzz;
+using Gzzz.Authentication;
 using Gzzz.AwsFunctionUrlInvoker.Models;
 using Gzzz.Controllers;
-using Gzzz.Services.Authentication;
 using System.Text.Json.Serialization;
 namespace Project1;
 

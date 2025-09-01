@@ -10,8 +10,10 @@ using System.Text.Json;
 using BenchmarkDotNet.Attributes;
 using Gzzz;
 
-Console.WriteLine(	);
-BenchmarkRunner.Run<TryCatchBenchmark>();
+var path1 = "/test";
+var path2 = "signin";
+Console.WriteLine(	Path.Combine(path1,path2));
+//BenchmarkRunner.Run<TryCatchBenchmark>();
 //
 //
 //
