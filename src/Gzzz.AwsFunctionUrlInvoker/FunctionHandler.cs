@@ -30,13 +30,16 @@ public class FunctionHandler(IServiceProvider services)
 
 	bool _isColdStart = true;
 
-	public Task RunAsync()=>LambdaBootstrapBuilder.Create<FunctionUrlRequest, FunctionUrlResponse>(RequestHandleAsync, _lambdaSerializer).Build().RunAsync();
+	public Task RunAsync()=>LambdaBootstrapBuilder
+		.Create<FunctionUrlRequest, FunctionUrlResponse>(RequestHandleAsync, _lambdaSerializer)
+		.Build()
+		.RunAsync();
 
 	public async Task<FunctionUrlResponse> RequestHandleAsync(FunctionUrlRequest request)
 	{
 		using var scope = _services.CreateScope();
 
-		var context = services.GetRequiredService<ApiContext>();
+		var context = scope.ServiceProvider.GetRequiredService<ApiContext>();
 		if (_isColdStart)
 		{
 			context.IsColdStart = true;
@@ -59,29 +62,6 @@ public class FunctionHandler(IServiceProvider services)
 		response.Headers.Add("elased", context.Elapsed.ToString());
 		return response;
 	}
-
-	//public async Task<Stream> StreamHandleAsync(Stream requestStream)
-	//{
-	//	var request = await JsonSerializer.DeserializeAsync<FunctionUrlRequest>(requestStream, FunctionUrlJsonContext.Default.FunctionUrlRequest);
-	//	using var scope = _services.CreateScope();
-
-	//	var context = CreateApiContext(scope.ServiceProvider, request);
-
-	//	FunctionUrlResponse response = await HandleAsync(scope.ServiceProvider, request, context);
-
-	//	context.Status = response.StatusCode;
-	//	context.Elapsed = (int)(_timeService.GetNow() - context.RequestTime).TotalMilliseconds;
-
-	//	if (context.SkipLogging == false)
-	//		_logger.Write(context);
-
-	//	var responseStream = new MemoryStream();
-	//	await JsonSerializer.SerializeAsync(responseStream, response, FunctionUrlJsonContext.Default.FunctionUrlResponse);
-	//	responseStream.Position = 0;
-	//	return responseStream;
-	//}
-
-	
 
 	public async Task<FunctionUrlResponse> HandleAsync(IServiceProvider services, FunctionUrlRequest request, ApiContext context)
 	{

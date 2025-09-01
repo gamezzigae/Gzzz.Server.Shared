@@ -1,10 +1,10 @@
-name: Gzzz.Base Deployment
+name: Gzzz.Server.Base Deployment
 
 on:
   push:
-    branches: [ "main", "feature/0.0.13"]
+    branches: [ "main" ]
     paths:
-      - "src/Gzzz.Base/**"
+      - "src/Gzzz.Server.Base/**"
 
 env:
     NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
