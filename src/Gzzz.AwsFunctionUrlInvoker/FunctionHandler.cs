@@ -38,7 +38,6 @@ public class FunctionHandler(IServiceProvider services)
 	public async Task<FunctionUrlResponse> RequestHandleAsync(FunctionUrlRequest request)
 	{
 		using var scope = _services.CreateScope();
-
 		var context = scope.ServiceProvider.GetRequiredService<ApiContext>();
 		if (_isColdStart)
 		{
@@ -58,8 +57,8 @@ public class FunctionHandler(IServiceProvider services)
 		if (context.SkipLogging == false)
 			_logger.Write(context);
 
-		response.Headers.Add("test", "ok2");
 		response.Headers.Add("elased", context.Elapsed.ToString());
+		response.Headers.Add("cold_start", context.IsColdStart.ToString());
 		return response;
 	}
 
@@ -97,6 +96,7 @@ public class FunctionHandler(IServiceProvider services)
 			context.ResponseModel = await command.InvokeAsync(services, context.RequestModel);
 			string deserializedResponseBody = _contextSerializer.Serialize(context.ResponseModel); //예외처리 하지 않는다.
 			context.TrimSuccess(command.LoggingType);
+
 			return FunctionUrlResponseHelper.Success(deserializedResponseBody);
 		}
 		catch (HttpException httpException)

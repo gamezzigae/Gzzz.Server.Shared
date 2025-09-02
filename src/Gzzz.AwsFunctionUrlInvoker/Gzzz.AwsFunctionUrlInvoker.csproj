@@ -4,6 +4,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Version>0.1.0</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,8 +17,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Gzzz.CommandInvoker\Gzzz.CommandInvoker.csproj" />
-	  <ProjectReference Include="..\Gzzz.Server.Services\Gzzz.Server.Services.csproj" />
+		<ProjectReference Include="..\Gzzz.CommandInvoker\Gzzz.CommandInvoker.csproj" />
+		<ProjectReference Include="..\Gzzz.Server.Services\Gzzz.Server.Services.csproj" />
 	</ItemGroup>
 
 </Project>

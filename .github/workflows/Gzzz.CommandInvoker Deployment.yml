@@ -1,8 +1,8 @@
-name: Gzzz.Base Deployment
+name: Gzzz.CommandInvoker Deployment
 
 on:
   push:
-    branches: [ "main", "feature/0.0.13"]
+    branches: [ "main"]
     paths:
       - "src/Gzzz.CommandInvoker/**"
 

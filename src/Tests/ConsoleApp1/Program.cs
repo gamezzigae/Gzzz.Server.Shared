@@ -1,51 +1,56 @@
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Engines;
-using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Running;
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text.Json;
-using BenchmarkDotNet.Attributes;
+
 using Gzzz;
+using System;
+using System.IO;
+using System.IO.Compression;
+using System.Text;
+using System.Text.Json;
 
-var path1 = "/test";
-var path2 = "signin";
-Console.WriteLine(	Path.Combine(path1,path2));
-//BenchmarkRunner.Run<TryCatchBenchmark>();
-//
-//
-//
-//
-
-
-[MemoryDiagnoser]
-public class TryCatchBenchmark
+public class LambdaJsonSizeComparison
 {
-	string _message = RandomX.CreateRandomBase64String(256);
-
-	[Benchmark]
-	public void SerializeToUtf8Bytes()
+	public static void Main()
 	{
-		var bytes = JsonSerializer.SerializeToUtf8Bytes(_message);
-		using var ms = new MemoryStream(bytes);
+		int[] sizes = { 50, 100, 500, 1000, 2000, 5000, 10000 }; // JSON 길이(byte) 기준
+		Console.WriteLine("Size\tUTF8\tBase64\tGZip+Base64");
+
+		foreach (int size in sizes)
+		{
+			var sample = new SampleData
+			{
+				Id = RandomX.GetRandom(),
+				Name = "Test Object",
+				Description = RandomX.GetRandomText(size)
+			};
+
+			// 1️⃣ JSON → UTF8
+			byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(sample);
+			string utf8String = Encoding.UTF8.GetString(jsonBytes);
+
+			// 2️⃣ JSON → Base64
+			string base64String = Convert.ToBase64String(jsonBytes);
+
+			// 3️⃣ JSON → GZip → Base64
+			string gzipBase64String = Convert.ToBase64String(CompressGzip(jsonBytes, CompressionLevel.Optimal));
+			string gzipBase64String2 = Convert.ToBase64String(CompressGzip(jsonBytes, CompressionLevel.SmallestSize));
+
+			Console.WriteLine($"{jsonBytes.Length}\t{utf8String.Length}\t{base64String.Length}\t{gzipBase64String.Length}\t{gzipBase64String2.Length}");
+		}
 	}
 
-
-	[Benchmark]
-	public async Task SerializeStreamAsync()
+	public static byte[] CompressGzip(byte[] data, CompressionLevel compressionLevel)
 	{
-		using var ms = new MemoryStream();
-		await JsonSerializer.SerializeAsync(ms, _message);
+		using var output = new MemoryStream();
+		using (var gzip = new GZipStream(output, compressionLevel, leaveOpen: true))
+		{
+			gzip.Write(data, 0, data.Length);
+		}
+		return output.ToArray();
 	}
 
-
-	[Benchmark]
-	public void SerializeStream()
+	public class SampleData
 	{
-		using var ms = new MemoryStream();
-		JsonSerializer.Serialize(ms, _message);
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public string Description { get; set; }
 	}
-
 }
