@@ -8,9 +8,6 @@ public class ApiContext
 	[JsonPropertyName("cold")]
 	public bool IsColdStart { get; set; }
 
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	[JsonPropertyName("memory_size")]
-	public int MemorySize { get; set; }
 
 	[JsonPropertyName("subject")]
 	public string Subject { get; } = "API";
@@ -77,10 +74,10 @@ public class ApiContext
 				RequestModel = default;
 				ResponseModel = default;
 				return;
-			case LoggingType.IgnoreRequestBody:
+			case LoggingType.TrimRequestBody:
 				RequestModel = default;
 				return;
-			case LoggingType.IgnoreResponseBody:
+			case LoggingType.TrimResponseBody:
 				ResponseModel = default;
 				return;
 			default:

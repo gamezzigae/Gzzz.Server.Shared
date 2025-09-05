@@ -28,13 +28,13 @@ public static class FunctionUrlResponseHelper
 			Headers = new Dictionary<string, string>
 			{
 				{ "Content-Type", "application/json" },
-				{ "zz-mgs", message },
+				{ "zz-em", message },
 			},
 		};
 
 		if(errorCode > 0)
 		{
-			result.Headers.Add("zz-ecode", errorCode.ToString());
+			result.Headers.Add("zz-ec", errorCode.ToString());
 		}
 		return result;
 	}

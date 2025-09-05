@@ -20,7 +20,6 @@ namespace Gzzz.AwsFunctionUrlInvoker;
 public class FunctionHandler(IServiceProvider services)
 {
 	readonly ILambdaSerializer _lambdaSerializer = new SourceGeneratorLambdaJsonSerializer<FunctionUrlJsonContext>();
-	readonly int _allocatedMemory = int.Parse(Environment.GetEnvironmentVariable("AWS_LAMBDA_FUNCTION_MEMORY_SIZE"));
 	readonly IServiceProvider _services = services;
 	readonly IReadOnlyDictionary<string, CommandInfo> _commands = services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
 	readonly TimeService _timeService = services.GetRequiredService<TimeService>();
@@ -47,7 +46,6 @@ public class FunctionHandler(IServiceProvider services)
 		context.Ip = request.RequestContext.Http.SourceIp;
 		context.RequestTime = _timeService.GetNow();
 		context.Path = request.RequestContext.Http.Path;
-		context.MemorySize = _allocatedMemory;
 
 		FunctionUrlResponse response = await HandleAsync(scope.ServiceProvider, request, context);
 

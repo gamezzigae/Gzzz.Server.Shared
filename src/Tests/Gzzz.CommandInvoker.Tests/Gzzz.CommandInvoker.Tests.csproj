@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
@@ -18,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Gzzz.AwsFunctionUrlInvoker\Gzzz.AwsFunctionUrlInvoker.csproj" />
     <ProjectReference Include="..\..\Gzzz.CommandInvoker\Gzzz.CommandInvoker.csproj" />
   </ItemGroup>
 

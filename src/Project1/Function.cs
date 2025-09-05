@@ -14,6 +14,8 @@ public static class Function
 {
 	private static async Task Main()
 	{
+		
+
 		Assembly[] assemblies = [typeof(TestController).Assembly, typeof(SignController).Assembly];
 		await new FunctionHandlerBuilder(CustomJsonContext.Default.Options)
 			.UseCommandInvokers(assemblies)

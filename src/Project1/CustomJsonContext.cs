@@ -12,7 +12,7 @@ namespace Project1;
 [JsonSerializable(typeof(ApiContext))]
 //
 [JsonSerializable(typeof(AuthenticationConfig))]
-[JsonSerializable(typeof(SignResponse))]
+[JsonSerializable(typeof(AuthenticationTokens))]
 public partial class CustomJsonContext : JsonSerializerContext
 {
 }

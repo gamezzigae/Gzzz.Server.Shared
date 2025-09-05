@@ -26,12 +26,17 @@ public class FunctionHandlerBuilder
 	}
 	public FunctionHandlerBuilder(JsonSerializerOptions options)
 	{
+		if(options == null)
+			_services.AddSingleton<JsonSerializerOptions>(_ => null);
+		else
+			_services.AddSingleton(options);
+
 		this._services
 			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
 			.AddSingleton<JsonLogger>()
 			.AddSingleton<TimeService>()
-			.AddScoped<ApiContext>()
-			.AddSingleton(options);
+			.AddScoped<ApiContext>();
+
 		_options = options;
 	}
 
@@ -49,14 +54,18 @@ public class FunctionHandlerBuilder
 		return this;
 	}
 
-
-	public FunctionHandlerBuilder UseAuthentication<TAuthenticationService>() where TAuthenticationService : AuthenticationService
+	public FunctionHandlerBuilder UseAuthentication<TAuthenticationService>(AuthenticationConfig authenticationConfig=null) where TAuthenticationService : AuthenticationService
 	{
 		_services
 			.AddSingleton<AuthenticationService, TAuthenticationService>()
 			.AddSingleton<TokenService>();
 
-		return AddEnvironmentObject<AuthenticationConfig>("ZZ_AUTHENTICATION_CONFIG"); 
+		if (authenticationConfig != default)
+			_services.AddSingleton(authenticationConfig);
+		else
+			AddEnvironmentObject<AuthenticationConfig>("ZZ_AUTHENTICATION_CONFIG");
+
+		return this;
 	}
 
 }

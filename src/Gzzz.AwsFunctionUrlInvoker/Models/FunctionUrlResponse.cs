@@ -18,6 +18,4 @@ public struct FunctionUrlResponse
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("isBase64Encoded")]
 	public bool IsBase64Encoded { get; init; }
-
-
 }

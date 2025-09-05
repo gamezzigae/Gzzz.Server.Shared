@@ -1,11 +1,6 @@
 using Gzzz.Authentication;
 using Gzzz.CommandInvoker;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Gzzz.Controllers;
 
@@ -23,13 +18,13 @@ public class SignController
 		_apiContext = apiContext;
 	}
 
-	async Task<SignResponse> CreateTokensAsync(string userId)
+	async Task<AuthenticationTokens> CreateTokensAsync(string userId)
 	{
 		var accessToken = _authenticationService.CreateAccessToken(userId, _apiContext.RequestTime);
 		var refreshToken = _authenticationService.CreateRefreshToken(userId, _apiContext.RequestTime);
 
 		await _accountScopedRepository.SetTokensAsync(accessToken, refreshToken);
-		return new SignResponse()
+		return new AuthenticationTokens()
 		{
 			UserId = userId,
 			AccessToken = accessToken,
@@ -37,19 +32,25 @@ public class SignController
 		};
 	}
 
-	[AnonymousCommand("/sign/guest")]	public Task<SignResponse> GuestSignInAsync()=>CreateTokensAsync(RandomX.CreateRandomBase64String(18));
-	[AnonymousCommand("/sign/impersonate")]	public Task<SignResponse> ImpersonateSignInAsync(string userId)=>CreateTokensAsync(userId);
+	[AnonymousCommand("/sign/_____impersonate_____")]
+	public Task<AuthenticationTokens> ImpersonateSignInAsync(string userId)
+	{
+		return CreateTokensAsync(userId);
+	}
 
 
-	[AnonymousCommand("/sign/refresh")]
-	public async Task<SignResponse> SignInByRefreshTokenAsync(string refreshToken)
+	[AnonymousCommand("/sign/gst")]	public Task<AuthenticationTokens> GuestSignInAsync()=>CreateTokensAsync(RandomX.CreateRandomBase64String(18));
+	
+
+	[AnonymousCommand("/sign/rtkn")]
+	public async Task<AuthenticationTokens> SignInByRefreshTokenAsync(string refreshToken)
 	{
 		await _authenticationService.ValidateTokenAsync(TokenType.Refresh, refreshToken, _apiContext, _accountScopedRepository);
 		return await CreateTokensAsync(_apiContext.UserId);
 	}
 }
 
-public class SignResponse
+public class AuthenticationTokens
 {
 	[JsonPropertyName("uid")]
 	public string UserId { get; set; }
