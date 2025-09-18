@@ -29,9 +29,9 @@ public class RedisOptimisicRepository<T> : IOptimisticRepository<T>
 		await db.KeyDeleteAsync(redieKeys);
 	}
 
-	public async Task<Dictionary<string, OptimisticRecord<T>>> GetExpiredItemsAsync(DateTime expireAt, int take = 10)
+	public async Task<Dictionary<string, OptimisticRecord<T>>> GetExpiredItemsAsync(DateTimeOffset expireAt, int take = 10)
 	{
-		var maxTimestamp = expireAt.ToTimescore();
+		var maxTimestamp = expireAt.ToUnixTimeMilliseconds();
 		var db = _redisService.GetDatabase();
 		var sortedSetEntries = await db.SortedSetRangeByScoreWithScoresAsync(
 			key: _sortedSetKey,
@@ -51,52 +51,47 @@ public class RedisOptimisicRepository<T> : IOptimisticRepository<T>
 			var redisValue = items[i];
 			var deserializedItem = _textSerializer.Deserialize(redisValue);
 			var timestamp = (long)sortedSetEntries[i].Score;
-			var record = new OptimisticRecord<T>(itemKey, deserializedItem, timestamp, true);
+			var record = new OptimisticRecord<T>(itemKey, deserializedItem, DateTimeOffset.FromUnixTimeMilliseconds(timestamp), true);
 			result.Add(itemKey, record);
 		}
 
 		return result;
 	}
 
-
-	public Task<long> PutItemAsync(string sortKey, T item, DateTime now, long checkTimestamp = 0)
-		=> PutItemAsync(sortKey, item, now.ToTimescore(), checkTimestamp);
-
-	public async Task<long> PutItemAsync(string sortKey, T item, long nextTimestamp, long checkTimestamp = 0)
-    {
-		var redisKey = _partitionKey+sortKey;
-
-		if (checkTimestamp == nextTimestamp)
+	
+	public async Task PutItemAsync(string key, T item, DateTimeOffset now, DateTimeOffset updatedAt = default)
+	{
+		var nowUnixMs = now.ToUnixTimeMilliseconds();
+		var updatedAtUnixMs = updatedAt.ToUnixTimeMilliseconds();
+		if (nowUnixMs <= updatedAtUnixMs)
 		{
-			throw new RedisPutException(redisKey, checkTimestamp, nextTimestamp, "timestamp가 같거나 큼");
+			throw new RedisPutException("time condition error");
 		}
+		var redisKey = _partitionKey + key;
 
 		var serializedItem = _textSerializer.Serialize(item);
 
         var transaction = _redisService.CreateTransaction();
 
-
-		if (checkTimestamp > 0)
-        {
-            transaction.AddCondition(Condition.SortedSetEqual(_sortedSetKey, sortKey, checkTimestamp));
-			transaction.AddCondition(Condition.KeyExists(redisKey));
-		}
-        else
-        {
-            transaction.AddCondition(Condition.SortedSetNotContains(_sortedSetKey, sortKey));
+		
+		if (updatedAt == default)
+		{
+			transaction.AddCondition(Condition.SortedSetNotContains(_sortedSetKey, key));
 			transaction.AddCondition(Condition.KeyNotExists(redisKey));
 		}
-        var sortedSetAddTask = transaction.SortedSetAddAsync(_sortedSetKey, sortKey, nextTimestamp);
+        else
+		{
+			transaction.AddCondition(Condition.SortedSetEqual(_sortedSetKey, key, updatedAtUnixMs));
+			transaction.AddCondition(Condition.KeyExists(redisKey));
+		}
+        var sortedSetAddTask = transaction.SortedSetAddAsync(_sortedSetKey, key, nowUnixMs);
         var setAddTask = transaction.StringSetAsync(redisKey, serializedItem);
         bool committed = await transaction.ExecuteAsync();
 
         if (!committed)
         {
-            throw new RedisPutException(redisKey, checkTimestamp, nextTimestamp, "not committed");
+            throw new RedisPutException("not committed");
         }
-
-		return nextTimestamp;
-
 	}
 
 	public Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string itemKey1, string itemKey2) => GetItemOrDefaultAsync($"{itemKey1}:{itemKey2}");
@@ -112,7 +107,7 @@ public class RedisOptimisicRepository<T> : IOptimisticRepository<T>
 		
 		var item = await db.StringGetAsync(redisKey);
 		var deserializedItem = _textSerializer.Deserialize(item);
-		return new(itemKey, deserializedItem, (long)timestamp.Value, true);
+		return new(itemKey, deserializedItem, DateTimeOffset.FromUnixTimeMilliseconds( (long)timestamp.Value), true);
 	}
 
 	public async Task DeleteItemAsync(string itemKey)
@@ -125,15 +120,8 @@ public class RedisOptimisicRepository<T> : IOptimisticRepository<T>
 
 public class RedisPutException : Exception
 {
-	public string Key { get; set; }
-	public double Timestamp1 { get; set; }
-	public double Timestamp2 { get; set; }
 
-	public RedisPutException(string key, double timestamp1, double timestamp2, string message) : base(message)
+	public RedisPutException(string message) : base(message)
 	{
-		Key = key;
-		Timestamp1 = timestamp1;
-		Timestamp2 = timestamp2;
 	}
-
 }

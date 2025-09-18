@@ -16,12 +16,12 @@ public static class DynamoDbTestUtil
 			{
 				TableName = tableName,
 				KeySchema = [
-					new KeySchemaElement("PK", KeyType.HASH),
-					new KeySchemaElement("SK", KeyType.RANGE)
+					new KeySchemaElement(DynamoDbKeys.PartitionKey, KeyType.HASH),
+					new KeySchemaElement(DynamoDbKeys.SortKey, KeyType.RANGE)
 				],
 				AttributeDefinitions = [
-					new AttributeDefinition("PK", ScalarAttributeType.S),
-					new AttributeDefinition("SK", ScalarAttributeType.S)
+					new AttributeDefinition(DynamoDbKeys.PartitionKey, ScalarAttributeType.S),
+					new AttributeDefinition(DynamoDbKeys.SortKey, ScalarAttributeType.S)
 				],
 				ProvisionedThroughput = new ProvisionedThroughput(1, 1)
 			});

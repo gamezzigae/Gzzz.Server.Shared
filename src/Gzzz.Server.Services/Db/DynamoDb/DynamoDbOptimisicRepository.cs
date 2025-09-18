@@ -2,41 +2,36 @@ using Amazon.DynamoDBv2.Model;
 
 namespace Gzzz.Db.DynamoDb;
 
-public class DynamoDbOptimisicRepository<T>
+public class DynamoDbOptimisicRepository<T> : IOptimisticRepository<T>
 	where T : class
 {
 	readonly DynamoDbService _dynamoDbService;
 	readonly string _partitionKey;
 	readonly AttributeValue _partitionKeyAttributeValue;
-	readonly string _sortKeyFieldName;
 
-	public DynamoDbOptimisicRepository(DynamoDbService dynamoDbService, string partitionKey, string sortKeyFieldName)
+	public DynamoDbOptimisicRepository(DynamoDbService dynamoDbService, string partitionKey)
 	{
 		_dynamoDbService = dynamoDbService;
 		_partitionKey = partitionKey;
 		_partitionKeyAttributeValue = new AttributeValue(partitionKey);
-		_sortKeyFieldName = sortKeyFieldName;
 	}
-	public async Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string sortKey)
+
+	public async Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string key)
 	{
-		var attributeMap = await _dynamoDbService.GetAttirubtesAsync(_partitionKey, sortKey);
+		var attributeMap = await _dynamoDbService.GetAttirubtesAsync(_partitionKey, key);
 		if (attributeMap==default)
 			return default;
 
-		var timestamp = long.Parse(attributeMap["TS"].N);
 		var value = AttributeMap.ConvertTo<T>(attributeMap);
-		var record = new OptimisticRecord<T>(sortKey, value, timestamp, false);
+		var record = new OptimisticRecord<T>(key, value, attributeMap.GetUpdatedAt(), false);
 
 		return record;
 	}
-	public async Task<long> PutItemAsync(T item, DateTime now, long checkTimestamp = 0)
+	public async Task PutItemAsync(string key, T item, DateTimeOffset now, DateTimeOffset updatedAt = default)
 	{
 		var attributeMap = AttributeMap.ConvertFrom(item);
-		attributeMap.Add("PK", _partitionKeyAttributeValue);
-		attributeMap.Add("SK", attributeMap[_sortKeyFieldName]);
-		var nextTimestamp = now.ToTimescore();
-		attributeMap.Add("TS", new AttributeValue { N = nextTimestamp.ToString() });
-		await _dynamoDbService.PutItemAsync(attributeMap, checkTimestamp==0? null: new AttributeValue() { N= checkTimestamp .ToString() });
-		return nextTimestamp;
+		attributeMap.Add(DynamoDbKeys.PartitionKey, _partitionKeyAttributeValue);
+		attributeMap.Add(DynamoDbKeys.SortKey, new AttributeValue(key));
+		await _dynamoDbService.PutItemAsync(attributeMap, now, updatedAt);
 	}
 }

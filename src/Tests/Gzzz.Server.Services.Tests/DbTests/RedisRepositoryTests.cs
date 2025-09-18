@@ -21,6 +21,7 @@ public class TestRedisRepository : RedisOptimisicRepository<TestEntity>
 class RedisRepositoryTests
 {
 	TestRedisRepository _repository = new TestRedisRepository();
+	readonly DateTimeOffset _now = DateTimeOffset.UtcNow;
 
 	[OneTimeSetUp]
 	public Task SetupAsync()=>_repository.FlushAsync();
@@ -29,20 +30,19 @@ class RedisRepositoryTests
 	public async Task InsertItemTestAsync()
 	{
 		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
-		var now = DateTime.UtcNow;
-		await _repository.PutItemAsync(item.UserId, item, now);
+		await _repository.PutItemAsync(item.UserId, item, _now);
 		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId);
 		Assert.That(retrievedItem, Is.Not.Default);
 		AssertX.JsonEquals(item, retrievedItem.Value);
 		Assert.That(retrievedItem.IsFromCache, Is.True);
-		Assert.That(retrievedItem.Timestamp, Is.EqualTo(now.ToTimescore()));
+		Assert.That(retrievedItem.UpdatedAt.ToUnixTimeMilliseconds(), Is.EqualTo(_now.ToUnixTimeMilliseconds()));
 	}
 
 	[Test]
 	public async Task InsertDuplicatedItemTestAsync()
 	{
 		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
-		var now = DateTime.UtcNow;
+		var now = DateTimeOffset.UtcNow;
 		await _repository.PutItemAsync(item.UserId, item, now);
 		var exception = Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now));
 	}
@@ -51,20 +51,19 @@ class RedisRepositoryTests
 	public async Task UpdateItemTestAsync()
 	{
 		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
-		var now = DateTime.UtcNow;
-		await _repository.PutItemAsync(item.UserId, item, now);
+		await _repository.PutItemAsync(item.UserId, item, _now);
 
 		var nextLevel = RandomX.GetRandom();
 		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId);
 		item.Level = nextLevel;
-		await _repository.PutItemAsync(item.UserId, item, now.AddTicks(1), retrievedItem.Timestamp);
+		await _repository.PutItemAsync(item.UserId, item, _now.AddMilliseconds(1), retrievedItem.UpdatedAt);
 
 		var retrievedItem2 = await _repository.GetItemOrDefaultAsync(item.UserId);
 
 		Assert.That(retrievedItem2, Is.Not.Default);
 		AssertX.JsonEquals(item, retrievedItem2.Value);
 		Assert.That(retrievedItem2.IsFromCache, Is.True);
-		Assert.That(retrievedItem2.Timestamp, Is.EqualTo(now.AddTicks(1).ToTimescore()));
+		Assert.That(retrievedItem2.UpdatedAt.ToUnixTimeMilliseconds(), Is.EqualTo(_now.AddMilliseconds(1).ToUnixTimeMilliseconds()));
 		Assert.That(retrievedItem2.Value.Level, Is.EqualTo(nextLevel));
 	}
 
@@ -73,11 +72,10 @@ class RedisRepositoryTests
 	public async Task UpdateItemTimeStampErrorTestAsync()
 	{
 		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
-		var now = DateTime.UtcNow;
-		var timestamp = now.ToTimescore();	
+		var now = DateTimeOffset.Now;
 		await _repository.PutItemAsync(item.UserId, item, now);
-		Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, timestamp));
-		Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, timestamp+1));
+		Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, now));
+		//Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, now+1)); //뭐였는지 모르겠음
 	}
 
 

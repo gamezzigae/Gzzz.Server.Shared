@@ -6,7 +6,8 @@ namespace Gzzz.Server.Shared.Tests.Db;
 
 class DynamoDbServiceTests
 {
-	MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
+	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
+	readonly DateTimeOffset _now = DateTimeOffset.UtcNow.TrimBelowMilliseconds();
 	[OneTimeSetUp]
 	public async Task OneTimeSetUpAsync()
 	{
@@ -20,44 +21,51 @@ class DynamoDbServiceTests
 	[Test]
     public async Task InsertItemTestAsync()
     {
-        var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), TS= RandomX.GetRandom(), Age = RandomX.GetRandom() };
+        var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), Age = RandomX.GetRandom() };
         var attributeMap = AttributeMap.ConvertFrom(item);
-        await _dynamoDbService.PutItemAsync(attributeMap);
+        await _dynamoDbService.PutItemAsync(attributeMap, _now);
 
         var retrievedItem = await _dynamoDbService.GetAttirubtesAsync(item.PK, item.SK);
-        AssertX.JsonEquals(attributeMap, retrievedItem);
-    }
+		AssertX.JsonEquals(attributeMap["PK"], retrievedItem["PK"]);
+		AssertX.JsonEquals(attributeMap["SK"], retrievedItem["SK"]);
+		AssertX.JsonEquals(attributeMap["Age"], retrievedItem["Age"]);
 
-    [Test]
-    public async Task InsertExistsKeyErrorTestAsync()
-    {
-        var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), TS = RandomX.GetRandom(), Age = RandomX.GetRandom() };
-        var attributeMap = AttributeMap.ConvertFrom(item);
-        await _dynamoDbService.PutItemAsync(attributeMap);
-        Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _dynamoDbService.PutItemAsync(attributeMap));
-    }
+		Assert.That( retrievedItem.GetUpdatedAt(), Is.EqualTo(_now));
 
-    [Test]
-    public async Task UpdateItemTestAsync()
-    {
-        var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), TS = RandomX.GetRandom(), Age = RandomX.GetRandom() };
-        var attributeMap = AttributeMap.ConvertFrom(item);
-        await _dynamoDbService.PutItemAsync(attributeMap);
+	}
 
-        var updateItem = new { item.PK, item.SK, TS = RandomX.GetRandom(), Age = item.Age + 1 };
-        var updateAttributeMap = AttributeMap.ConvertFrom(updateItem);
-        await _dynamoDbService.PutItemAsync(updateAttributeMap, AttributeMap.CreateTimestamp(item.TS));
+	[Test]
+	public async Task InsertExistsKeyErrorTestAsync()
+	{
+		var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), Age = RandomX.GetRandom() };
+		var attributeMap = AttributeMap.ConvertFrom(item);
+		await _dynamoDbService.PutItemAsync(attributeMap, _now);
+		Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _dynamoDbService.PutItemAsync(attributeMap, _now));
+	}
 
-        var retrievedItem = await _dynamoDbService.GetAttirubtesAsync(item.PK, item.SK);
-        AssertX.JsonEquals(updateAttributeMap, retrievedItem);
-    }
+	[Test]
+	public async Task UpdateItemTestAsync()
+	{
+		var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), Age = RandomX.GetRandom() };
+		var attributeMap = AttributeMap.ConvertFrom(item);
+		await _dynamoDbService.PutItemAsync(attributeMap, _now);
+			
+		var updateItem = new { item.PK, item.SK, Age = item.Age + 1 };
+		var updateAttributeMap = AttributeMap.ConvertFrom(updateItem);
+		await _dynamoDbService.PutItemAsync(updateAttributeMap, _now.AddMilliseconds(1), _now);
 
-    [Test]
-    public void UpdateTimestampTestAsync()
-    {
-        var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), TS = RandomX.GetRandom(), Age = RandomX.GetRandom() };
-        var attributeMap = AttributeMap.ConvertFrom(item);
-        var exception = Assert.ThrowsAsync<ArgumentException>(() => _dynamoDbService.PutItemAsync(attributeMap, attributeMap["TS"]));
-        Assert.That(exception.Message, Is.EqualTo("before/after timestamp is equals"));
-    }
+		var retrievedItem = await _dynamoDbService.GetAttirubtesAsync(item.PK, item.SK);
+		AssertX.JsonEquals(updateAttributeMap["PK"], retrievedItem["PK"]);
+		AssertX.JsonEquals(updateAttributeMap["SK"], retrievedItem["SK"]);
+		AssertX.JsonEquals(updateAttributeMap["Age"], retrievedItem["Age"]);
+	}
+
+	[Test]
+	public void UpdateTimestampTestAsync()
+	{
+		var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), Age = RandomX.GetRandom() };
+		var attributeMap = AttributeMap.ConvertFrom(item);
+		var exception = Assert.ThrowsAsync<ArgumentException>(() => _dynamoDbService.PutItemAsync(attributeMap, _now, _now));
+		Assert.That(exception.Message, Is.EqualTo("dynamodb putitem time condition error"));
+	}
 }

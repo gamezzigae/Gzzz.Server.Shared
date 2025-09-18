@@ -41,16 +41,22 @@ public class DynamoDbService
 	}
 
 
-	public async Task PutItemAsync(Dictionary<string, AttributeValue> attributeMap, AttributeValue checkTimestamp = null)
+	public async Task PutItemAsync(Dictionary<string, AttributeValue> attributeMap, DateTimeOffset now, DateTimeOffset updatedAt = default)
     {
-        if (attributeMap["PK"] == null)
+        if (attributeMap.ContainsKey(DynamoDbKeys.PartitionKey) == false)
             throw new ArgumentException("attributeMap must contain a 'PK'");
-        if (attributeMap["SK"] == null)
+        if (attributeMap.ContainsKey(DynamoDbKeys.SortKey) == false)
             throw new ArgumentException("attributeMap must contain a 'SK'");
-        if (attributeMap["TS"] == null)
-            throw new ArgumentException("attributeMap must contain a 'TS'");
 
-        var condition = checkTimestamp == null ? DynamoDbCondition.Insert : DynamoDbCondition.Update;
+		var nowUnixMs = now.ToUnixTimeMilliseconds();
+		var updatedAtUnixms = updatedAt.ToUnixTimeMilliseconds();
+		if (nowUnixMs <= updatedAtUnixms)
+		{
+			throw new ArgumentException("dynamodb putitem time condition error");
+		}
+		attributeMap.Add(DynamoDbKeys.UpdatedAt, new AttributeValue() { N = nowUnixMs.ToString() });
+
+		var condition = updatedAt == default ? DynamoDbCondition.Insert : DynamoDbCondition.Update;
 		
         var request = new PutItemRequest()
 		{
@@ -61,22 +67,22 @@ public class DynamoDbService
 
 		if (condition == DynamoDbCondition.Update)
 		{
-			if(attributeMap["TS"].N == checkTimestamp.N)
-            {
-                throw new ArgumentException("before/after timestamp is equals");
-            }
-            request.ExpressionAttributeValues = new Dictionary<string, AttributeValue>() { { ":uat", checkTimestamp } };
+            request.ExpressionAttributeValues = new Dictionary<string, AttributeValue>()
+			{
+				{ ":uat", new () { N = updatedAtUnixms.ToString() } }
+			};
 		}
 
 		await _client.PutItemAsync(request);
+		attributeMap.Remove(DynamoDbKeys.UpdatedAt); //다시지워준다.
 	}
 
 	static string GetCondition(DynamoDbCondition condition) => condition switch
 	{
 		DynamoDbCondition.Insert => "attribute_not_exists(PK) and attribute_not_exists(SK)",
-		DynamoDbCondition.Update => "attribute_exists(PK) and attribute_exists(SK) and TS = :uat",
+		DynamoDbCondition.Update => "attribute_exists(PK) and attribute_exists(SK) and UA = :uat",
 		//DynamoDbCondition.InsertOrUpdate => "TS = :uat or (attribute_not_exists(PK) and attribute_not_exists(SK))",
-		_ => throw new Exception("invalid DynamoDbCondition:" + condition.ToString())
+		_ => throw new ArgumentOutOfRangeException("invalid DynamoDbCondition:" + condition.ToString())
 	};
 }
 public enum DynamoDbCondition
@@ -84,4 +90,12 @@ public enum DynamoDbCondition
 	Update,
 	Insert,
 	InsertOrUpdate,
+}
+
+public static class DynamoDbKeys
+{
+	public static readonly string PartitionKey = "PK";
+	public static readonly string SortKey = "SK";
+	public static readonly string UpdatedAt = "UA";
+
 }

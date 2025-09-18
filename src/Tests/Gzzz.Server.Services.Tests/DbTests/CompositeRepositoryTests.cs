@@ -9,7 +9,8 @@ class CompositeRepositoryTests
 	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
 
 	TestDynamoDbRepository _dynamodb; 
-	TestRedisRepository _redis; 
+	TestRedisRepository _redis;
+	readonly DateTimeOffset _now = DateTimeOffset.UtcNow.TrimBelowMilliseconds();
 	public CompositeRepositoryTests()
 	{
 		_dynamodb = new TestDynamoDbRepository(_dynamoDbService);
@@ -48,13 +49,12 @@ class CompositeRepositoryTests
 	public async Task InsertItemTestAsync()
 	{
 		var item = TestEntity.CreateRandom();
-		var now = DateTime.Now;
-		await _repository.PutItemAsync(item.UserId, item, now);
+		await _repository.PutItemAsync(item.UserId, item, _now);
 
 		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId);
 		Assert.That(retrievedItem, Is.Not.Null);
 		Assert.That(retrievedItem.IsFromCache, Is.True);
-		Assert.That(retrievedItem.Timestamp, Is.EqualTo(now.ToTimescore()));
+		Assert.That(retrievedItem.UpdatedAt, Is.EqualTo(_now));
 		AssertX.JsonEquals(item, retrievedItem.Value);
 
 		await EqualsAsync(item, true, true);
@@ -65,13 +65,12 @@ class CompositeRepositoryTests
 	public async Task GetItemWithFlushTestAsync()
 	{
 		var item = TestEntity.CreateRandom();
-		var now = DateTime.Now;
-		await _repository.PutItemAsync(item.UserId, item, now);
+		await _repository.PutItemAsync(item.UserId, item, _now);
 
 		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId, true);
 		Assert.That(retrievedItem, Is.Not.Null);
 		Assert.That(retrievedItem.IsFromCache, Is.False);
-		Assert.That(retrievedItem.Timestamp, Is.EqualTo(now.ToTimescore()));
+		Assert.That(retrievedItem.UpdatedAt, Is.EqualTo(_now));
 		AssertX.JsonEquals(item, retrievedItem.Value);
 
 		await EqualsAsync(item, true, true);
@@ -82,13 +81,13 @@ class CompositeRepositoryTests
 	public async Task UpdateErrorTestAsync()
 	{
 		var item = TestEntity.CreateRandom();
-		var now = DateTime.Now;
+		var now = DateTimeOffset.Now;
 
 		await _repository.PutItemAsync(item.UserId, item, now);
 
 		Assert.ThrowsAsync<RedisPutException>(async () => { await _repository.PutItemAsync(item.UserId, item, now); }, "이미 등록된 아이템을 덮어쓸 수 없음");
-		Assert.ThrowsAsync<RedisPutException>(async () => { await _repository.PutItemAsync(item.UserId, item, now, now.ToTimescore()); }, "동일한 timestamp 사용불가");
-		Assert.ThrowsAsync<RedisPutException>(async () => { await _repository.PutItemAsync(item.UserId, item, now.AddTicks(1), now.ToTimescore()+1); }, "timestamp mismatch");
+		Assert.ThrowsAsync<RedisPutException>(async () => { await _repository.PutItemAsync(item.UserId, item, now, now); }, "동일한 timestamp 사용불가");
+		Assert.ThrowsAsync<RedisPutException>(async () => { await _repository.PutItemAsync(item.UserId, item, now, now.AddMilliseconds(1)); }, "timestamp mismatch");
 	}
 
 
@@ -96,12 +95,12 @@ class CompositeRepositoryTests
 	public async Task UpdatePersistentTestAsync()
 	{
 		var item = TestEntity.CreateRandom();
-		var now = DateTime.Now;
+		var now = DateTimeOffset.Now;
 
 		await _repository.PutItemAsync(item.UserId, item, now);
 
 		item.Level = RandomX.GetRandom();
-		await _repository.PersistentPutItemAsync(item.UserId, item, now.AddTicks(1), now.ToTimescore());
+		await _repository.PersistentPutItemAsync(item.UserId, item, now.AddMilliseconds(1), now);
 
 		await EqualsAsync(item,true,true);
 	}
@@ -109,12 +108,12 @@ class CompositeRepositoryTests
 	public async Task UpdateNoPersistentTestAsync()
 	{
 		var item = TestEntity.CreateRandom();
-		var now = DateTime.Now;
+		var now = DateTimeOffset.Now;
 
 		await _repository.PutItemAsync(item.UserId, item, now);
 
 		item.Level = RandomX.GetRandom();
-		await _repository.PutItemAsync(item.UserId, item, now.AddTicks(1), now.ToTimescore());
+		await _repository.PutItemAsync(item.UserId, item, now.AddMilliseconds(1), now);
 
 		await EqualsAsync(item,true,false);
 	}

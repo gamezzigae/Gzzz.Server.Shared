@@ -7,7 +7,6 @@ public class CompositeOptimisicRepository<T, TRedisRepository, TDynamoDbReposito
 	where TRedisRepository : RedisOptimisicRepository<T>
 	where TDynamoDbRepository : DynamoDbOptimisicRepository<T>
 	where T : class
-
 {
 	readonly TRedisRepository _redisRepository;
 	readonly TDynamoDbRepository _dynamoDbRepository;
@@ -19,7 +18,7 @@ public class CompositeOptimisicRepository<T, TRedisRepository, TDynamoDbReposito
 	}
 
 
-	public Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string key)=> GetItemOrDefaultAsync(key, false);
+	public Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string key) => GetItemOrDefaultAsync(key, false);
 	public async Task<OptimisticRecord<T>> GetItemOrDefaultAsync(string key, bool flushCache)
 	{
 		if (flushCache)
@@ -27,7 +26,7 @@ public class CompositeOptimisicRepository<T, TRedisRepository, TDynamoDbReposito
 			await _redisRepository.DeleteItemAsync(key);
 		}
 		else
-		{ 
+		{
 			var redisRecord = await _redisRepository.GetItemOrDefaultAsync(key);
 			if (redisRecord.IsNotDefault())
 			{
@@ -39,20 +38,18 @@ public class CompositeOptimisicRepository<T, TRedisRepository, TDynamoDbReposito
 		if (dynamoDbRecord.IsDefault())
 			return default;
 
-		await _redisRepository.PutItemAsync(key, dynamoDbRecord.Value, dynamoDbRecord.Timestamp, 0);
+		await _redisRepository.PutItemAsync(key, dynamoDbRecord.Value, dynamoDbRecord.UpdatedAt);
 
 		return dynamoDbRecord;
 	}
 
+	public Task PutItemAsync(string key, T value, DateTimeOffset now, DateTimeOffset lastUpdatedAt = default)
+		=> lastUpdatedAt == default?  PersistentPutItemAsync(key, value, now) : _redisRepository.PutItemAsync(key, value, now, lastUpdatedAt);
 
-	public Task<long> PutItemAsync(string key, T value, DateTime now, long checkTimestamp = 0)=> checkTimestamp == 0
-		? PersistentPutItemAsync( key,  value,  now)
-		: _redisRepository.PutItemAsync(key, value, now, checkTimestamp);
 
-	public async Task<long> PersistentPutItemAsync(string key, T value, DateTime now, long checkTimestamp = 0)
+	public async Task PersistentPutItemAsync(string key, T value, DateTimeOffset now, DateTimeOffset lastUpdatedAt = default)
 	{
-		var result = await _redisRepository.PutItemAsync(key, value, now, checkTimestamp);
-		await _dynamoDbRepository.PutItemAsync(value, now, checkTimestamp);
-		return result;
+		await _redisRepository.PutItemAsync(key, value, now, lastUpdatedAt);
+		await _dynamoDbRepository.PutItemAsync(key, value, now, lastUpdatedAt);
 	}
 }

@@ -14,6 +14,7 @@ class DynamoDbRepositoryTests
 
 	readonly TestDynamoDbRepository _testRepository;
 	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
+	readonly DateTimeOffset _now = DateTimeOffset.UtcNow.TrimBelowMilliseconds();
 	public DynamoDbRepositoryTests()
 	{
 		_testRepository = new TestDynamoDbRepository(_dynamoDbService);
@@ -29,13 +30,12 @@ class DynamoDbRepositoryTests
 			Level = RandomX.GetRandom()
 		};
 
-		var now = DateTime.Now;
-		await _testRepository.PutItemAsync(item, now);
+		await _testRepository.PutItemAsync(item.UserId, item, _now);
 
 		var retrievedItem = await _testRepository.GetItemOrDefaultAsync(item.UserId);
 
 		AssertX.JsonEquals(item, retrievedItem.Value);
-		Assert.That(retrievedItem.Timestamp, Is.EqualTo(now.ToTimescore()));
+		Assert.That(retrievedItem.UpdatedAt, Is.EqualTo(_now));
 		Assert.That(retrievedItem.IsFromCache, Is.False);
 	}
 
@@ -49,9 +49,8 @@ class DynamoDbRepositoryTests
 			Level = RandomX.GetRandom()
 		};
 
-		var now = DateTime.Now;
-		await _testRepository.PutItemAsync(item, now);
-		Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _testRepository.PutItemAsync(item, now));
+		await _testRepository.PutItemAsync(item.UserId, item, _now);
+		Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _testRepository.PutItemAsync(item.UserId, item, _now));
 	}
 
 	[Test]
@@ -63,14 +62,13 @@ class DynamoDbRepositoryTests
 			Level = RandomX.GetRandom()
 		};
 
-		var now = DateTime.Now;
-		await _testRepository.PutItemAsync(item, now);
+		await _testRepository.PutItemAsync(item.UserId, item, _now);
 		var retrievedItem = await _testRepository.GetItemOrDefaultAsync(item.UserId);
 
 		item.Level++;
 
-		now = now.AddTicks(1);
-		await _testRepository.PutItemAsync(item, now, retrievedItem.Timestamp);
+		var now2 = _now.AddMilliseconds(1);
+		await _testRepository.PutItemAsync(item.UserId, item, now2, retrievedItem.UpdatedAt);
 
 		var retrievedItem2 = await _testRepository.GetItemOrDefaultAsync(item.UserId);
 		AssertX.JsonEquals(item, retrievedItem2.Value);
@@ -86,11 +84,10 @@ class DynamoDbRepositoryTests
 			Level = RandomX.GetRandom()
 		};
 
-		var now = DateTime.Now;
-		await _testRepository.PutItemAsync(item, now);
+		await _testRepository.PutItemAsync(item.UserId, item, _now);
 		var retrievedItem = await _testRepository.GetItemOrDefaultAsync(item.UserId);
 		item.Level++;
-		Assert.ThrowsAsync<ArgumentException>(() => _testRepository.PutItemAsync(item, now, retrievedItem.Timestamp));
+		Assert.ThrowsAsync<ArgumentException>(() => _testRepository.PutItemAsync(item.UserId, item, _now, retrievedItem.UpdatedAt));
 	}
 	[Test]
 	public async Task UpdateCheckTimestampErrorTestAsync()
@@ -101,10 +98,9 @@ class DynamoDbRepositoryTests
 			Level = RandomX.GetRandom()
 		};
 
-		var now = DateTime.Now;
-		await _testRepository.PutItemAsync(item, now);
+		await _testRepository.PutItemAsync(item.UserId, item, _now);
 		var retrievedItem = await _testRepository.GetItemOrDefaultAsync(item.UserId);
 		item.Level++;
-		Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _testRepository.PutItemAsync(item, now, retrievedItem.Timestamp-1));
+		Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _testRepository.PutItemAsync(item.UserId, item, _now, retrievedItem.UpdatedAt.AddMilliseconds(-1)));
 	}
 }
