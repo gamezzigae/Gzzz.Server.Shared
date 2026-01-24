@@ -1,6 +1,5 @@
 @echo off
 
-pushd Project1
 
 dotnet lambda deploy-function ^
 --profile "newp" ^
@@ -16,7 +15,6 @@ dotnet lambda deploy-function ^
 --package-type "Zip" ^
 --msbuild-parameters "--self-contained true"
 
-popd
 
 
 pause

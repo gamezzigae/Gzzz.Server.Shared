@@ -8,9 +8,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.12.0" />
-		<PackageReference Include="Amazon.Lambda.Core" Version="2.5.0" />
-		<PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
+		<PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.14.1" />
+		<PackageReference Include="Amazon.Lambda.Core" Version="2.8.0" />
+		<PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.5" />
 		<!--<PackageReference Include="Gzzz.CommandInvoker" Version="0.1.1" />-->
 		<!--<PackageReference Include="Gzzz.Base" Version="1.0.1" />
 		<PackageReference Include="Gzzz.Server.Services" Version="0.1.2" />-->

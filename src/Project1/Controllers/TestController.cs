@@ -8,11 +8,11 @@ namespace Project1.Controllers;
 [Controller]
 public class TestController
 {
-	[Command("/echo")]
+	[AnonymousCommand("/echo")]
 	public Task<string> EchoAsync(string input) => Task.FromResult("echo:" + input);
 
-	[Command("/int")]
-	public Task<int> GetUserInfoAsync() => Task.FromResult(33);
+	[AnonymousCommand("/int")]
+	public Task<int> GetUserInfoAsync() => Task.FromResult(Random.Shared.Next());
 }
 
 [Controller]
