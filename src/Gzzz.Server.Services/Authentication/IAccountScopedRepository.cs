@@ -40,7 +40,7 @@ public class DefaultAccountScopedRepository : IAccountScopedRepository
 			writer.WriteString("event", "DefaultAccountScopedRepository.ValidateClaimsAsync");
 			writer.WriteString("claims.userid", claims.UserId);
 			writer.WriteString("claims.type", ((TokenType)claims.Type).ToString());
-			writer.WriteString("claims.type", claims.ExpireAt.ToISO8601());
+			writer.WriteString("claims.exp", claims.ExpireAt.ToISO8601());
 			writer.WriteEndObject();
 		}
 

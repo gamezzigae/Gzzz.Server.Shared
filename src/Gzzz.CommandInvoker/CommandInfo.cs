@@ -6,8 +6,8 @@ namespace Gzzz.CommandInvoker;
 public class CommandInfo
 {
 	public LoggingType LoggingType { get; set; }
-	public bool AuthenticationRequired { get; }
-	public bool ParameterRequired { get; }
+	public bool IsAuthenticationRequired { get; }
+	public bool IsParameterRequired { get; }
 	public Type ControllerType { get; }
 	public Type RequestType { get; }
 	public Func<object, object> ResultGetter { get; }
@@ -16,7 +16,7 @@ public class CommandInfo
 
 	public CommandInfo(MethodInfo methodInfo, CommandAttribute commandAttribute)
 	{
-		this.AuthenticationRequired = (commandAttribute is AnonymousCommandAttribute) == false;
+		this.IsAuthenticationRequired = (commandAttribute is AnonymousCommandAttribute) == false;
 		this.LoggingType= commandAttribute.LoggingType;
 		var parameters = methodInfo.GetParameters();
 
@@ -37,8 +37,8 @@ public class CommandInfo
 		}
 
 		ControllerType = methodInfo.ReflectedType;
-		ParameterRequired = parameters.Length > 0;
-		RequestType = ParameterRequired ? parameters[0].ParameterType : null;
+		IsParameterRequired = parameters.Length > 0;
+		RequestType = IsParameterRequired ? parameters[0].ParameterType : null;
 
 		Invoker = FastInvoker.Create<Task>(methodInfo);
 	}

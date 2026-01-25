@@ -20,7 +20,7 @@ namespace Gzzz.AwsFunctionUrlInvoker;
 public class FunctionHandler(IServiceProvider services)
 {
 	readonly ILambdaSerializer _lambdaSerializer = new SourceGeneratorLambdaJsonSerializer<FunctionUrlJsonContext>();
-	readonly IServiceProvider _services = services;
+	public readonly IServiceProvider Services = services;
 	readonly IReadOnlyDictionary<string, CommandInfo> _commands = services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
 	readonly TimeService _timeService = services.GetRequiredService<TimeService>();
 	readonly IContextSerializer _contextSerializer = services.GetRequiredService<IContextSerializer>();
@@ -36,7 +36,7 @@ public class FunctionHandler(IServiceProvider services)
 
 	public async Task<FunctionUrlResponse> RequestHandleAsync(FunctionUrlRequest request)
 	{
-		using var scope = _services.CreateScope();
+		using var scope = Services.CreateScope();
 		var context = scope.ServiceProvider.GetRequiredService<ApiContext>();
 		if (_isColdStart)
 		{
@@ -66,7 +66,7 @@ public class FunctionHandler(IServiceProvider services)
 		if (_commands.TryGetValue(request.RequestContext.Http.Path, out var command) == false)
 			return FunctionUrlResponseHelper.Error(404, "command not found", 0);
 		//
-		if (command.AuthenticationRequired)
+		if (command.IsAuthenticationRequired)
 		{
 			var accountScopedRepository = services.GetRequiredService<IAccountScopedRepository>();
 			var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Access, request.Headers.AccessToken, context, accountScopedRepository);
@@ -76,7 +76,7 @@ public class FunctionHandler(IServiceProvider services)
 			}
 		}
 		//
-		if (command.ParameterRequired)
+		if (command.IsParameterRequired)
 		{
 			try
 			{

@@ -24,6 +24,7 @@ public class AwsFunctionUrlHandlerFixture
 			.UseAuthentication<AuthenticationService>(_authenticationConfig)
 			.ConfigureServices(services => services
 				.AddSingleton<IContextSerializer, JsonContextSerializer>()
+				.AddSingleton<TimeService, MockTimeService>()
 			).BuildFunctionHandler();
 	}
 
@@ -36,5 +37,7 @@ public class AwsFunctionUrlHandlerFixture
 		client.AuthenticationTokens = tokens;
 		return client;
 	}
+
+	public T GetService<T>() => _functionHandler.Services.GetRequiredService<T>();
 
 }

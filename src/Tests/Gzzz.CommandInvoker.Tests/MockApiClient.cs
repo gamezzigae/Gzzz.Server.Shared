@@ -4,6 +4,23 @@ using System.Text.Json;
 
 namespace Gzzz.CommandInvoker.Tests;
 
+public class MockTimeService : TimeService
+{
+	DateTime? _now;
+	
+	public override DateTime GetNow()
+	{
+		if (_now.IsNotDefault())
+			return _now.Value;
+		return DateTime.UtcNow;
+	}
+	public DateTime SetNow(DateTime time)
+	{
+		_now = time;
+		return time;
+	}
+}
+
 public class MockApiClient : IApiClient	
 {
 	readonly FunctionHandler _functionHandler;

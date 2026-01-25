@@ -3,11 +3,13 @@ public class SignControllerTests : AwsFunctionUrlHandlerFixture
 {
 	readonly IApiClient _client;
 	readonly MockApiClient _mockClient;
-
+	readonly MockTimeService _timeService;
 	public SignControllerTests()
 	{
+		
 		_mockClient = (MockApiClient)CreateEmptyClient();
 		_client = _mockClient;
+		_timeService = (MockTimeService)GetService<TimeService>();
 	}
 
 	[Test]
@@ -34,6 +36,21 @@ public class SignControllerTests : AwsFunctionUrlHandlerFixture
 		var beforeRefreshToken = _client.AuthenticationTokens.RefreshToken;
 		var newTokens = await _client.RefreshTokensAsync();
 
+		Assert.That(newTokens.AccessToken, Is.Not.EqualTo(beforeAccessToken));
+		Assert.That(newTokens.RefreshToken, Is.Not.EqualTo(beforeRefreshToken));
+
+		Assert.That(newTokens.AccessToken, Is.EqualTo(_client.GetAccessToken()));
+		Assert.That(newTokens.RefreshToken, Is.EqualTo(_client.AuthenticationTokens.RefreshToken));
+	}
+	[Test]
+	public async Task RefreshSignTestExpiredAsync()
+	{
+		await GuestSignInTestAsync();
+		var beforeAccessToken = _client.AuthenticationTokens.AccessToken;
+		var beforeRefreshToken = _client.AuthenticationTokens.RefreshToken;
+		
+		_timeService.SetNow(DateTime.UtcNow);
+		var newTokens = await _client.RefreshTokensAsync();
 		Assert.That(newTokens.AccessToken, Is.Not.EqualTo(beforeAccessToken));
 		Assert.That(newTokens.RefreshToken, Is.Not.EqualTo(beforeRefreshToken));
 
