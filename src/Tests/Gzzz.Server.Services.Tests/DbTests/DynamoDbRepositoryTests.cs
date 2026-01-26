@@ -7,10 +7,10 @@ namespace Gzzz.Server.Shared.Tests.DbTests;
 
 
 
-class DynamoDbRepositoryTests
+public class DynamoDbRepositoryTests : IAsyncLifetime
 {
-	[OneTimeSetUp] public Task SetupFixtureAsync() => _dynamoDbService.CreateTableAsync();
-	[OneTimeTearDown] public Task TearDownFixtureAsync() => _dynamoDbService.DeleteTableAsync();
+	public Task InitializeAsync() => _dynamoDbService.CreateTableAsync();
+	public Task DisposeAsync() => _dynamoDbService.DeleteTableAsync();
 
 	readonly TestDynamoDbRepository _testRepository;
 	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
@@ -21,7 +21,7 @@ class DynamoDbRepositoryTests
 	}
 	
 
-	[Test]
+	[Fact]
 	public async Task InsertItemTestAsync()
 	{
 		var item = new TestEntity
@@ -35,12 +35,12 @@ class DynamoDbRepositoryTests
 		var retrievedItem = await _testRepository.GetItemOrDefaultAsync(item.UserId);
 
 		AssertX.JsonEquals(item, retrievedItem.Value);
-		Assert.That(retrievedItem.UpdatedAt, Is.EqualTo(_now));
-		Assert.That(retrievedItem.IsFromCache, Is.False);
+		Assert.Equal(_now, retrievedItem.UpdatedAt);
+		Assert.False(retrievedItem.IsFromCache);
 	}
 
 
-	[Test]
+	[Fact]
 	public async Task InsertExistsKeyErrorTestAsync()
 	{
 		var item = new TestEntity
@@ -53,7 +53,7 @@ class DynamoDbRepositoryTests
 		Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _testRepository.PutItemAsync(item.UserId, item, _now));
 	}
 
-	[Test]
+	[Fact]
 	public async Task UpdateItemTestAsync()
 	{
 		var item = new TestEntity
@@ -75,7 +75,7 @@ class DynamoDbRepositoryTests
 	}
 
 
-	[Test]
+	[Fact]
 	public async Task UpdateEqualTimestampErrorTestAsync()
 	{
 		var item = new TestEntity
@@ -89,7 +89,7 @@ class DynamoDbRepositoryTests
 		item.Level++;
 		Assert.ThrowsAsync<ArgumentException>(() => _testRepository.PutItemAsync(item.UserId, item, _now, retrievedItem.UpdatedAt));
 	}
-	[Test]
+	[Fact]
 	public async Task UpdateCheckTimestampErrorTestAsync()
 	{
 		var item = new TestEntity

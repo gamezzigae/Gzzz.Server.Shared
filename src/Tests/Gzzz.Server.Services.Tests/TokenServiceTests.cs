@@ -8,7 +8,7 @@ namespace Gzzz.Server.Shared.Tests;
 //{
 //	readonly TokenClaims _sampleClaims = new(111, 1, 2, RandomX.CreateRandomBase64String(15));
 
-//	[Test]
+//	[Fact]
 //	public void temp()
 //	{
 //		var hashkey = RandomX.CreateRandomBase64String(256);
@@ -16,11 +16,11 @@ namespace Gzzz.Server.Shared.Tests;
 //		var token = tokenService.CreateToken(_sampleClaims);
 //		Assert.That(tokenService.VerifyToken(token, out var decodedClaims), Is.True);
 
-//		Assert.That(decodedClaims, Is.Not.Null);
-//		Assert.That(decodedClaims.Type, Is.EqualTo(_sampleClaims.Type));
-//		Assert.That(decodedClaims.CreatedAt, Is.EqualTo(_sampleClaims.CreatedAt));
-//		Assert.That(decodedClaims.Lifetime, Is.EqualTo(_sampleClaims.Lifetime));
-//		Assert.That(decodedClaims.UserId, Is.EqualTo(_sampleClaims.UserId));
+//		Assert.That(decodedClaims);
+//		Assert.That(decodedClaims.Type, (_sampleClaims.Type));
+//		Assert.That(decodedClaims.CreatedAt, (_sampleClaims.CreatedAt));
+//		Assert.That(decodedClaims.Lifetime, (_sampleClaims.Lifetime));
+//		Assert.That(decodedClaims.UserId, (_sampleClaims.UserId));
 //	}
 //}
 
@@ -47,48 +47,48 @@ public class AuthenticationServiceTests
 		_accountScopedRepository= services.GetRequiredService<IAccountScopedRepository>();
 	}
 
-	[Test]
+	[Fact]
 	public async Task CreateAccessTokenAndVerifyOkTestAsync()
 	{
 		var accessToken = _authenticationService.CreateAccessToken(_userId, _now);
-		Assert.That(_tokenService.VerifyToken(accessToken, out var claims), Is.True);
-		Assert.That(claims.Type, Is.EqualTo((byte)TokenType.Access));
-		Assert.That(claims.UserId, Is.EqualTo(_userId));
-		Assert.That(claims.ExpireAt, Is.EqualTo(_now.AddMinutes(_authenticationConfig.AccessTokenLIfetime)));
+		Assert.True(_tokenService.VerifyToken(accessToken, out var claims));
+		Assert.Equal(((byte)TokenType.Access), claims.Type);
+		Assert.Equal(claims.UserId, (_userId));
+		Assert.Equal(claims.ExpireAt, (_now.AddMinutes(_authenticationConfig.AccessTokenLIfetime)));
 
 		var context = new ApiContext() { RequestTime = claims.ExpireAt }; //만료시간 딱 맞춰서
 		await _authenticationService.ValidateTokenAsync(TokenType.Access, accessToken, context, _accountScopedRepository);
-		Assert.That(context.UserId, Is.EqualTo(_userId));
+		Assert.Equal(context.UserId, (_userId));
 	}
 
-	[Test]
+	[Fact]
 	public async Task ExpiredTokenTestAsync()
 	{
 		var accessToken = _authenticationService.CreateAccessToken(_userId, _now);
-		Assert.That(_tokenService.VerifyToken(accessToken, out var claims), Is.True);
+		Assert.True(_tokenService.VerifyToken(accessToken, out var claims));
 
 		//1ms만 늦어도 exception
 		var context = new ApiContext() { RequestTime = claims.ExpireAt.AddMilliseconds(1) };
 		var result = await _authenticationService.ValidateTokenAsync(TokenType.Access, accessToken, context, _accountScopedRepository);
-		Assert.That(result.IsSuccess, Is.False);
-		Assert.That(result.ErrorMessage, Is.EqualTo(AuthenticationResult.ExpiredToken.ErrorMessage));
-		Assert.That(context.UserId, Is.EqualTo(_userId));
+		Assert.False(result.IsSuccess);
+		Assert.Equal(result.ErrorMessage,AuthenticationResult.ExpiredToken.ErrorMessage);
+		Assert.Equal(context.UserId,_userId);
 	}
-	[Test]
+	[Fact]
 	public void InvalidTokenTest()
 	{
 		var accessToken = _authenticationService.CreateAccessToken(_userId, _now) + "=";
-		Assert.That(_tokenService.VerifyToken(accessToken, out var claims), Is.False);
+		Assert.False(_tokenService.VerifyToken(accessToken, out var claims));
 	}
 
-	[Test]
+	[Fact]
 	public async Task InvalidTokenTypeTestAsync()
 	{
 		var refreshToken = _authenticationService.CreateRefreshToken(_userId, _now);
 
 		var context = new ApiContext() { RequestTime = _now };
 		var result = await _authenticationService.ValidateTokenAsync(TokenType.Access, refreshToken, context, _accountScopedRepository); //다른토큰이라 안됨
-		Assert.That(context.UserId, Is.Null);
-		Assert.That(result.ErrorMessage, Is.EqualTo(AuthenticationResult.InvalidTokenType.ErrorMessage));
+		Assert.Null(context.UserId);
+		Assert.Equal(result.ErrorMessage, AuthenticationResult.InvalidTokenType.ErrorMessage);
 	}
 }

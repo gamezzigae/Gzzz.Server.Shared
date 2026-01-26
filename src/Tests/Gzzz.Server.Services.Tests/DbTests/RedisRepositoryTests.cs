@@ -18,27 +18,28 @@ public class TestRedisRepository : RedisOptimisicRepository<TestEntity>
 	}
 }
 
-class RedisRepositoryTests
+public class RedisRepositoryTests : IAsyncLifetime
 {
 	TestRedisRepository _repository = new TestRedisRepository();
 	readonly DateTimeOffset _now = DateTimeOffset.UtcNow;
 
-	[OneTimeSetUp]
-	public Task SetupAsync()=>_repository.FlushAsync();
-
-	[Test]
+	
+	public Task InitializeAsync() => _repository.FlushAsync();
+	public Task DisposeAsync() => Task.CompletedTask;
+	
+	[Fact]
 	public async Task InsertItemTestAsync()
 	{
 		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
 		await _repository.PutItemAsync(item.UserId, item, _now);
 		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId);
-		Assert.That(retrievedItem, Is.Not.Default);
+		Assert.NotEqual(default, retrievedItem);
 		AssertX.JsonEquals(item, retrievedItem.Value);
-		Assert.That(retrievedItem.IsFromCache, Is.True);
-		Assert.That(retrievedItem.UpdatedAt.ToUnixTimeMilliseconds(), Is.EqualTo(_now.ToUnixTimeMilliseconds()));
+		Assert.True(retrievedItem.IsFromCache);
+		Assert.Equal(retrievedItem.UpdatedAt.ToUnixTimeMilliseconds(), (_now.ToUnixTimeMilliseconds()));
 	}
 
-	[Test]
+	[Fact]
 	public async Task InsertDuplicatedItemTestAsync()
 	{
 		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
@@ -47,7 +48,7 @@ class RedisRepositoryTests
 		var exception = Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now));
 	}
 
-	[Test]
+	[Fact]
 	public async Task UpdateItemTestAsync()
 	{
 		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
@@ -60,15 +61,15 @@ class RedisRepositoryTests
 
 		var retrievedItem2 = await _repository.GetItemOrDefaultAsync(item.UserId);
 
-		Assert.That(retrievedItem2, Is.Not.Default);
+		Assert.NotEqual(default, retrievedItem2);
 		AssertX.JsonEquals(item, retrievedItem2.Value);
-		Assert.That(retrievedItem2.IsFromCache, Is.True);
-		Assert.That(retrievedItem2.UpdatedAt.ToUnixTimeMilliseconds(), Is.EqualTo(_now.AddMilliseconds(1).ToUnixTimeMilliseconds()));
-		Assert.That(retrievedItem2.Value.Level, Is.EqualTo(nextLevel));
+		Assert.True(retrievedItem2.IsFromCache);
+		Assert.Equal(retrievedItem2.UpdatedAt.ToUnixTimeMilliseconds(), (_now.AddMilliseconds(1).ToUnixTimeMilliseconds()));
+		Assert.Equal(retrievedItem2.Value.Level, (nextLevel));
 	}
 
 
-	[Test]
+	[Fact]
 	public async Task UpdateItemTimeStampErrorTestAsync()
 	{
 		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
