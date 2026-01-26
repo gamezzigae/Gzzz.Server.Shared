@@ -14,28 +14,28 @@ public class Tests
 		return services; ;
 	}
 
-	[Test]
+	[Fact]
 	public async Task EchoTestAsync()
 	{
 		using var services = Setup("/test/echo", out var command);
 		var message = "Hello, World!";
 		var echo = await command.InvokeAsync<string>(services, message);
-		Assert.That(echo, Is.EqualTo(message));
+		Assert.Equal(message, echo);
 	}
 
-	[Test]
+	[Fact]
 	public async Task NoParameterTestAsync()
 	{
 		using var services = Setup("/test/hello", out var command);
 		var echo = await command.InvokeAsync<string>(services, null);
-		Assert.That(echo, Is.EqualTo("world"));
+		Assert.Equal("world", echo);
 	}
-	[Test]
+	[Fact]
 	public async Task NoParameterNoReturnTestAsync()
 	{
 		using var services = Setup("/test/nothing", out var command);
 		var echo = await command.InvokeAsync<string>(services, null);
-		Assert.That(echo, Is.Null);
+		Assert.Null(echo);
 	}
 }
 
