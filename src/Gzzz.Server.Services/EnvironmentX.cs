@@ -6,10 +6,11 @@ namespace Gzzz;
 
 public static class EnvironmentX
 {
-	public static void SetProcessValue(string name, string value)
+	public static void SetValue(string name, string value)
 	{
 		Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process);
 	}
+	public static void SetObject(string name, object value) => SetValue(name, JsonSerializer.Serialize(value));
 
 	public static string GetValue(string name)
     {

@@ -19,7 +19,6 @@ namespace Gzzz.AwsFunctionUrlInvoker;
 [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
 public class FunctionHandler(IServiceProvider services)
 {
-	readonly ILambdaSerializer _lambdaSerializer = new SourceGeneratorLambdaJsonSerializer<FunctionUrlJsonContext>();
 	public readonly IServiceProvider Services = services;
 	readonly IReadOnlyDictionary<string, CommandInfo> _commands = services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
 	readonly TimeService _timeService = services.GetRequiredService<TimeService>();
@@ -30,12 +29,13 @@ public class FunctionHandler(IServiceProvider services)
 	bool _isColdStart = true;
 
 	public Task RunAsync()=>LambdaBootstrapBuilder
-		.Create<FunctionUrlRequest, FunctionUrlResponse>(RequestHandleAsync, _lambdaSerializer)
+		.Create<FunctionUrlRequest, FunctionUrlResponse>(RequestHandleAsync, new SourceGeneratorLambdaJsonSerializer<FunctionUrlJsonContext>())
 		.Build()
 		.RunAsync();
 
 	public async Task<FunctionUrlResponse> RequestHandleAsync(FunctionUrlRequest request)
 	{
+
 		using var scope = Services.CreateScope();
 		var context = scope.ServiceProvider.GetRequiredService<ApiContext>();
 		if (_isColdStart)
@@ -62,32 +62,20 @@ public class FunctionHandler(IServiceProvider services)
 
 	public async Task<FunctionUrlResponse> HandleAsync(IServiceProvider services, FunctionUrlRequest request, ApiContext context)
 	{
-		//
 		if (_commands.TryGetValue(request.RequestContext.Http.Path, out var command) == false)
-			return FunctionUrlResponseHelper.Error(404, "command not found", 0);
-		//
+			return FunctionUrlResponseHelper.Error(404, "not found", 0); //로그를 남길까 말까~
+																		 //
 		if (command.IsAuthenticationRequired)
 		{
-			var accountScopedRepository = services.GetRequiredService<IAccountScopedRepository>();
-			var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Access, request.Headers.AccessToken, context, accountScopedRepository);
-			if (authenticationResult.IsSuccess == false)
-			{
-				return FunctionUrlResponseHelper.Error(401, authenticationResult.ErrorMessage, 0);
-			}
+			if (_authenticationService.ValidateToken(TokenType.Access, request.Headers.AccessToken, context, out var errorMessage) == false)
+				return FunctionUrlResponseHelper.Error(401, errorMessage, 0);
 		}
 		//
 		if (command.IsParameterRequired)
 		{
-			try
-			{
-				context.RequestModel = _contextSerializer.Derialize(command.RequestType, request.GetRequestBody());
-			}
-			catch (Exception)
-			{
-				return FunctionUrlResponseHelper.Error(400, "request deserialize failed", 0);
-			}
+			try { context.RequestModel = _contextSerializer.Derialize(command.RequestType, request.GetRequestBody()); }
+			catch (Exception) { return FunctionUrlResponseHelper.Error(400, "request deserialize failed", 0); }
 		}
-
 		//
 		try
 		{
@@ -111,3 +99,4 @@ public class FunctionHandler(IServiceProvider services)
 	}
 	
 }
+

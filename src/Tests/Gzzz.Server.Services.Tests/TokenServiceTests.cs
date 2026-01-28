@@ -31,7 +31,6 @@ public class AuthenticationServiceTests
 	readonly TokenService _tokenService;
 	readonly DateTime _now = DateTime.UtcNow;
 	readonly string _userId = RandomX.CreateRandomBase64String(15);
-	readonly IAccountScopedRepository _accountScopedRepository;
 	public AuthenticationServiceTests()
 	{
 		var services = new ServiceCollection()
@@ -44,20 +43,19 @@ public class AuthenticationServiceTests
 		_authenticationService = services.GetRequiredService<AuthenticationService>();
 		_authenticationConfig = services.GetRequiredService<AuthenticationConfig>();
 		_tokenService = services.GetRequiredService<TokenService>();
-		_accountScopedRepository= services.GetRequiredService<IAccountScopedRepository>();
 	}
 
 	[Fact]
 	public async Task CreateAccessTokenAndVerifyOkTestAsync()
 	{
 		var accessToken = _authenticationService.CreateAccessToken(_userId, _now);
-		Assert.True(_tokenService.VerifyToken(accessToken, out var claims));
+		Assert.True(_tokenService.DecodeToken(accessToken, out var claims));
 		Assert.Equal(((byte)TokenType.Access), claims.Type);
 		Assert.Equal(claims.UserId, (_userId));
 		Assert.Equal(claims.ExpireAt, (_now.AddMinutes(_authenticationConfig.AccessTokenLIfetime)));
 
 		var context = new ApiContext() { RequestTime = claims.ExpireAt }; //만료시간 딱 맞춰서
-		await _authenticationService.ValidateTokenAsync(TokenType.Access, accessToken, context, _accountScopedRepository);
+		_authenticationService.ValidateToken(TokenType.Access, accessToken, context, out var errorMessage);
 		Assert.Equal(context.UserId, (_userId));
 	}
 
@@ -65,20 +63,20 @@ public class AuthenticationServiceTests
 	public async Task ExpiredTokenTestAsync()
 	{
 		var accessToken = _authenticationService.CreateAccessToken(_userId, _now);
-		Assert.True(_tokenService.VerifyToken(accessToken, out var claims));
+		Assert.True(_tokenService.DecodeToken(accessToken, out var claims));
 
 		//1ms만 늦어도 exception
 		var context = new ApiContext() { RequestTime = claims.ExpireAt.AddMilliseconds(1) };
-		var result = await _authenticationService.ValidateTokenAsync(TokenType.Access, accessToken, context, _accountScopedRepository);
-		Assert.False(result.IsSuccess);
-		Assert.Equal(result.ErrorMessage,AuthenticationResult.ExpiredToken.ErrorMessage);
+		var result = _authenticationService.ValidateToken(TokenType.Access, accessToken, context, out var errorMessage);
+		Assert.False(result);
+		Assert.Equal("expired", errorMessage);
 		Assert.Equal(context.UserId,_userId);
 	}
 	[Fact]
 	public void InvalidTokenTest()
 	{
 		var accessToken = _authenticationService.CreateAccessToken(_userId, _now) + "=";
-		Assert.False(_tokenService.VerifyToken(accessToken, out var claims));
+		Assert.False(_tokenService.DecodeToken(accessToken, out var claims));
 	}
 
 	[Fact]
@@ -87,8 +85,8 @@ public class AuthenticationServiceTests
 		var refreshToken = _authenticationService.CreateRefreshToken(_userId, _now);
 
 		var context = new ApiContext() { RequestTime = _now };
-		var result = await _authenticationService.ValidateTokenAsync(TokenType.Access, refreshToken, context, _accountScopedRepository); //다른토큰이라 안됨
+		var result = _authenticationService.ValidateToken(TokenType.Access, refreshToken, context, out var errorMessage); //다른토큰이라 안됨
 		Assert.Null(context.UserId);
-		Assert.Equal(result.ErrorMessage, AuthenticationResult.InvalidTokenType.ErrorMessage);
+		Assert.Equal("invalid type", errorMessage);
 	}
 }

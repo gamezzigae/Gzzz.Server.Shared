@@ -8,7 +8,7 @@
     <PublishAot>true</PublishAot>
     <StripSymbols>true</StripSymbols>
     <TrimMode>partial</TrimMode>
-	<!--<IsAotCompatible>true</IsAotCompatible>-->
+	
   </PropertyGroup>
   <ItemGroup>
     <None Remove="deploy-release-arm64.cmd" />

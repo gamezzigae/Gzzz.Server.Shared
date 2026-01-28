@@ -13,7 +13,7 @@ public class TokenService
 		_signatureLength = _hmac.HashSize / 8;
 	}
 
-	public string CreateToken(TokenClaims claims)
+	public string EncodeToken(TokenClaims claims)
 	{
 		Span<byte> result = stackalloc byte[256];
 		var payloadLength = CopyTo(claims, result.Slice(1)); //0은 length
@@ -25,7 +25,7 @@ public class TokenService
 		return Convert.ToBase64String(result.Slice(0, payloadLength + _signatureLength + 1));
 	}
 
-	public bool VerifyToken(string token, out TokenClaims result)
+	public bool DecodeToken(string token, out TokenClaims result)
 	{
 		Span<byte> tokenSpan = stackalloc byte[token.Length];
 		if(Convert.TryFromBase64String(token, tokenSpan, out var bytesWritten) == false)

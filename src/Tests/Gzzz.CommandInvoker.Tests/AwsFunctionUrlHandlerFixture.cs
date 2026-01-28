@@ -9,19 +9,20 @@ namespace Gzzz.CommandInvoker.Tests;
 public class AwsFunctionUrlHandlerFixture
 {
 	readonly FunctionHandler _functionHandler;
-	static readonly AuthenticationConfig _authenticationConfig = new AuthenticationConfig()
-	{
-		HashKey = "abc12312",
-		AccessTokenLIfetime=1000,
-		RefreshTokenLifetime=3000,
-	};
 
 	public AwsFunctionUrlHandlerFixture()
 	{
+		EnvironmentX.SetObject("ZZ_AUTHENTICATION_CONFIG", new AuthenticationConfig()
+		{
+			HashKey = "abc12312",
+			AccessTokenLIfetime = 1000,
+			RefreshTokenLifetime = 3000,
+		});
+
 		Assembly[] assemblies = [typeof(TestController).Assembly, typeof(Gzzz.Controllers.SignController).Assembly];
 		_functionHandler = new FunctionHandlerBuilder(default)
 			.UseCommandInvokers(assemblies)
-			.UseAuthentication<AuthenticationService>(_authenticationConfig)
+			.UseAuthentication<AuthenticationService>()
 			.ConfigureServices(services => services
 				.AddSingleton<IContextSerializer, JsonContextSerializer>()
 				.AddSingleton<TimeService, MockTimeService>()

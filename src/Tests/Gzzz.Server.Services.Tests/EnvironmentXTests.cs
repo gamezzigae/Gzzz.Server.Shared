@@ -32,7 +32,7 @@ public class EnvironmentXTests
 		var value = new { Name = RandomX.GetRandomText(), Age = "30", Text = RandomX.GetRandomText() };
 		var json = Json.Serialize(value);
 
-		EnvironmentX.SetProcessValue(key, json);
+		EnvironmentX.SetValue(key, json);
 
 		var retrievedItem = EnvironmentX.GetRequiredObject<Dictionary<string, string>>(key);
 		Assert.Equal(3, retrievedItem.Count);
@@ -47,7 +47,7 @@ public class EnvironmentXTests
 		var key = RandomX.GetRandomText(10);
 		var defaultValue = RandomX.GetRandomText(10);
 
-		EnvironmentX.SetProcessValue(key, defaultValue);
+		EnvironmentX.SetValue(key, defaultValue);
 
 		var result = EnvironmentX.GetValueOrDefault(key, defaultValue);
 		Assert.Equal(defaultValue, result);
