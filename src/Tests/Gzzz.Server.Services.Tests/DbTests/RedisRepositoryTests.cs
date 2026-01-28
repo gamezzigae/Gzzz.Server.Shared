@@ -24,8 +24,8 @@ public class RedisRepositoryTests : IAsyncLifetime
 	readonly DateTimeOffset _now = DateTimeOffset.UtcNow;
 
 	
-	public Task InitializeAsync() => _repository.FlushAsync();
-	public Task DisposeAsync() => Task.CompletedTask;
+	public async ValueTask InitializeAsync() =>await _repository.FlushAsync();
+	public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 	
 	[Fact]
 	public async Task InsertItemTestAsync()
@@ -75,7 +75,7 @@ public class RedisRepositoryTests : IAsyncLifetime
 		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
 		var now = DateTimeOffset.Now;
 		await _repository.PutItemAsync(item.UserId, item, now);
-		Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, now));
+		await Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, now));
 		//Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, now+1)); //뭐였는지 모르겠음
 	}
 

@@ -9,8 +9,8 @@ namespace Gzzz.Server.Shared.Tests.DbTests;
 
 public class DynamoDbRepositoryTests : IAsyncLifetime
 {
-	public Task InitializeAsync() => _dynamoDbService.CreateTableAsync();
-	public Task DisposeAsync() => _dynamoDbService.DeleteTableAsync();
+	public async ValueTask InitializeAsync() =>await _dynamoDbService.CreateTableAsync();
+	public async ValueTask DisposeAsync() => await _dynamoDbService.DeleteTableAsync();
 
 	readonly TestDynamoDbRepository _testRepository;
 	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
@@ -50,7 +50,7 @@ public class DynamoDbRepositoryTests : IAsyncLifetime
 		};
 
 		await _testRepository.PutItemAsync(item.UserId, item, _now);
-		Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _testRepository.PutItemAsync(item.UserId, item, _now));
+		await Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _testRepository.PutItemAsync(item.UserId, item, _now));
 	}
 
 	[Fact]
@@ -87,7 +87,7 @@ public class DynamoDbRepositoryTests : IAsyncLifetime
 		await _testRepository.PutItemAsync(item.UserId, item, _now);
 		var retrievedItem = await _testRepository.GetItemOrDefaultAsync(item.UserId);
 		item.Level++;
-		Assert.ThrowsAsync<ArgumentException>(() => _testRepository.PutItemAsync(item.UserId, item, _now, retrievedItem.UpdatedAt));
+		await Assert.ThrowsAsync<ArgumentException>(() => _testRepository.PutItemAsync(item.UserId, item, _now, retrievedItem.UpdatedAt));
 	}
 	[Fact]
 	public async Task UpdateCheckTimestampErrorTestAsync()
@@ -101,6 +101,6 @@ public class DynamoDbRepositoryTests : IAsyncLifetime
 		await _testRepository.PutItemAsync(item.UserId, item, _now);
 		var retrievedItem = await _testRepository.GetItemOrDefaultAsync(item.UserId);
 		item.Level++;
-		Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _testRepository.PutItemAsync(item.UserId, item, _now, retrievedItem.UpdatedAt.AddMilliseconds(-1)));
+		await Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _testRepository.PutItemAsync(item.UserId, item, _now, retrievedItem.UpdatedAt.AddMilliseconds(-1)));
 	}
 }

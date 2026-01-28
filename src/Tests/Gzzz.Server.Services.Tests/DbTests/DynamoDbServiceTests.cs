@@ -8,12 +8,12 @@ public class DynamoDbServiceTests : IAsyncLifetime
 {
 	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
 	readonly DateTimeOffset _now = DateTimeOffset.UtcNow.TrimBelowMilliseconds();
-	
-	public async Task InitializeAsync()
+
+	public async ValueTask InitializeAsync()
 	{
 		await _dynamoDbService.CreateTableAsync();
 	}
-	public async Task DisposeAsync()
+	public async ValueTask DisposeAsync()
 	{
 		await _dynamoDbService.DeleteTableAsync();
 	}

@@ -18,8 +18,8 @@ public class CompositeRepositoryTests : IAsyncLifetime
 		_repository = new (_redis, _dynamodb);
 	}
 
-	public Task InitializeAsync() => _dynamoDbService.CreateTableAsync();
-	public Task DisposeAsync() => _dynamoDbService.DeleteTableAsync();
+	public async ValueTask InitializeAsync() => await _dynamoDbService.CreateTableAsync();
+	public async ValueTask DisposeAsync() => await _dynamoDbService.DeleteTableAsync();
 
 
 	async Task EqualsAsync(TestEntity expected, bool redisEquals, bool dynamoDbEquals)
