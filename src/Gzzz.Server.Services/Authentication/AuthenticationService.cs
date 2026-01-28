@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 
 namespace Gzzz.Authentication;
+
 public class AuthenticationService
 {
 	readonly AuthenticationConfig _authenticationConfig;
@@ -15,59 +16,54 @@ public class AuthenticationService
 	public string CreateAccessToken(string userId, DateTime createdAt)
 	{
 		var claims = new TokenClaims((byte)TokenType.Access, createdAt.AddMinutes(_authenticationConfig.AccessTokenLIfetime), userId);
-		return _tokenService.CreateToken(claims);
+		return _tokenService.EncodeToken(claims);
 	}
 
 	public string CreateRefreshToken(string userId, DateTime createdAt)
 	{
 		var claims = new TokenClaims((byte)TokenType.Refresh, createdAt.AddMinutes(_authenticationConfig.RefreshTokenLifetime), userId);
-		return _tokenService.CreateToken(claims);
+		return _tokenService.EncodeToken(claims);
 	}
 
 
-	public virtual Task<AuthenticationResult> ValidateTokenAsync(TokenType tokenType, string token, ApiContext context, IAccountScopedRepository accountRepository)
+	public bool ValidateToken(TokenType tokenType, string token, ApiContext context, out string errorMessage)
 	{
 		if (string.IsNullOrEmpty(token))
-			return AuthenticationResult.MissingTokenTask;
+		{
+			errorMessage = "not presented";
+			return false;
+		}
 
-		if (_tokenService.VerifyToken(token, out var claims)==false)
-			return AuthenticationResult.InvalidTokenTask;
+		if (_tokenService.DecodeToken(token, out var claims) == false)
+		{
+			errorMessage = "Invalid";
+			return false;
+		}
 
 		if (claims.Type != (byte)tokenType)
-			return AuthenticationResult.InvalidTokenTypeTask;
+		{
+			errorMessage= "invalid type";
+			return false;
+		}
 
 		context.UserId = claims.UserId;
 
 		var now = context.RequestTime;
 
-		if(now > claims.ExpireAt)
-			return AuthenticationResult.ExpiredTokenTask;
-		return accountRepository.ValidateClaimsAsync(claims);
+		if (now > claims.ExpireAt)
+		{
+			errorMessage = "expired";
+			return false;
+		}
+
+		errorMessage = null;
+		return true;
 	}
 }
 
-public class  AuthenticationConfig
+public class AuthenticationConfig
 {
 	public uint AccessTokenLIfetime { get; set; }
 	public uint RefreshTokenLifetime { get; set; }
 	public string HashKey { get; set; }
 }
-
-public class AuthenticationResult
-{
-	public static readonly AuthenticationResult Success = new() { IsSuccess = true };
-	public static readonly AuthenticationResult MissingToken = new() { IsSuccess = false, ErrorMessage = "missing" };
-	public static readonly AuthenticationResult InvalidToken = new() { IsSuccess = false, ErrorMessage = "Invalid" };
-	public static readonly AuthenticationResult InvalidTokenType = new() { IsSuccess = false, ErrorMessage = "invalid type" };
-	public static readonly AuthenticationResult ExpiredToken = new() { IsSuccess = false, ErrorMessage = "expired" };
-
-	public static readonly Task<AuthenticationResult> SuccessTask = Task.FromResult(Success);
-	public static readonly Task<AuthenticationResult> MissingTokenTask = Task.FromResult(MissingToken);
-	public static readonly Task<AuthenticationResult> InvalidTokenTask = Task.FromResult(InvalidToken);
-	public static readonly Task<AuthenticationResult> InvalidTokenTypeTask = Task.FromResult(InvalidTokenType);
-	public static readonly Task<AuthenticationResult> ExpiredTokenTask = Task.FromResult(ExpiredToken);
-
-	public bool IsSuccess { get; set; }
-	public string ErrorMessage { get; set; }
-}
-

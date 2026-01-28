@@ -7,60 +7,60 @@ public class ApiContextTests
 		ResponseModel = new object(),
 	};
 
-	[Test]
+	[Fact]
 	public void TrimRequestBodyTest()
 	{
 		var context = NewContext();
 
 		context.TrimSuccess(LoggingType.TrimRequestBody);
 
-		Assert.That(context.RequestModel, Is.Null);
-		Assert.That(context.ResponseModel, Is.Not.Null);
-		Assert.That(context.SkipLogging, Is.False);
+		Assert.Null(context.RequestModel);
+		Assert.NotNull(context.ResponseModel);
+		Assert.False(context.SkipLogging);
 	}
 
-	[Test]
+	[Fact]
 	public void TrimResponseBodyTest()
 	{
 		var context = NewContext();
 
 		context.TrimSuccess(LoggingType.TrimResponseBody);
 
-		Assert.That(context.RequestModel, Is.Not.Null);
-		Assert.That(context.ResponseModel, Is.Null);
-		Assert.That(context.SkipLogging, Is.False);
+		Assert.NotNull(context.RequestModel);
+		Assert.Null(context.ResponseModel);
+		Assert.False(context.SkipLogging);
 	}
-	[Test]
+	[Fact]
 	public void SimpleLogTest()
 	{
 		var context = NewContext();
 
 		context.TrimSuccess(LoggingType.Simple);
 
-		Assert.That(context.RequestModel, Is.Null);
-		Assert.That(context.ResponseModel, Is.Null);
-		Assert.That(context.SkipLogging, Is.False);
+		Assert.Null(context.RequestModel);
+		Assert.Null(context.ResponseModel);
+		Assert.False(context.SkipLogging);
 	}
 
 
-	[Test]
+	[Fact]
 	public void SkipLoggingTest()
 	{
 		var context = NewContext();
 
 		context.TrimSuccess(LoggingType.Ignored);
 
-		Assert.That(context.SkipLogging, Is.True);
+		Assert.True(context.SkipLogging);
 	}
-	[Test]
+	[Fact]
 	public void DetailedTest()
 	{
 		var context = NewContext();
 
 		context.TrimSuccess(LoggingType.Detailed);
 
-		Assert.That(context.RequestModel, Is.Not.Null);
-		Assert.That(context.ResponseModel, Is.Not.Null);
-		Assert.That(context.SkipLogging, Is.False);
+		Assert.NotNull(context.RequestModel);
+		Assert.NotNull(context.ResponseModel);
+		Assert.False(context.SkipLogging);
 	}
 }

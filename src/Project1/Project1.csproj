@@ -1,15 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <AWSProjectType>Lambda</AWSProjectType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <PublishAot>true</PublishAot>
     <StripSymbols>true</StripSymbols>
     <TrimMode>partial</TrimMode>
-	<!--<IsAotCompatible>true</IsAotCompatible>-->
+	
   </PropertyGroup>
   <ItemGroup>
     <None Remove="deploy-release-arm64.cmd" />

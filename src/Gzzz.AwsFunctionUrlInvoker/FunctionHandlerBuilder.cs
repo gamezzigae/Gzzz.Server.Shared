@@ -35,7 +35,8 @@ public class FunctionHandlerBuilder
 			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
 			.AddSingleton<JsonLogger>()
 			.AddSingleton<TimeService>()
-			.AddScoped<ApiContext>();
+			.AddScoped<ApiContext>()
+		;
 
 		_options = options;
 	}
@@ -54,16 +55,13 @@ public class FunctionHandlerBuilder
 		return this;
 	}
 
-	public FunctionHandlerBuilder UseAuthentication<TAuthenticationService>(AuthenticationConfig authenticationConfig=null) where TAuthenticationService : AuthenticationService
+	public FunctionHandlerBuilder UseAuthentication<TAuthenticationService>() where TAuthenticationService : AuthenticationService
 	{
 		_services
 			.AddSingleton<AuthenticationService, TAuthenticationService>()
 			.AddSingleton<TokenService>();
 
-		if (authenticationConfig != default)
-			_services.AddSingleton(authenticationConfig);
-		else
-			AddEnvironmentObject<AuthenticationConfig>("ZZ_AUTHENTICATION_CONFIG");
+		this.AddEnvironmentObject<AuthenticationConfig>("ZZ_AUTHENTICATION_CONFIG");
 
 		return this;
 	}

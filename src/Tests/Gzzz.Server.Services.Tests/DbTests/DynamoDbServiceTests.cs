@@ -4,21 +4,20 @@ using Gzzz.Server.Shared.Tests.DbTests;
 
 namespace Gzzz.Server.Shared.Tests.Db;
 
-class DynamoDbServiceTests
+public class DynamoDbServiceTests : IAsyncLifetime
 {
 	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
 	readonly DateTimeOffset _now = DateTimeOffset.UtcNow.TrimBelowMilliseconds();
-	[OneTimeSetUp]
-	public async Task OneTimeSetUpAsync()
+
+	public async ValueTask InitializeAsync()
 	{
 		await _dynamoDbService.CreateTableAsync();
 	}
-	[OneTimeTearDown]
-	public async Task OneTimeTearDownAsync()
+	public async ValueTask DisposeAsync()
 	{
 		await _dynamoDbService.DeleteTableAsync();
 	}
-	[Test]
+	[Fact]
     public async Task InsertItemTestAsync()
     {
         var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), Age = RandomX.GetRandom() };
@@ -30,20 +29,20 @@ class DynamoDbServiceTests
 		AssertX.JsonEquals(attributeMap["SK"], retrievedItem["SK"]);
 		AssertX.JsonEquals(attributeMap["Age"], retrievedItem["Age"]);
 
-		Assert.That( retrievedItem.GetUpdatedAt(), Is.EqualTo(_now));
+		Assert.Equal( retrievedItem.GetUpdatedAt(), (_now));
 
 	}
 
-	[Test]
+	[Fact]
 	public async Task InsertExistsKeyErrorTestAsync()
 	{
 		var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), Age = RandomX.GetRandom() };
 		var attributeMap = AttributeMap.ConvertFrom(item);
 		await _dynamoDbService.PutItemAsync(attributeMap, _now);
-		Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _dynamoDbService.PutItemAsync(attributeMap, _now));
+		await Assert.ThrowsAsync<ConditionalCheckFailedException>(() => _dynamoDbService.PutItemAsync(attributeMap, _now));
 	}
 
-	[Test]
+	[Fact]
 	public async Task UpdateItemTestAsync()
 	{
 		var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), Age = RandomX.GetRandom() };
@@ -60,12 +59,12 @@ class DynamoDbServiceTests
 		AssertX.JsonEquals(updateAttributeMap["Age"], retrievedItem["Age"]);
 	}
 
-	[Test]
-	public void UpdateTimestampTestAsync()
+	[Fact]
+	public async Task UpdateTimestampTestAsync()
 	{
 		var item = new { PK = RandomX.GetRandomText(), SK = RandomX.GetRandomText(), Age = RandomX.GetRandom() };
 		var attributeMap = AttributeMap.ConvertFrom(item);
-		var exception = Assert.ThrowsAsync<ArgumentException>(() => _dynamoDbService.PutItemAsync(attributeMap, _now, _now));
-		Assert.That(exception.Message, Is.EqualTo("dynamodb putitem time condition error"));
+		var exception = await Assert.ThrowsAsync<ArgumentException>(() => _dynamoDbService.PutItemAsync(attributeMap, _now, _now));
+		Assert.Equal("dynamodb putitem time condition error",exception.Message);
 	}
 }

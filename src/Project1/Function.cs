@@ -12,6 +12,11 @@ namespace Project1;
 
 public static class Function
 {
+	static Function()
+	{
+		
+	}
+
 	private static async Task Main()
 	{
 		
