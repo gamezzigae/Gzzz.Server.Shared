@@ -2,14 +2,14 @@ using Amazon.DynamoDBv2.Model;
 
 namespace Gzzz.Db.DynamoDb;
 
-public class DynamoDbOptimisicRepository<T> : IOptimisticRepository<T>
+public class DynamoDbOptimisticRepository<T> : IOptimisticRepository<T>
 	where T : class
 {
 	readonly DynamoDbService _dynamoDbService;
 	readonly string _partitionKey;
 	readonly AttributeValue _partitionKeyAttributeValue;
 
-	public DynamoDbOptimisicRepository(DynamoDbService dynamoDbService, string partitionKey)
+	public DynamoDbOptimisticRepository(DynamoDbService dynamoDbService, string partitionKey)
 	{
 		_dynamoDbService = dynamoDbService;
 		_partitionKey = partitionKey;

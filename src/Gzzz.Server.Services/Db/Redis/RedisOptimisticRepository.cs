@@ -3,7 +3,7 @@ using StackExchange.Redis;
 
 namespace Gzzz.Db.Redis;
 
-public class RedisOptimisicRepository<T> : IOptimisticRepository<T>
+public class RedisOptimisticRepository<T> : IOptimisticRepository<T>
 	where T : class
 {
 	readonly string _sortedSetKey;
@@ -11,7 +11,7 @@ public class RedisOptimisicRepository<T> : IOptimisticRepository<T>
 	readonly RedisService _redisService;
 	readonly ITextSerializer<T> _textSerializer;
 
-	public RedisOptimisicRepository(RedisService redisService, string partitionKey, bool useCompression=true)
+	public RedisOptimisticRepository(RedisService redisService, string partitionKey, bool useCompression=true)
 	{
 		_partitionKey = partitionKey+":";
 		_sortedSetKey = _partitionKey + "_Timestamps";

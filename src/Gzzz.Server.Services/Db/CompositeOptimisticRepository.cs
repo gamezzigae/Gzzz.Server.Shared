@@ -3,15 +3,15 @@ using Gzzz.Db.Redis;
 
 namespace Gzzz.Db;
 
-public class CompositeOptimisicRepository<T, TRedisRepository, TDynamoDbRepository> : IOptimisticRepository<T>
-	where TRedisRepository : RedisOptimisicRepository<T>
-	where TDynamoDbRepository : DynamoDbOptimisicRepository<T>
+public class CompositeOptimisticRepository<T, TRedisRepository, TDynamoDbRepository> : IOptimisticRepository<T>
+	where TRedisRepository : RedisOptimisticRepository<T>
+	where TDynamoDbRepository : DynamoDbOptimisticRepository<T>
 	where T : class
 {
 	readonly TRedisRepository _redisRepository;
 	readonly TDynamoDbRepository _dynamoDbRepository;
 
-	public CompositeOptimisicRepository(TRedisRepository redisRepository, TDynamoDbRepository dynamoDbRepository)
+	public CompositeOptimisticRepository(TRedisRepository redisRepository, TDynamoDbRepository dynamoDbRepository)
 	{
 		_redisRepository = redisRepository;
 		_dynamoDbRepository = dynamoDbRepository;

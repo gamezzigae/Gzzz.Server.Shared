@@ -5,7 +5,7 @@ namespace Gzzz.Server.Shared.Tests.DbTests;
 
 public class CompositeRepositoryTests : IAsyncLifetime
 {
-	CompositeOptimisicRepository<TestEntity, TestRedisRepository, TestDynamoDbRepository> _repository;
+	CompositeOptimisticRepository<TestEntity, TestRedisRepository, TestDynamoDbRepository> _repository;
 	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
 
 	TestDynamoDbRepository _dynamodb; 
