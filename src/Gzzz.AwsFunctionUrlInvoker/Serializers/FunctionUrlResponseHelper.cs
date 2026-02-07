@@ -24,7 +24,7 @@ public static class FunctionUrlResponseHelper
 		};
 	}
 
-	public static FunctionUrlResponse Error(int statusCode, string message, int errorCode)
+	public static FunctionUrlResponse Error(int statusCode, string message, string body, int errorCode)
 	{
 		var result = new FunctionUrlResponse
 		{
@@ -34,6 +34,7 @@ public static class FunctionUrlResponseHelper
 				{ _contentTypeHeader },
 				{ "zz-em", message },
 			},
+			Body = body
 		};
 
 		if (errorCode > 0)

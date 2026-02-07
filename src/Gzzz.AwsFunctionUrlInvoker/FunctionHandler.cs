@@ -101,7 +101,7 @@ public class FunctionHandler
 		{
 			var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Access, request.Headers.AccessToken, context);
 			if (authenticationResult.IsSuccess == false)
-				return FunctionUrlResponseHelper.Error(401, authenticationResult.ErrorMessage, 0);
+				return FunctionUrlResponseHelper.Error(401, authenticationResult.ErrorMessage, null, 0);
 		}
 		//
 		if (command.IsParameterRequired)
@@ -130,12 +130,12 @@ public class FunctionHandler
 		{
 			context.ErrorCode = httpException.ErrorCode;
 			context.ErrorMessage = httpException.Message;
-			return FunctionUrlResponseHelper.Error(httpException.StatusCode, httpException.Message, httpException.ErrorCode);
+			return FunctionUrlResponseHelper.Error(httpException.StatusCode, httpException.Message, httpException.Message, httpException.ErrorCode);
 		}
 		catch (Exception ex)
 		{
 			context.Exception = ex.ToString();
-			return FunctionUrlResponseHelper.Error(500, ex.ToString(), 0); //release 전에는 감춰야함
+			return FunctionUrlResponseHelper.Error(422, "Unexpected Exception", ex.ToString(), 0); //release 전에는 감춰야함
 		}
 	}
 

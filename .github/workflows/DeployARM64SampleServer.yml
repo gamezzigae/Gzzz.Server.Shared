@@ -55,20 +55,6 @@ jobs:
     - name: install lambda tool
       run: dotnet tool install -g Amazon.Lambda.Tools
 
-    - name: write version.json
-      run: |
-        chmod +x $project_location
-        sudo echo '{
-          "Workflow" : "${{github.workflow}}",
-          "RunId" : "${{github.run_id}}",
-          "RunNumber" : "${{github.run_number}}",
-          "CommitSha" : "${{github.sha}}",
-          "OS" : "${{runner.os}}",
-          "Architecture" : "${{runner.arch}}",
-          "CommitMessage" : "${{github.event.head_commit.message}}"
-        }' > $project_location/version.json
-
-
     - name: deploy to aws lambda
       run: |
         dotnet lambda deploy-function \
