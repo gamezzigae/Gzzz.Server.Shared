@@ -5,7 +5,7 @@ namespace Gzzz.Server.Shared.Tests.DbTests;
 
 public class CompositeRepositoryTests : IAsyncLifetime
 {
-	CompositeOptimisicRepository<TestEntity, TestRedisRepository, TestDynamoDbRepository> _repository;
+	CompositeOptimisticRepository<TestEntity, TestRedisRepository, TestDynamoDbRepository> _repository;
 	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
 
 	TestDynamoDbRepository _dynamodb; 
@@ -51,7 +51,7 @@ public class CompositeRepositoryTests : IAsyncLifetime
 	{
 		var item = TestEntity.CreateRandom();
 		await _repository.PutItemAsync(item.UserId, item, _now);
-
+		await Task.Delay(10, TestContext.Current.CancellationToken);
 		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId);
 		Assert.NotNull(retrievedItem);
 		Assert.True(retrievedItem.IsFromCache);
@@ -99,7 +99,7 @@ public class CompositeRepositoryTests : IAsyncLifetime
 		var now = DateTimeOffset.Now;
 
 		await _repository.PutItemAsync(item.UserId, item, now);
-
+		await Task.Delay(10, TestContext.Current.CancellationToken);
 		item.Level = RandomX.GetRandom();
 		await _repository.PersistentPutItemAsync(item.UserId, item, now.AddMilliseconds(1), now);
 

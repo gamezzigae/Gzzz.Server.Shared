@@ -2,7 +2,7 @@ name: Gzzz.Base Deployment
 
 on:
   push:
-    branches: [ "main", "feature/0.0.13"]
+    branches: [ "main"]
     paths:
       - "src/Gzzz.Server.Services/**"
 

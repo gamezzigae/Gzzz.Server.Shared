@@ -16,7 +16,7 @@ public class ApiContext
 	public string Ip { get; set; }
 
 	[JsonPropertyName("t")]
-	public DateTime RequestTime { get; set; }
+	public DateTimeOffset RequestTime { get; set; }
 
 	[JsonPropertyName("path")]
 	public string Path { get; set; }
@@ -36,6 +36,7 @@ public class ApiContext
 	[JsonPropertyName("status")]
 	public int Status { get; set; }
 
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("elapsed")]
 	public int Elapsed { get; set; }
 
@@ -44,7 +45,7 @@ public class ApiContext
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("reqRaw")]
-	public object RequestRaw { get; set; }
+	public string RequestRaw { get; set; }
 
 	//
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

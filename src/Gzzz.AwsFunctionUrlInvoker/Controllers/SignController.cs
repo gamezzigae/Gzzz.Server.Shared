@@ -1,5 +1,6 @@
 using Gzzz.Authentication;
 using Gzzz.CommandInvoker;
+using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
 namespace Gzzz.Controllers;
@@ -40,14 +41,15 @@ public class SignController
 
 
 	[AnonymousCommand("/sign/gst")]	public Task<AuthenticationTokens> GuestSignInAsync()=>CreateTokensAsync(RandomX.CreateRandomBase64String(18));
-	
+
 
 	[AnonymousCommand("/sign/rtkn")]
 	public async Task<AuthenticationTokens> SignInByRefreshTokenAsync(string refreshToken)
 	{
-		if(_authenticationService.ValidateToken(TokenType.Refresh, refreshToken, _apiContext, out var errorMessage) == false)
+		var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Refresh, refreshToken, _apiContext);
+		if (authenticationResult.IsSuccess == false)
 		{
-			throw new HttpException(400, errorMessage);
+			throw new HttpException(400, authenticationResult.ErrorMessage);
 		}
 
 		return await CreateTokensAsync(_apiContext.UserId);

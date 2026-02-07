@@ -24,14 +24,13 @@ public class DynamoDbService
 
 
 	
-	public async Task<Dictionary<string, AttributeValue>> GetAttirubtesAsync(string partitionKey, string sortKey, string projectionExpression = null)
+	public async Task<Dictionary<string, AttributeValue>> GetAttirubtesAsync(string partitionKey, string sortKey)
 	{
 		var keys = AttributeMap.CreateKeys(partitionKey, sortKey);
 		var request = new GetItemRequest()
 		{
 			TableName = this.TableName,
 			Key = keys,
-			ProjectionExpression = projectionExpression,
 		};
 		var response = await _client.GetItemAsync(request);
 		if (response.IsItemSet == false)

@@ -2,7 +2,7 @@ using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2.Model.Internal.MarshallTransformations;
 using Gzzz.Server.Shared.Tests.DbTests;
 
-namespace Gzzz.Server.Shared.Tests.Db;
+namespace Gzzz.Server.Shared.Tests.DbTests;
 
 public class DynamoDbServiceTests : IAsyncLifetime
 {

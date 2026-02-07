@@ -10,25 +10,57 @@ using Gzzz.AwsFunctionUrlInvoker.Services;
 using Gzzz.CommandInvoker;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker;
 
-[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
-[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
-public class FunctionHandler(IServiceProvider services)
+public class FunctionHandler
 {
-	public readonly IServiceProvider Services = services;
-	readonly IReadOnlyDictionary<string, CommandInfo> _commands = services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
-	readonly TimeService _timeService = services.GetRequiredService<TimeService>();
-	readonly IContextSerializer _contextSerializer = services.GetRequiredService<IContextSerializer>();
-	readonly JsonLogger _logger = services.GetRequiredService<JsonLogger>();
-	readonly AuthenticationService _authenticationService = services.GetRequiredService<AuthenticationService>();
+
+	public readonly IServiceProvider Services;
+	readonly IReadOnlyDictionary<string, CommandInfo> _commands;
+	readonly TimeService _timeService;
+	readonly IContextSerializer _contextSerializer;
+	readonly JsonLogger _logger;
+	readonly AuthenticationService _authenticationService;
 
 	bool _isColdStart = true;
+	public FunctionHandler(Assembly[] assemblies, JsonSerializerOptions jsonSerializerOptions, Action<IServiceCollection> configureServices)
+	{
+		IServiceCollection serviceCollection= new ServiceCollection()
+			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
+			.AddSingleton<JsonLogger>()
+			.AddSingleton<IContextSerializer, JsonContextSerializer>()
+			.AddSingleton<TimeService>()
+			.AddScoped<ApiContext>()
+			//
+			.AddSingleton<AuthenticationService>()
+			.AddSingleton<TokenService>()
+			.AddEnvironmentObject<AuthenticationConfig>("ZZ_AUTHENTICATION_CONFIG", jsonSerializerOptions)
+			//
+			.AddCommandInvokers(assemblies)
+		;
 
-	public Task RunAsync()=>LambdaBootstrapBuilder
+		if (jsonSerializerOptions == null)
+			serviceCollection.AddSingleton<JsonSerializerOptions>(_ => null);
+		else
+			serviceCollection.AddSingleton(jsonSerializerOptions);
+
+
+		configureServices(serviceCollection);
+	
+		this.Services = serviceCollection.BuildServiceProvider(new ServiceProviderOptions() { ValidateOnBuild = true, ValidateScopes = true });
+		_commands = Services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
+		_timeService = Services.GetRequiredService<TimeService>();
+		_contextSerializer = Services.GetRequiredService<IContextSerializer>();
+		_logger = Services.GetRequiredService<JsonLogger>();
+		_authenticationService = Services.GetRequiredService<AuthenticationService>();
+	}
+
+
+	public Task RunAsync() => LambdaBootstrapBuilder
 		.Create<FunctionUrlRequest, FunctionUrlResponse>(RequestHandleAsync, new SourceGeneratorLambdaJsonSerializer<FunctionUrlJsonContext>())
 		.Build()
 		.RunAsync();
@@ -63,18 +95,27 @@ public class FunctionHandler(IServiceProvider services)
 	public async Task<FunctionUrlResponse> HandleAsync(IServiceProvider services, FunctionUrlRequest request, ApiContext context)
 	{
 		if (_commands.TryGetValue(request.RequestContext.Http.Path, out var command) == false)
-			return FunctionUrlResponseHelper.Error(404, "not found", 0); //로그를 남길까 말까~
-																		 //
+			return ResponsePreset.NotFound;//로그를 남길까 말까~
+										   //
 		if (command.IsAuthenticationRequired)
 		{
-			if (_authenticationService.ValidateToken(TokenType.Access, request.Headers.AccessToken, context, out var errorMessage) == false)
-				return FunctionUrlResponseHelper.Error(401, errorMessage, 0);
+			var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Access, request.Headers.AccessToken, context);
+			if (authenticationResult.IsSuccess == false)
+				return FunctionUrlResponseHelper.Error(401, authenticationResult.ErrorMessage, 0);
 		}
 		//
 		if (command.IsParameterRequired)
 		{
-			try { context.RequestModel = _contextSerializer.Derialize(command.RequestType, request.GetRequestBody()); }
-			catch (Exception) { return FunctionUrlResponseHelper.Error(400, "request deserialize failed", 0); }
+			var requestBody = request.GetRequestBody();
+			try
+			{
+				context.RequestModel = _contextSerializer.Derialize(command.RequestType, requestBody);
+			}
+			catch (Exception)
+			{
+				context.RequestRaw = requestBody;
+				return ResponsePreset.DeserializeFail;
+			}
 		}
 		//
 		try
@@ -97,6 +138,14 @@ public class FunctionHandler(IServiceProvider services)
 			return FunctionUrlResponseHelper.Error(500, ex.ToString(), 0); //release 전에는 감춰야함
 		}
 	}
-	
+
 }
 
+
+public static class ResponsePreset
+{
+	public static readonly FunctionUrlResponse NotFound = FunctionUrlResponseHelper.Error(404);
+	public static readonly FunctionUrlResponse DeserializeFail = FunctionUrlResponseHelper.Error(400);
+
+
+}
