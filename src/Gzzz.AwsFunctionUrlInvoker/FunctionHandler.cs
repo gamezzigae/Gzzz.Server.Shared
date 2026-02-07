@@ -135,7 +135,7 @@ public class FunctionHandler
 		catch (Exception ex)
 		{
 			context.Exception = ex.ToString();
-			return FunctionUrlResponseHelper.Error(422, "Unexpected Exception", ex.ToString(), 0); //release 전에는 감춰야함
+			return FunctionUrlResponseHelper.Error(500, "Unexpected Exception", ex.ToString(), 0); //release 전에는 감춰야함
 		}
 	}
 

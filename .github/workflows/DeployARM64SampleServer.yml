@@ -2,7 +2,7 @@ name: 샘플ARM서버배포
 on:
   workflow_dispatch: 
   push:
-    branches: [ "develop"]
+    branches: [ "main"]
 env:
     project_location: ./Project1
     aws_region: ap-northeast-1
