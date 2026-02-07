@@ -1,5 +1,5 @@
 namespace Gzzz.CommandInvoker.Tests;
-public class SignControllerTests : AwsFunctionUrlHandlerFixture
+public class SignControllerTests : AwsFunctionUrlInvokerFixture
 {
 	readonly IApiClient _client;
 	readonly MockApiClient _mockClient;

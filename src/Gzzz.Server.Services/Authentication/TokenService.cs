@@ -73,7 +73,7 @@ public class TokenService
 	{
 		var cursor = 0;
 		span[cursor++] = claims.Type;
-		WriteTo(BitConverter.GetBytes(claims.ExpireAt.ToBinary()), span, ref cursor);
+		WriteTo(BitConverter.GetBytes(claims.ExpireAt.LocalDateTime.ToBinary()), span, ref cursor);
 		WriteTo(Convert.FromBase64String(claims.UserId), span, ref cursor);
 		return cursor;
 	}

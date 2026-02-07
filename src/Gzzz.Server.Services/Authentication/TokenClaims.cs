@@ -1,6 +1,6 @@
 namespace Gzzz.Authentication;
 
-public record TokenClaims(byte Type, DateTime ExpireAt, string UserId);
+public record TokenClaims(byte Type, DateTimeOffset ExpireAt, string UserId);
 
 public enum TokenType : byte
 {

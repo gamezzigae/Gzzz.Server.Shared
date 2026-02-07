@@ -1,0 +1,15 @@
+namespace Gzzz.CommandInvoker.Tests;
+
+[Controller("test")]
+public class TestController
+{
+	[Command("/echo")]
+	public Task<string> GetStringAsync(string message) => Task.FromResult(message);
+	[Command("/hello")]
+	public Task<string> GetStringAsync() => Task.FromResult("world");
+	[Command("/nothing")]
+	public Task NothingAsync() => Task.CompletedTask;
+
+	[AnonymousCommand("/echodatetime")]
+	public Task<DateTime> EchoTime(DateTime datetime) => Task.FromResult(datetime);
+}

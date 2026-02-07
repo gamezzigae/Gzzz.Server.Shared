@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
+using static Gzzz.Authentication.AuthenticationService;
 
 namespace Gzzz.Authentication;
 
@@ -13,52 +14,66 @@ public class AuthenticationService
 		_tokenService = tokenService;
 	}
 
-	public string CreateAccessToken(string userId, DateTime createdAt)
+	public string CreateAccessToken(string userId, DateTimeOffset createdAt)
 	{
 		var claims = new TokenClaims((byte)TokenType.Access, createdAt.AddMinutes(_authenticationConfig.AccessTokenLIfetime), userId);
 		return _tokenService.EncodeToken(claims);
 	}
 
-	public string CreateRefreshToken(string userId, DateTime createdAt)
+	public string CreateRefreshToken(string userId, DateTimeOffset createdAt)
 	{
 		var claims = new TokenClaims((byte)TokenType.Refresh, createdAt.AddMinutes(_authenticationConfig.RefreshTokenLifetime), userId);
 		return _tokenService.EncodeToken(claims);
 	}
 
 
-	public bool ValidateToken(TokenType tokenType, string token, ApiContext context, out string errorMessage)
+
+	public class ValidateTokenResult
+	{
+		public ValidateTokenResult(bool success, string errorMessage)
+		{
+			IsSuccess = success;
+			ErrorMessage = errorMessage;
+		}
+		public bool IsSuccess { get; }
+		public string ErrorMessage { get; }
+
+		public static readonly Task<ValidateTokenResult> Success = Task.FromResult(new ValidateTokenResult(true, null));
+		public static readonly Task<ValidateTokenResult> NotPresent = Task.FromResult(new ValidateTokenResult(false, "not present"));
+		public static readonly Task<ValidateTokenResult> DecodeFail = Task.FromResult(new ValidateTokenResult(false, "decode fail"));
+		public static readonly Task<ValidateTokenResult> MismatchType = Task.FromResult(new ValidateTokenResult(false, "mismatch type"));
+		public static readonly Task<ValidateTokenResult> ExpiredToken = Task.FromResult(new ValidateTokenResult(false, "expired"));
+	}
+
+	
+
+	public virtual Task<ValidateTokenResult> ValidateTokenAsync(TokenType tokenType, string token, ApiContext context)
 	{
 		if (string.IsNullOrEmpty(token))
 		{
-			errorMessage = "not presented";
-			return false;
+			return ValidateTokenResult.NotPresent;
 		}
 
 		if (_tokenService.DecodeToken(token, out var claims) == false)
 		{
-			errorMessage = "Invalid";
-			return false;
+			return ValidateTokenResult.DecodeFail;
 		}
 
 		if (claims.Type != (byte)tokenType)
 		{
-			errorMessage= "invalid type";
-			return false;
+			return ValidateTokenResult.MismatchType;
 		}
 
 		context.UserId = claims.UserId;
 
-		var now = context.RequestTime;
-
-		if (now > claims.ExpireAt)
+		if (context.RequestTime > claims.ExpireAt)
 		{
-			errorMessage = "expired";
-			return false;
+			return ValidateTokenResult.ExpiredToken;
 		}
 
-		errorMessage = null;
-		return true;
+		return ValidateTokenResult.Success;
 	}
+
 }
 
 public class AuthenticationConfig

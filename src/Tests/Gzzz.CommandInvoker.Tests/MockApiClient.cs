@@ -6,15 +6,15 @@ namespace Gzzz.CommandInvoker.Tests;
 
 public class MockTimeService : TimeService
 {
-	DateTime? _now;
+	DateTimeOffset? _now;
 	
-	public override DateTime GetNow()
+	public override DateTimeOffset GetNow()
 	{
 		if (_now.IsNotDefault())
 			return _now.Value;
 		return DateTime.UtcNow;
 	}
-	public DateTime SetNow(DateTime time)
+	public DateTimeOffset SetNow(DateTimeOffset time)
 	{
 		_now = time;
 		return time;

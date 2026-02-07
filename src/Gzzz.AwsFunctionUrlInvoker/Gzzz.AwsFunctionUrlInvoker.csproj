@@ -1,15 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Version>0.1.6</Version>
+		<Version>0.1.7</Version>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.14.1" />
-		<PackageReference Include="Amazon.Lambda.Core" Version="2.8.0" />
+		<PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.14.2" />
+		<PackageReference Include="Amazon.Lambda.Core" Version="2.8.1" />
 		<PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.5" />
 		<!--<PackageReference Include="Gzzz.CommandInvoker" Version="0.1.1" />-->
 		<!--<PackageReference Include="Gzzz.Base" Version="1.0.1" />
@@ -19,6 +19,12 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Gzzz.CommandInvoker\Gzzz.CommandInvoker.csproj" />
 		<ProjectReference Include="..\Gzzz.Server.Services\Gzzz.Server.Services.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="version.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

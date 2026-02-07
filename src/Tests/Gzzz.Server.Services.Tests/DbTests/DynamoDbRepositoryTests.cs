@@ -1,6 +1,5 @@
 using Amazon.DynamoDBv2.Model;
 using Gzzz.Db.DynamoDb;
-using Gzzz.Server.Shared.Tests.Db;
 using Newtonsoft.Json;
 
 namespace Gzzz.Server.Shared.Tests.DbTests;

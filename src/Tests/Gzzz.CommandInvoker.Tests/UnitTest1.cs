@@ -38,14 +38,3 @@ public class Tests
 		Assert.Null(echo);
 	}
 }
-
-[Controller("test")]
-public class TestController
-{
-	[Command("/echo")]
-	public Task<string> GetStringAsync(string message) => Task.FromResult(message);
-	[Command("/hello")]
-	public Task<string> GetStringAsync() => Task.FromResult("world");
-	[Command("/nothing")]
-	public Task NothingAsync() => Task.CompletedTask;
-}
