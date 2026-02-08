@@ -86,9 +86,6 @@ public class FunctionHandler
 
 		if (context.SkipLogging == false)
 			_logger.Write(context);
-
-		response.Headers.Add("elased", context.Elapsed.ToString());
-		response.Headers.Add("cold_start", context.IsColdStart.ToString());
 		return response;
 	}
 

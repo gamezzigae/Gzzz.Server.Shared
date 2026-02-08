@@ -19,19 +19,23 @@ public class MockTimeService : TimeService
 		_now = time;
 		return time;
 	}
+	public DateTimeOffset SetNow() => this.SetNow(DateTimeOffset.UtcNow);
 }
 
 public class MockApiClient : IApiClient	
 {
 	readonly FunctionHandler _functionHandler;
+	readonly ITestOutputHelper _logger;
+
 	public string Ip { get; set; }
 
 	public AuthenticationTokens AuthenticationTokens { get; set; }
 
 	public int RequestId { get; set; }
-	public MockApiClient(FunctionHandler functionHandler)
+	public MockApiClient(FunctionHandler functionHandler, ITestOutputHelper logger)
 	{
 		this._functionHandler = functionHandler;
+		_logger = logger;
 		this.Ip = "128.1.2.3";
 	}
 
@@ -59,6 +63,8 @@ public class MockApiClient : IApiClient
 		{
 			var errorMessage = response.Headers.GetValueOrDefault("zz-em");
 			int.TryParse(response.Headers.GetValueOrDefault("zz-ec"), out var errorCode);
+
+			_logger.WriteLine($"API Error {response.StatusCode} - {errorCode}: {errorMessage}");	
 			throw new HttpException(response.StatusCode, errorMessage, errorCode);
 		}
 

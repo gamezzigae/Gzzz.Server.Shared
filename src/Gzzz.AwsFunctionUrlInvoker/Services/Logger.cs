@@ -10,14 +10,14 @@ public class JsonLogger
 		_jsonSerializerOptions = jsonSerializerOptions;
 	}
 
-	public void Write(string message)
+	public virtual void Write(string message)
 	{
 		Amazon.Lambda.Core.LambdaLogger.Log(message);
 	}
 	public void Write(object obj)
 	{
 		var json = JsonSerializer.Serialize(obj, _jsonSerializerOptions);
-		Amazon.Lambda.Core.LambdaLogger.Log(json);
+		this.Write(json);
 	}
 }
 

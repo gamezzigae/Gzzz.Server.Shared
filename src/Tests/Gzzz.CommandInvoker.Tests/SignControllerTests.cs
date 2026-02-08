@@ -3,13 +3,10 @@ public class SignControllerTests : AwsFunctionUrlInvokerFixture
 {
 	readonly IApiClient _client;
 	readonly MockApiClient _mockClient;
-	readonly MockTimeService _timeService;
-	public SignControllerTests()
+	public SignControllerTests(ITestOutputHelper testLogger) : base(testLogger)
 	{
-		
 		_mockClient = (MockApiClient)CreateEmptyClient();
 		_client = _mockClient;
-		_timeService = (MockTimeService)GetService<TimeService>();
 	}
 
 	[Fact]
@@ -50,7 +47,7 @@ public class SignControllerTests : AwsFunctionUrlInvokerFixture
 		var beforeAccessToken = _client.AuthenticationTokens.AccessToken;
 		var beforeRefreshToken = _client.AuthenticationTokens.RefreshToken;
 		
-		_timeService.SetNow(DateTime.MaxValue); //좀 더 정밀한 시간을 넣어주는게 좋다
+		_mockTimeService.SetNow(DateTime.MaxValue); //좀 더 정밀한 시간을 넣어주는게 좋다
 		
 		var exception= await Assert.ThrowsAsync<HttpException>(_client.RefreshTokensAsync);
 		Assert.Equal(400, exception.StatusCode); //401은 인증성공시

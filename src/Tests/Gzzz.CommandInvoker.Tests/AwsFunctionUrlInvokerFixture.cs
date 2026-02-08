@@ -1,16 +1,19 @@
 using Gzzz.Authentication;
 using Gzzz.AwsFunctionUrlInvoker;
-using Gzzz.AwsFunctionUrlInvoker.Serializer;
+using Gzzz.AwsFunctionUrlInvoker.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
+using System.Text.Json;
 
 namespace Gzzz.CommandInvoker.Tests;
 
 public class AwsFunctionUrlInvokerFixture
 {
-	readonly FunctionHandler _functionHandler;
+	protected readonly FunctionHandler _functionHandler;
+	protected readonly MockJsonLogger _mockJsonLogger;
+	protected readonly MockTimeService _mockTimeService;
+	readonly ITestOutputHelper _testLogger;
 
-	public AwsFunctionUrlInvokerFixture()
+	public AwsFunctionUrlInvokerFixture(ITestOutputHelper testLogger)
 	{
 		EnvironmentX.SetObject("ZZ_AUTHENTICATION_CONFIG", new AuthenticationConfig()
 		{
@@ -24,10 +27,15 @@ public class AwsFunctionUrlInvokerFixture
 			default,
 			services => services
 				.AddSingleton<TimeService, MockTimeService>()
+				.AddSingleton<JsonLogger, MockJsonLogger>()
 			);
+
+		_mockJsonLogger = GetRequiredService<JsonLogger, MockJsonLogger>();
+		_mockTimeService = GetRequiredService<TimeService, MockTimeService>();
+		_testLogger = testLogger;
 	}
 
-	public IApiClient CreateEmptyClient() => new MockApiClient(this._functionHandler);
+	public IApiClient CreateEmptyClient() => new MockApiClient(this._functionHandler, _testLogger);
 
 	public async Task<IApiClient> CreateSignedClientAsync(string userId)
 	{
@@ -38,25 +46,48 @@ public class AwsFunctionUrlInvokerFixture
 	}
 
 	public T GetService<T>() => _functionHandler.Services.GetRequiredService<T>();
-
+	public TImplementation GetRequiredService<TService, TImplementation>() where TImplementation : TService => (TImplementation)GetService<TService>();
 }
 
 public class ApiErrorTests : AwsFunctionUrlInvokerFixture
 {
 	readonly IApiClient _client;
-	public ApiErrorTests()
+	public ApiErrorTests(ITestOutputHelper testLogger) : base(testLogger)
 	{
 		_client = CreateEmptyClient();
 	}
+
+	[Fact]
+	public async Task ApiLogTest()
+	{
+		var now = _mockTimeService.SetNow();
+		var path = "/test/hello";
+		var expectedResponse = "world";
+		var response = await _client.RequestAsync<string>(path, ApiOption.Anonymous);
+		Assert.Equal(expectedResponse, response);
+
+		var log = _mockJsonLogger.DequeueApiLog();
+
+		Assert.Equal(path, log.Path);
+		Assert.Equal(200, log.Status);
+		Assert.Equal(now, log.RequestTime);
+		Assert.Equal(expectedResponse, ((JsonElement)log.ResponseModel).GetString());
+	}
+
 	[Fact]
 	public async Task NotFoundErrorTestAsync()
 	{
+		var path = "/not/exist/path";
 		var exception = await Assert.ThrowsAsync<HttpException>(async () =>
 		{
-			await _client.RequestAsync<object>("/not/exist/path", ApiOption.Anonymous);
+			await _client.RequestAsync<object>(path, ApiOption.Anonymous);
 		});
 		Assert.Equal(404, exception.StatusCode);
 		Assert.Equal(0, exception.ErrorCode);
+
+		var log = _mockJsonLogger.DequeueApiLog();
+		Assert.Equal(path, log.Path);
+		Assert.Equal(404, log.Status);
 	}
 
 	[Fact]
@@ -77,5 +108,29 @@ public class ApiErrorTests : AwsFunctionUrlInvokerFixture
 		});
 		Assert.Equal(400, exception.StatusCode);
 		Assert.Equal(0, exception.ErrorCode);
+
+		var log = _mockJsonLogger.DequeueApiLog();
+
+		Assert.Equal("\"abc\"", log.RequestRaw);
+	}
+}
+
+public class MockJsonLogger : JsonLogger
+{
+	public MockJsonLogger() : base(JsonSerializerOptions.Default)
+	{
+	}
+
+	public readonly Queue<string> Queue = new Queue<string>();
+
+	public override void Write(string message)
+	{
+		Queue.Enqueue(message);
+	}
+
+	public ApiContext DequeueApiLog()
+	{
+		var log = Queue.Dequeue();
+		return JsonSerializer.Deserialize<ApiContext>(log)!;
 	}
 }

@@ -15,4 +15,5 @@ public static class DependencyInjectionExtensions
 		T obj = JsonSerializer.Deserialize<T>(json, jsonSerializerOptions) ?? throw new Exception($"환경변수 {name}의 객체 변환에 실패했습니다.");
 		return services.AddSingleton(obj);
 	}
+
 }
