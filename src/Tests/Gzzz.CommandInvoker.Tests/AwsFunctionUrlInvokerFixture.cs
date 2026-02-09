@@ -15,7 +15,7 @@ public class AwsFunctionUrlInvokerFixture
 
 	public AwsFunctionUrlInvokerFixture(ITestOutputHelper testLogger)
 	{
-		EnvironmentX.SetObject("ZZ_AUTHENTICATION_CONFIG", new AuthenticationConfig()
+		EnvironmentX.SetObject(AuthenticationConfig.EnvironmentVariableName, new AuthenticationConfig()
 		{
 			HashKey = "abc12312",
 			AccessTokenLIfetime = 1000,

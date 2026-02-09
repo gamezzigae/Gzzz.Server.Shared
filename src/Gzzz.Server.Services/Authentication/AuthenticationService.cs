@@ -78,6 +78,7 @@ public class AuthenticationService
 
 public class AuthenticationConfig
 {
+	public static readonly string EnvironmentVariableName = "ZZ_AUTHENTICATION_CONFIG";
 	public uint AccessTokenLIfetime { get; set; }
 	public uint RefreshTokenLifetime { get; set; }
 	public string HashKey { get; set; }

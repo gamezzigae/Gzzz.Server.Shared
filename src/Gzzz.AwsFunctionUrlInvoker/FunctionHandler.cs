@@ -38,7 +38,7 @@ public class FunctionHandler
 			//
 			.AddSingleton<AuthenticationService>()
 			.AddSingleton<TokenService>()
-			.AddEnvironmentObject<AuthenticationConfig>("ZZ_AUTHENTICATION_CONFIG", jsonSerializerOptions)
+			.AddEnvironmentObject<AuthenticationConfig>(AuthenticationConfig.EnvironmentVariableName, jsonSerializerOptions)
 			//
 			.AddCommandInvokers(assemblies)
 		;
