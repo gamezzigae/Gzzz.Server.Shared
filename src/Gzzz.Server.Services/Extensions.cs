@@ -1,3 +1,5 @@
+using Amazon.Runtime;
+using Gzzz.Db.DynamoDb;
 using Gzzz.Serialize;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -7,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 
 namespace Gzzz;
 
@@ -111,6 +114,13 @@ public static class Extensions
     public static bool IsNotNullOrEmpty<T>(this T[] array)
     {
         return array != null && array.Length == 0;
-    }
+	}
+
+	public static IServiceCollection AddAwsFallbackCredentials(this IServiceCollection services)
+		=>services.AddSingleton<AWSCredentials>(Amazon.Runtime.Credentials.DefaultAWSCredentialsIdentityResolver.GetCredentials());
+
+	public static IServiceCollection AddDynamoDbService(this IServiceCollection services, JsonSerializerOptions jsonSerializerOptions)
+		=>services.AddEnvironmentObject<DynamoDbConfig>(DynamoDbConfig.EnvironmentVariableName, jsonSerializerOptions)
+				.AddSingleton<DynamoDbService>();
 
 }

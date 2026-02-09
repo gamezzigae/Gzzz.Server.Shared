@@ -13,6 +13,15 @@ public class TestController
 
 	[AnonymousCommand("/int")]
 	public Task<int> GetUserInfoAsync() => Task.FromResult(Random.Shared.Next());
+
+}
+
+public class PutItemRequest
+{
+	public string PK { get; set; }
+	public string SK { get; set; }
+	public string UA { get; set; }
+	public string Value { get; set; }
 }
 
 [Controller]
