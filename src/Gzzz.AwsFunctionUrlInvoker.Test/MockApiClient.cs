@@ -1,5 +1,6 @@
 using Gzzz.AwsFunctionUrlInvoker;
 using Gzzz.AwsFunctionUrlInvoker.Models;
+using Gzzz.Client;
 using System.Text.Json;
 
 namespace Gzzz.CommandInvoker.Tests;
