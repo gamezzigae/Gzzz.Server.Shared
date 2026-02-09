@@ -1,14 +1,9 @@
+using Gzzz.Serialize;
 using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Services;
 public class JsonLogger
 {
-	readonly JsonSerializerOptions _jsonSerializerOptions;
-
-	public JsonLogger(JsonSerializerOptions jsonSerializerOptions)
-	{
-		_jsonSerializerOptions = jsonSerializerOptions;
-	}
 
 	public virtual void Write(string message)
 	{
@@ -16,7 +11,7 @@ public class JsonLogger
 	}
 	public void Write(object obj)
 	{
-		var json = JsonSerializer.Serialize(obj, _jsonSerializerOptions);
+		var json = Json.Serialize(obj);
 		this.Write(json);
 	}
 }

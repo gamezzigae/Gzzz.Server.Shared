@@ -16,14 +16,6 @@ public class TestController
 
 }
 
-public class PutItemRequest
-{
-	public string PK { get; set; }
-	public string SK { get; set; }
-	public string UA { get; set; }
-	public string Value { get; set; }
-}
-
 [Controller]
 public class UserController
 {

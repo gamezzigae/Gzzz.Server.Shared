@@ -27,7 +27,7 @@ public class FunctionHandler
 	readonly AuthenticationService _authenticationService;
 
 	bool _isColdStart = true;
-	public FunctionHandler(Assembly[] assemblies, JsonSerializerOptions jsonSerializerOptions, Action<IServiceCollection> configureServices)
+	public FunctionHandler(Assembly[] assemblies, Action<IServiceCollection> configureServices)
 	{
 		IServiceCollection serviceCollection= new ServiceCollection()
 			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
@@ -38,15 +38,10 @@ public class FunctionHandler
 			//
 			.AddSingleton<AuthenticationService>()
 			.AddSingleton<TokenService>()
-			.AddEnvironmentObject<AuthenticationConfig>(AuthenticationConfig.EnvironmentVariableName, jsonSerializerOptions)
+			.AddEnvironmentObject<AuthenticationConfig>(AuthenticationConfig.EnvironmentVariableName)
 			//
 			.AddCommandInvokers(assemblies)
 		;
-
-		if (jsonSerializerOptions == null)
-			serviceCollection.AddSingleton<JsonSerializerOptions>(_ => null);
-		else
-			serviceCollection.AddSingleton(jsonSerializerOptions);
 
 
 		configureServices(serviceCollection);

@@ -119,8 +119,8 @@ public static class Extensions
 	public static IServiceCollection AddAwsFallbackCredentials(this IServiceCollection services)
 		=>services.AddSingleton<AWSCredentials>(Amazon.Runtime.Credentials.DefaultAWSCredentialsIdentityResolver.GetCredentials());
 
-	public static IServiceCollection AddDynamoDbService(this IServiceCollection services, JsonSerializerOptions jsonSerializerOptions)
-		=>services.AddEnvironmentObject<DynamoDbConfig>(DynamoDbConfig.EnvironmentVariableName, jsonSerializerOptions)
+	public static IServiceCollection AddDynamoDbService(this IServiceCollection services)
+		=>services.AddEnvironmentObject<DynamoDbConfig>(DynamoDbConfig.EnvironmentVariableName)
 				.AddSingleton<DynamoDbService>();
 
 }

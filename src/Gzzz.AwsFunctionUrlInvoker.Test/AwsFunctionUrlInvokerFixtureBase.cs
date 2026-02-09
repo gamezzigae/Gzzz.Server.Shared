@@ -29,7 +29,6 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 
 		_functionHandler = new FunctionHandler(
 			GetAssemblies(),
-			default,
 			services => {
 				services
 				.AddSingleton<TimeService, MockTimeService>()

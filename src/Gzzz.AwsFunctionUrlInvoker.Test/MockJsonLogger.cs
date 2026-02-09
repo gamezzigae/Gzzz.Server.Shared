@@ -1,13 +1,11 @@
 using Gzzz.AwsFunctionUrlInvoker.Services;
+using Gzzz.Serialize;
 using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Test;
 
 public class MockJsonLogger : JsonLogger
 {
-	public MockJsonLogger() : base(JsonSerializerOptions.Default)
-	{
-	}
 
 	public readonly Queue<string> Queue = new Queue<string>();
 
@@ -19,6 +17,6 @@ public class MockJsonLogger : JsonLogger
 	public ApiContext DequeueApiLog()
 	{
 		var log = Queue.Dequeue();
-		return JsonSerializer.Deserialize<ApiContext>(log)!;
+		return Json.Deserialize<ApiContext>(log)!;
 	}
 }

@@ -19,6 +19,11 @@ public static class AttributeMap
 		attributeMap.Add(DynamoDbKeys.SortKey, new AttributeValue(sortKey));
 		return attributeMap;
     }
+	public static Dictionary<string, AttributeValue> AddAttribute(this Dictionary<string, AttributeValue> attributeMap, string key, AttributeValue attributeValue)
+	{
+		attributeMap.Add(key, attributeValue);
+		return attributeMap;
+	}
 
     public static Dictionary<string, AttributeValue> CreateKeys(string partitionKey, string sortKey) => new() { { DynamoDbKeys.PartitionKey, new(partitionKey) }, { DynamoDbKeys.SortKey, new(sortKey) } };
 
