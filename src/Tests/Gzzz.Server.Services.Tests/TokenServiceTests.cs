@@ -38,7 +38,7 @@ public class AuthenticationServiceTests
 			.AddSingleton<TokenService>()
 			.AddSingleton<AuthenticationService>()
 			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
-			.ValidatedBuild();
+			.BuildWithValidation();
 
 		_authenticationService = services.GetRequiredService<AuthenticationService>();
 		_authenticationConfig = services.GetRequiredService<AuthenticationConfig>();

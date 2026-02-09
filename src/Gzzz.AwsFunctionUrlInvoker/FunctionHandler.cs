@@ -51,7 +51,7 @@ public class FunctionHandler
 
 		configureServices(serviceCollection);
 
-		this.Services = serviceCollection.ValidatedBuild();
+		this.Services = serviceCollection.BuildWithValidation();
 		_commands = Services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
 		_timeService = Services.GetRequiredService<TimeService>();
 		_contextSerializer = Services.GetRequiredService<IContextSerializer>();

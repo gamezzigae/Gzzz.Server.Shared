@@ -16,7 +16,7 @@ public static class DependencyInjectionExtensions
 		return services.AddSingleton(obj);
 	}
 
-	public static IServiceProvider ValidatedBuild(this IServiceCollection services)
+	public static IServiceProvider BuildWithValidation(this IServiceCollection services)
 		=>services.BuildServiceProvider(new ServiceProviderOptions() { ValidateOnBuild = true, ValidateScopes = true });
 
 }

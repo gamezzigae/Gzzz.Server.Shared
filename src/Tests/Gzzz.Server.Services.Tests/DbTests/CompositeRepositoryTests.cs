@@ -1,19 +1,21 @@
 using Gzzz.Db;
 using Gzzz.Db.Redis;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Gzzz.Server.Shared.Tests.DbTests;
 
 public class CompositeRepositoryTests : DynamoDbFixture
 {
-	CompositeOptimisticRepository<TestEntity, TestRedisRepository, TestDynamoDbRepository> _repository;
+	CompositeOptimisticRepository<TestEntity, RedisOptimisticRepository<TestEntity>, TestDynamoDbRepository> _repository;
 
-	TestDynamoDbRepository _dynamodb; 
-	TestRedisRepository _redis;
+	TestDynamoDbRepository _dynamodb;
+	RedisOptimisticRepository<TestEntity> _redis;
 	readonly DateTimeOffset _now = DateTimeOffset.UtcNow.TrimBelowMilliseconds();
 	public CompositeRepositoryTests()
 	{
+		var services = RedisFixture.ConfigureServices(new ServiceCollection()).BuildWithValidation();
 		_dynamodb = new TestDynamoDbRepository(_dynamoDbService);
-		_redis = new TestRedisRepository();
+		_redis = services.GetRequiredService<RedisOptimisticRepository<TestEntity>>();
 		_repository = new (_redis, _dynamodb);
 	}
 
