@@ -5,7 +5,7 @@ using Gzzz.Client;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-namespace Gzzz.CommandInvoker.Tests;
+namespace Gzzz.AwsFunctionUrlInvoker.Test;
 
 public abstract class AwsFunctionUrlInvokerFixtureBase
 {

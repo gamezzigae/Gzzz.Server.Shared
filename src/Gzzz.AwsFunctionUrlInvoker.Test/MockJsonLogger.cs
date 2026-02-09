@@ -1,7 +1,7 @@
 using Gzzz.AwsFunctionUrlInvoker.Services;
 using System.Text.Json;
 
-namespace Gzzz.CommandInvoker.Tests;
+namespace Gzzz.AwsFunctionUrlInvoker.Test;
 
 public class MockJsonLogger : JsonLogger
 {
