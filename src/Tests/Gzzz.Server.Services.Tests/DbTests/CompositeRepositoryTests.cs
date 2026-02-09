@@ -3,10 +3,9 @@ using Gzzz.Db.Redis;
 
 namespace Gzzz.Server.Shared.Tests.DbTests;
 
-public class CompositeRepositoryTests : IAsyncLifetime
+public class CompositeRepositoryTests : DynamoDbFixture
 {
 	CompositeOptimisticRepository<TestEntity, TestRedisRepository, TestDynamoDbRepository> _repository;
-	readonly MockDynamoDbService _dynamoDbService = new MockDynamoDbService();
 
 	TestDynamoDbRepository _dynamodb; 
 	TestRedisRepository _redis;
@@ -17,10 +16,6 @@ public class CompositeRepositoryTests : IAsyncLifetime
 		_redis = new TestRedisRepository();
 		_repository = new (_redis, _dynamodb);
 	}
-
-	public async ValueTask InitializeAsync() => await _dynamoDbService.CreateTableAsync();
-	public async ValueTask DisposeAsync() => await _dynamoDbService.DeleteTableAsync();
-
 
 	async Task EqualsAsync(TestEntity expected, bool redisEquals, bool dynamoDbEquals)
 	{
