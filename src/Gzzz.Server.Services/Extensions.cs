@@ -13,12 +13,6 @@ namespace Gzzz;
 
 public static class Extensions
 {
-	public static IServiceProvider ValidatedBuild(this IServiceCollection services)
-		=> services.BuildServiceProvider(new ServiceProviderOptions()
-		{
-			ValidateOnBuild = true,
-			ValidateScopes = true,
-		});
 
 	public static string ToISO8601(this DateTime time) => time.ToString(DefaultConfig.DateTimeFormat);
     public static int GetIntervalSeconds(this DateTime time1, DateTime time2) => (int)((time2 - time1).TotalSeconds);

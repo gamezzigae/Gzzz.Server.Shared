@@ -4,7 +4,13 @@ using Amazon.DynamoDBv2.Model;
 
 namespace Gzzz.Db.DynamoDb;
 
-public record DynamoDbConfig(string TableName, string ServiceURL = null);
+public class DynamoDbConfig
+{
+	public static readonly string EnvironmentVariableName = "ZZ_DYNAMODB_CONFIG";
+
+	public string TableName { get; init; }
+	public string ServiceURL { get; init; }
+}
 
 public class DynamoDbService
 {

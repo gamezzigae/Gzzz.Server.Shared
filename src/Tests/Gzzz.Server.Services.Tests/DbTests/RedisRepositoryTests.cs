@@ -5,7 +5,7 @@ namespace Gzzz.Server.Shared.Tests.DbTests;
 
 public class TestRedisRepository : RedisOptimisticRepository<TestEntity>
 {
-	static readonly RedisConfig _redisConfig = new RedisConfig("127.0.0.1,defaultDatabase=1,allowAdmin=true");
+	static readonly RedisConfig _redisConfig = new RedisConfig() { Endpoint = "127.0.0.1,defaultDatabase=1,allowAdmin=true" };
 	public TestRedisRepository() : base(new RedisService(_redisConfig), RandomX.GetRandomText())
 	{
 	}
