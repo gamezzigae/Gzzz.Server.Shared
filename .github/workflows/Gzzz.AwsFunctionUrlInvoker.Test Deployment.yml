@@ -1,14 +1,14 @@
-name: Gzzz.CommandInvoker Deployment
+name: Gzzz.AwsFunctionUrlInvoker.Test Deployment
 
 on:
   push:
     branches: [ "main"]
     paths:
-      - "src/Gzzz.CommandInvoker/**"
+      - "src/Gzzz.AwsFunctionUrlInvoker.Test/**"
 
 env:
     NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    PROJECT_PATH: ./src/Gzzz.CommandInvoker/Gzzz.CommandInvoker.csproj
+    PROJECT_PATH: ./src/Gzzz.AwsFunctionUrlInvoker.Test/Gzzz.AwsFunctionUrlInvoker.Test.csproj
 jobs:
   build:
     runs-on: ubuntu-latest
