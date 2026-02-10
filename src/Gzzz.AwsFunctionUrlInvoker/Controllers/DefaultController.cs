@@ -15,18 +15,12 @@ public class DefaultController
 	[AnonymousCommand("/__version__")]
 	public Task<JsonDocument> GetVersionAsync()
 	{
-		var buffer = new ArrayBufferWriter<byte>();
-		using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(buffer);
+		JsonDocument doc = Json.WriteDocument(writer =>
+		{
+			writer.WriteString("entry", Assembly.GetEntryAssembly().ToString());
+			writer.WriteString("executing", Assembly.GetExecutingAssembly().ToString());
+		});
 
-		jsonWriter.WriteStartObject();
-		jsonWriter.WriteString("entry", Assembly.GetEntryAssembly().ToString());
-		jsonWriter.WriteString("executing", Assembly.GetExecutingAssembly().ToString());
-		jsonWriter.WriteEndObject();
-		jsonWriter.Flush();
-
-		string json = DefaultConfig.Encoding.GetString(buffer.WrittenSpan);
-
-		JsonDocument doc = JsonDocument.Parse(json);
 		return Task.FromResult(doc);
 	}
 
