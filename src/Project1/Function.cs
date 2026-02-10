@@ -28,6 +28,7 @@ await new FunctionHandler(
 [JsonSerializable(typeof(object))]
 [JsonSerializable(typeof(JsonDocument))]
 [JsonSerializable(typeof(DynamoDbConfig))]
+[JsonSerializable(typeof(DynamoDbMetric))] 
 //
 [JsonSerializable(typeof(DateTimeOffset))]
 [JsonSerializable(typeof(ApiContext))]

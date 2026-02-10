@@ -2,9 +2,8 @@ using Gzzz.Serialize;
 using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Services;
-public class JsonLogger
+public class JsonLogger : ITextLogger
 {
-
 	public virtual void Write(string message)
 	{
 		Amazon.Lambda.Core.LambdaLogger.Log(message);

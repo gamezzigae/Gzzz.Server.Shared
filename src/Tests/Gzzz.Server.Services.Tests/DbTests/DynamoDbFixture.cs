@@ -9,7 +9,7 @@ public class DynamoDbFixture : IAsyncLifetime
 	protected readonly DynamoDbService _dynamoDbService;
 	public DynamoDbFixture()
 	{
-		_dynamoDbService = new DynamoDbService(_awsCredentials, _dynamoDbConfig);
+		_dynamoDbService = new DynamoDbService(_awsCredentials, _dynamoDbConfig, null);
 	}
 	public async ValueTask InitializeAsync()
 	{

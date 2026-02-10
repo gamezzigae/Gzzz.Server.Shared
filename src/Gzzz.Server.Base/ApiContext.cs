@@ -9,7 +9,7 @@ public class ApiContext
 	public bool IsColdStart { get; set; }
 
 
-	[JsonPropertyName("subject")]
+	[JsonPropertyName("typ")]
 	public string Subject { get; } = "API";
 
 	[JsonPropertyName("ip")]

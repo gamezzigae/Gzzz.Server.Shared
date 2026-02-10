@@ -1,15 +1,17 @@
 using Amazon.DynamoDBv2;
 using Amazon.Runtime;
 using Amazon.DynamoDBv2.Model;
+using System.Text.Json.Serialization;
 
 namespace Gzzz.Db.DynamoDb;
 
 public class DynamoDbConfig
 {
 	public static readonly string EnvironmentVariableName = "ZZ_DYNAMODB_CONFIG";
-
+	
 	public string TableName { get; init; }
 	public string ServiceURL { get; init; }
+	public ReturnConsumedCapacity ReturnConsumedCapacity { get; init; }
 }
 
 public class DynamoDbService
@@ -17,11 +19,15 @@ public class DynamoDbService
 	public AmazonDynamoDBClient GetClient() => _client;
 	protected readonly AmazonDynamoDBClient _client;
 	protected readonly DynamoDbConfig _dynamoDbConfig;
+	readonly ITextLogger _logger;
 	public readonly string TableName;
+	readonly ReturnConsumedCapacity _returnConsumedCapacity;
 
-	public DynamoDbService(AWSCredentials awsCredentials, DynamoDbConfig dynamoDbConfig)
+	public DynamoDbService(AWSCredentials awsCredentials, DynamoDbConfig dynamoDbConfig, ITextLogger logger)
 	{
 		this._dynamoDbConfig = dynamoDbConfig;
+		_logger = logger;
+		_returnConsumedCapacity = dynamoDbConfig.ReturnConsumedCapacity;
 		this.TableName = dynamoDbConfig.TableName;
 		this._client = dynamoDbConfig.ServiceURL == default
 		? new(awsCredentials)
@@ -29,7 +35,6 @@ public class DynamoDbService
 	}
 
 
-	
 	public async Task<Dictionary<string, AttributeValue>> GetAttirubtesAsync(string partitionKey, string sortKey)
 	{
 		var keys = AttributeMap.CreateKeys(partitionKey, sortKey);
@@ -37,8 +42,15 @@ public class DynamoDbService
 		{
 			TableName = this.TableName,
 			Key = keys,
+			ReturnConsumedCapacity = _returnConsumedCapacity,
 		};
 		var response = await _client.GetItemAsync(request);
+
+		if (_returnConsumedCapacity != null)
+		{
+			_logger.Write(new DynamoDbMetric(1, response.ConsumedCapacity.CapacityUnits));
+		}
+
 		if (response.IsItemSet == false)
 			return default;
 
@@ -68,6 +80,7 @@ public class DynamoDbService
 			TableName = this.TableName,
 			Item = attributeMap,
 			ConditionExpression = GetCondition(condition),
+			ReturnConsumedCapacity = _returnConsumedCapacity,
 		};
 
 		if (condition == DynamoDbCondition.Update)
@@ -78,7 +91,11 @@ public class DynamoDbService
 			};
 		}
 
-		await _client.PutItemAsync(request);
+		var response = await _client.PutItemAsync(request);
+		if (_returnConsumedCapacity != null)
+		{
+			_logger.Write(new DynamoDbMetric(1, response.ConsumedCapacity.CapacityUnits));
+		}
 		attributeMap.Remove(DynamoDbKeys.UpdatedAt); //다시지워준다.
 	}
 
@@ -103,4 +120,17 @@ public static class DynamoDbKeys
 	public static readonly string SortKey = "SK";
 	public static readonly string UpdatedAt = "UA";
 
+}
+
+public struct DynamoDbMetric(int operation, double? consumedCapacityUnits)
+{
+
+	[JsonPropertyName("typ")]
+	public string Subject { get; } = "dynamodb_consumed_unit";
+
+	[JsonPropertyName("op")]
+	public int Operation { get; } = operation;
+
+	[JsonPropertyName("cu")]
+	public double? ConsumedCapacityUnits { get; } = consumedCapacityUnits;
 }

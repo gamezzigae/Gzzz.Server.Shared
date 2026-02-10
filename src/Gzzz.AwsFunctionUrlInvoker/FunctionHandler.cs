@@ -23,7 +23,7 @@ public class FunctionHandler
 	readonly IReadOnlyDictionary<string, CommandInfo> _commands;
 	readonly TimeService _timeService;
 	readonly IContextSerializer _contextSerializer;
-	readonly JsonLogger _logger;
+	readonly ITextLogger _logger;
 	readonly AuthenticationService _authenticationService;
 
 	bool _isColdStart = true;
@@ -31,7 +31,7 @@ public class FunctionHandler
 	{
 		IServiceCollection serviceCollection= new ServiceCollection()
 			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
-			.AddSingleton<JsonLogger>()
+			.AddSingleton<ITextLogger, JsonLogger>()
 			.AddSingleton<IContextSerializer, JsonContextSerializer>()
 			.AddSingleton<TimeService>()
 			.AddScoped<ApiContext>()
@@ -50,7 +50,7 @@ public class FunctionHandler
 		_commands = Services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
 		_timeService = Services.GetRequiredService<TimeService>();
 		_contextSerializer = Services.GetRequiredService<IContextSerializer>();
-		_logger = Services.GetRequiredService<JsonLogger>();
+		_logger = Services.GetRequiredService<ITextLogger>();
 		_authenticationService = Services.GetRequiredService<AuthenticationService>();
 	}
 

@@ -36,6 +36,14 @@ public class DynamoDbController
 		var items = AttributeMap.ConvertTo<JsonDocument>(attributeMap);
 		return items;
 	}
+
+	[AnonymousCommand("/round-trip")]
+	public async Task<JsonDocument> RoundTripAsync(PutItemRequest request)
+	{
+		var attributeMap = await _dynamoDbService.GetAttirubtesAsync(_partitionKey, request.Key);
+		var items = AttributeMap.ConvertTo<JsonDocument>(attributeMap);
+		return items;
+	}
 }
 
 public class PutItemRequest
