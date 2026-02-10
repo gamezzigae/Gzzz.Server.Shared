@@ -59,7 +59,7 @@ public class DynamoDbService
 
 
 	public async Task PutItemAsync(Dictionary<string, AttributeValue> attributeMap, DateTimeOffset now, DateTimeOffset updatedAt = default)
-    {
+	{
         if (attributeMap.ContainsKey(DynamoDbKeys.PartitionKey) == false)
             throw new ArgumentException("attributeMap must contain a 'PK'");
         if (attributeMap.ContainsKey(DynamoDbKeys.SortKey) == false)
@@ -71,7 +71,7 @@ public class DynamoDbService
 		{
 			throw new ArgumentException("dynamodb putitem time condition error");
 		}
-		attributeMap.Add(DynamoDbKeys.UpdatedAt, new AttributeValue() { N = nowUnixMs.ToString() });
+		attributeMap[DynamoDbKeys.UpdatedAt] = new AttributeValue() { N = nowUnixMs.ToString() };
 
 		var condition = updatedAt == default ? DynamoDbCondition.Insert : DynamoDbCondition.Update;
 		

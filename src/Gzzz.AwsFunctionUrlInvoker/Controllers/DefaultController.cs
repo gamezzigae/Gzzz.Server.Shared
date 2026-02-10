@@ -15,7 +15,7 @@ public class DefaultController
 	[AnonymousCommand("/__version__")]
 	public Task<JsonDocument> GetVersionAsync()
 	{
-		JsonDocument doc = Json.WriteDocument(writer =>
+		JsonDocument doc = Json.WriteDocument<object>(null, static (writer, _) =>
 		{
 			writer.WriteString("entry", Assembly.GetEntryAssembly().ToString());
 			writer.WriteString("executing", Assembly.GetExecutingAssembly().ToString());
@@ -41,11 +41,5 @@ public class DefaultController
 	public Task UnhandledExceptionAsync()
 	{
 		throw new Exception("unhandled exception");
-	}
-	[AnonymousCommand("/__jex__")]
-	public Task JsonExceptionAsync()
-	{
-		JsonSerializer.Deserialize<object>("this is not json");
-		return Task.CompletedTask;
 	}
 }

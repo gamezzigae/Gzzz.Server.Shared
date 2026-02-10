@@ -1,9 +1,10 @@
+using Amazon.DynamoDBv2.Model;
 using Gzzz;
 using Gzzz.CommandInvoker;
 using Gzzz.Db.DynamoDb;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Amazon.DynamoDBv2.Model;
 
 namespace Project1.Controllers;
 
@@ -24,7 +25,7 @@ public class DynamoDbController
 	{
 		var attributeMap = new Dictionary<string, AttributeValue>()
 			.AddKeys(_partitionKey, request.Key)
-			.AddAttribute("Value", new AttributeValue(request.Value));
+			.AddAttribute("Value", new AttributeValue(string.Empty.PadRight(request.Length,'A')));
 
 		await _dynamoDbService.PutItemAsync(attributeMap, _apiContext.RequestTime);
 	}
@@ -41,6 +42,8 @@ public class DynamoDbController
 	public async Task<JsonDocument> RoundTripAsync(PutItemRequest request)
 	{
 		var attributeMap = await _dynamoDbService.GetAttirubtesAsync(_partitionKey, request.Key);
+		attributeMap["Value"].S = string.Empty.PadRight(request.Length, 'A');
+		await _dynamoDbService.PutItemAsync(attributeMap, _apiContext.RequestTime, attributeMap.GetUpdatedAt());
 		var items = AttributeMap.ConvertTo<JsonDocument>(attributeMap);
 		return items;
 	}
@@ -49,5 +52,5 @@ public class DynamoDbController
 public class PutItemRequest
 {
 	public string Key { get; set; }
-	public string Value { get; set; }
+	public int Length { get; set; }
 }

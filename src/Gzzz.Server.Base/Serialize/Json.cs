@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Formats.Asn1;
 using System.Text;
 using System.Text.Json;
 
@@ -27,23 +28,28 @@ public static class Json
 	public static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, _options);
 	public static object Deserialize(string json, Type type) => JsonSerializer.Deserialize(json, type, _options);
 
-
-	public static string Write(Action<Utf8JsonWriter> write)
+	public static string Write<TState>(TState state, Action<Utf8JsonWriter, TState> action)
 	{
 		var buffer = new ArrayBufferWriter<byte>();
 		using Utf8JsonWriter writer = new Utf8JsonWriter(buffer);
-
 		writer.WriteStartObject();
-		write(writer);
+		action(writer, state);
 		writer.WriteEndObject();
 		writer.Flush();
 		string json = DefaultConfig.Encoding.GetString(buffer.WrittenSpan);
-
 		return json;
 	}
-	public static JsonDocument WriteDocument(Action<Utf8JsonWriter> write)
+
+	public static JsonDocument WriteDocument<TState>(TState state, Action<Utf8JsonWriter, TState> action)
 	{
-		string json = Write(write);
+		var buffer = new ArrayBufferWriter<byte>();
+		using Utf8JsonWriter writer = new Utf8JsonWriter(buffer);
+		writer.WriteStartObject();
+		action(writer, state);
+		writer.WriteEndObject();
+		writer.Flush();
+		string json = DefaultConfig.Encoding.GetString(buffer.WrittenSpan);
 		return JsonDocument.Parse(json);
 	}
+
 }
