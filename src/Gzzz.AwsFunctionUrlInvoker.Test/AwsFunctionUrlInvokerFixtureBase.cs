@@ -32,12 +32,12 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 			services => {
 				services
 				.AddSingleton<TimeService, MockTimeService>()
-				.AddSingleton<JsonLogger, MockJsonLogger>();
+				.AddSingleton<ITextLogger, MockJsonLogger>();
 
 				ConfigureServices(services);
 			});
 
-		_mockJsonLogger = GetRequiredService<JsonLogger, MockJsonLogger>();
+		_mockJsonLogger = GetRequiredService<ITextLogger, MockJsonLogger>();
 		_mockTimeService = GetRequiredService<TimeService, MockTimeService>();
 		_testLogger = testLogger;
 	}
