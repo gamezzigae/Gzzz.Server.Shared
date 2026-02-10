@@ -80,7 +80,7 @@ public class FunctionHandler
 		context.Elapsed = (int)(_timeService.GetNow() - context.RequestTime).TotalMilliseconds;
 
 		if (context.SkipLogging == false)
-			_logger.Write(context);
+			_logger.WriteObject(context);
 		return response;
 	}
 

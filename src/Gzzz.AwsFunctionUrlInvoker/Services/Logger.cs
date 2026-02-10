@@ -8,7 +8,7 @@ public class JsonLogger : ITextLogger
 	{
 		Amazon.Lambda.Core.LambdaLogger.Log(message);
 	}
-	public void Write(object obj)
+	public void WriteObject(object obj)
 	{
 		var json = Json.Serialize(obj);
 		this.Write(json);

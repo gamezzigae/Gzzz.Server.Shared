@@ -48,7 +48,7 @@ public class DynamoDbService
 
 		if (_returnConsumedCapacity != null)
 		{
-			_logger.Write(new DynamoDbMetric(1, response.ConsumedCapacity.CapacityUnits));
+			_logger.Write($"{{\"rcu\":{response.ConsumedCapacity.CapacityUnits}}}");
 		}
 
 		if (response.IsItemSet == false)
@@ -94,7 +94,7 @@ public class DynamoDbService
 		var response = await _client.PutItemAsync(request);
 		if (_returnConsumedCapacity != null)
 		{
-			_logger.Write(new DynamoDbMetric(1, response.ConsumedCapacity.CapacityUnits));
+			_logger.Write($"{{\"wcu\":{response.ConsumedCapacity.CapacityUnits}}}");
 		}
 		attributeMap.Remove(DynamoDbKeys.UpdatedAt); //다시지워준다.
 	}
@@ -119,18 +119,4 @@ public static class DynamoDbKeys
 	public static readonly string PartitionKey = "PK";
 	public static readonly string SortKey = "SK";
 	public static readonly string UpdatedAt = "UA";
-
-}
-
-public struct DynamoDbMetric(int operation, double? consumedCapacityUnits)
-{
-
-	[JsonPropertyName("typ")]
-	public string Subject { get; } = "dynamodb_consumed_unit";
-
-	[JsonPropertyName("op")]
-	public int Operation { get; } = operation;
-
-	[JsonPropertyName("cu")]
-	public double? ConsumedCapacityUnits { get; } = consumedCapacityUnits;
 }

@@ -3,7 +3,7 @@ namespace Gzzz;
 public interface ITextLogger
 {
 	void Write(string message);
-	void Write(object obj);
+	void WriteObject(object obj);
 }
 
 /*
