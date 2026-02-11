@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Gzzz.Controllers;
 
-[Controller]
+[Controller("/s")]
 public class SignController
 {
 	readonly AuthenticationService _authenticationService;
@@ -33,17 +33,17 @@ public class SignController
 		};
 	}
 
-	[AnonymousCommand("/sign/_____impersonate_____")]
+	[AnonymousCommand("/_____impersonate_____")]
 	public Task<AuthenticationTokens> ImpersonateSignInAsync(string userId)
 	{
 		return CreateTokensAsync(userId);
 	}
 
 
-	[AnonymousCommand("/sign/gst")]	public Task<AuthenticationTokens> GuestSignInAsync()=>CreateTokensAsync(RandomX.CreateRandomBase64String(18));
+	[AnonymousCommand("/gst")]	public Task<AuthenticationTokens> GuestSignInAsync()=>CreateTokensAsync(RandomX.CreateRandomBase64String(18));
 
 
-	[AnonymousCommand("/sign/rtkn")]
+	[AnonymousCommand("/rtkn")]
 	public async Task<AuthenticationTokens> SignInByRefreshTokenAsync(string refreshToken)
 	{
 		var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Refresh, refreshToken, _apiContext);

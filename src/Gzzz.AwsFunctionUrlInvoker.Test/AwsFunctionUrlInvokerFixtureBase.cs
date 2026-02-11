@@ -47,7 +47,7 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 	public async Task<IApiClient> CreateSignedClientAsync(string userId)
 	{
 		var client = CreateEmptyClient();
-		var tokens = await client.RequestAsync<AuthenticationTokens>("/sign/_____impersonate_____", ApiOption.Anonymous, userId);
+		var tokens = await client.RequestAsync<AuthenticationTokens>("/s/_____impersonate_____", ApiOption.Anonymous, userId);
 		client.AuthenticationTokens = tokens;
 		return client;
 	}
