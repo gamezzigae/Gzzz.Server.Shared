@@ -12,6 +12,7 @@ namespace Gzzz.AwsFunctionUrlInvoker.Controllers;
 [Controller]
 public class DefaultController
 {
+
 	[AnonymousCommand("/__version__")]
 	public Task<JsonDocument> GetVersionAsync()
 	{

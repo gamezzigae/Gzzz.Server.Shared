@@ -5,6 +5,7 @@ namespace Gzzz.CommandInvoker.Tests;
 public class ApiLogTests : AwsFunctionUrlInvokerFixture
 {
 	readonly IApiClient _client;
+	protected MockApiClient _mockApiClient => (MockApiClient)_client;
 	public ApiLogTests(ITestOutputHelper testLogger) : base(testLogger)
 	{
 		_client = CreateEmptyClient();
@@ -25,6 +26,17 @@ public class ApiLogTests : AwsFunctionUrlInvokerFixture
 		Assert.Equal(200, log.Status);
 		Assert.Equal(now, log.RequestTime);
 		Assert.Equal(expectedResponse, ((JsonElement)log.ResponseModel).GetString());
+	}
+
+	[Fact]
+	public async Task RequestInfoTest()
+	{
+		var now = base._mockTimeService.SetNow();
+		var path = "/me/__requestinfo__";
+		var response = await _client.RequestAsync<RequestInfo>(path, ApiOption.Anonymous);
+
+		Assert.Equal(now, response.RequestTime);
+		Assert.Equal(_mockApiClient.Ip, response.Ip);
 	}
 
 	[Fact]

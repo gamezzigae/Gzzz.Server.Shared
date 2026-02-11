@@ -2,6 +2,6 @@ namespace Gzzz.AwsFunctionUrlInvoker.Serializer;
 
 public interface IContextSerializer
 {
-	object Derialize(Type type, string input);
-	string Serialize(object value);
+	object Derialize(string input, Type type);
+	string Serialize(object value, Type type);
 }

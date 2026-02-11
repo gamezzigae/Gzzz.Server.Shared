@@ -35,6 +35,7 @@ public class FunctionHandler
 			.AddSingleton<IContextSerializer, JsonContextSerializer>()
 			.AddSingleton<TimeService>()
 			.AddScoped<ApiContext>()
+			.AddScoped<RequestInfo>(services=> (RequestInfo)services.GetRequiredService<ApiContext>())
 			//
 			.AddSingleton<AuthenticationService>()
 			.AddSingleton<TokenService>()
@@ -101,7 +102,7 @@ public class FunctionHandler
 			var requestBody = request.GetRequestBody();
 			try
 			{
-				context.RequestModel = _contextSerializer.Derialize(command.RequestType, requestBody);
+				context.RequestModel = _contextSerializer.Derialize(requestBody, command.RequestType);
 			}
 			catch (Exception)
 			{
@@ -113,9 +114,10 @@ public class FunctionHandler
 		try
 		{
 			context.ResponseModel = await command.InvokeAsync(services, context.RequestModel);
-			string deserializedResponseBody = _contextSerializer.Serialize(context.ResponseModel); //예외처리 하지 않는다.
+			string deserializedResponseBody = command.ResponseType != null ?
+				_contextSerializer.Serialize(context.ResponseModel, command.ResponseType)
+				: null;
 			context.TrimSuccess(command.LoggingType);
-
 			return FunctionUrlResponseHelper.Success(deserializedResponseBody);
 		}
 		catch (HttpException httpException)

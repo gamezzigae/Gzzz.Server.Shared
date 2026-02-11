@@ -6,12 +6,28 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
+Bar bar = new Bar { Name = "John", Email = "test@test.com" };
+Foo foo = bar;
+
+string json = JsonSerializer.Serialize(foo, typeof(Foo));
+Console.WriteLine(json);
 
 BenchmarkRunner.Run<JsonWriterBenchmark>();
 
 
+public class Foo
+{
+	public string Name { get; set; }
+}
+
+public class Bar : Foo
+{
+	[JsonPropertyName("email_address")]
+	public string Email { get; set; }
+}
 
 [MemoryDiagnoser]
 public class DictionaryBenchmark

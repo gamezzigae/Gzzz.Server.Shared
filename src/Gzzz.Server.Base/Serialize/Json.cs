@@ -24,7 +24,8 @@ public static class Json
 
 	static JsonSerializerOptions _options = default;
 
-	public static string Serialize(object item)=> JsonSerializer.Serialize(item, _options);
+	public static string Serialize(object item) => JsonSerializer.Serialize(item, _options);
+	public static string Serialize(object item, Type type) => JsonSerializer.Serialize(item, type, _options);
 	public static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, _options);
 	public static object Deserialize(string json, Type type) => JsonSerializer.Deserialize(json, type, _options);
 

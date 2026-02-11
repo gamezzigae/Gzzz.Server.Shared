@@ -2,7 +2,20 @@ using System.Text.Json.Serialization;
 
 namespace Gzzz;
 
-public class ApiContext
+public class RequestInfo
+{
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	[JsonPropertyName("uid")]
+	public string UserId { get; set; }
+
+	[JsonPropertyName("ip")]
+	public string Ip { get; set; }
+
+	[JsonPropertyName("t")]
+	public DateTimeOffset RequestTime { get; set; }
+}
+
+public class ApiContext : RequestInfo
 {
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("cold")]
@@ -12,18 +25,11 @@ public class ApiContext
 	[JsonPropertyName("typ")]
 	public string Subject { get; } = "API";
 
-	[JsonPropertyName("ip")]
-	public string Ip { get; set; }
 
-	[JsonPropertyName("t")]
-	public DateTimeOffset RequestTime { get; set; }
 
 	[JsonPropertyName("path")]
 	public string Path { get; set; }
 
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	[JsonPropertyName("uid")]
-	public string UserId { get; set; }
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("req")]

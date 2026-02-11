@@ -9,6 +9,7 @@ public class Tests
 
 		var services = new ServiceCollection()
 			.AddCommandInvokers(typeof(TestController).Assembly)
+			.AddScoped<RequestInfo>()
 			.BuildServiceProvider();
 		command = services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>()[path];
 		return services; ;

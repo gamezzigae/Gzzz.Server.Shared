@@ -3,6 +3,6 @@ namespace Gzzz.AwsFunctionUrlInvoker.Serializer;
 
 public class JsonContextSerializer : IContextSerializer
 {
-	public string Serialize(object value) => Json.Serialize(value);
-	public object Derialize(Type type, string input)=>Json.Deserialize(input, type);
+	public string Serialize(object value, Type type) => Json.Serialize(value, type);
+	public object Derialize(string input, Type type) => Json.Deserialize(input, type);
 }

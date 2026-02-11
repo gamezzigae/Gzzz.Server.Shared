@@ -10,6 +10,7 @@ public class CommandInfo
 	public bool IsParameterRequired { get; }
 	public Type ControllerType { get; }
 	public Type RequestType { get; }
+	public Type ResponseType { get; }
 	public Func<object, object> ResultGetter { get; }
 	public Func<object, object[], object> Invoker { get; }
 	
@@ -33,6 +34,7 @@ public class CommandInfo
         if (returnType.IsGenericType) // Task<T>
         {
             var resultInfo = returnType.GetProperty("Result");
+			ResponseType = resultInfo.PropertyType;
 			ResultGetter = PropertyAccessor.CreateGetter(resultInfo);
 		}
 
