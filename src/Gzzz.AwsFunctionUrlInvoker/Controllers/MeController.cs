@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Controllers;
 
-[Controller("/me")]
+[Controller]
 public class MeController
 {
 	readonly RequestInfo _requestInfo;
@@ -14,7 +14,7 @@ public class MeController
 		_requestInfo = requestInfo;
 	}
 
-	[AnonymousCommand("/__requestinfo__")]
+	[AnonymousCommand("/__me__")]
 	public Task<RequestInfo> GetRequestInfoAsync()
 	{
 		var result = new RequestInfo()

@@ -32,7 +32,7 @@ public class ApiLogTests : AwsFunctionUrlInvokerFixture
 	public async Task RequestInfoTest()
 	{
 		var now = base._mockTimeService.SetNow();
-		var path = "/me/__requestinfo__";
+		var path = "/__me__";
 		var response = await _client.RequestAsync<RequestInfo>(path, ApiOption.Anonymous);
 
 		Assert.Equal(now, response.RequestTime);
