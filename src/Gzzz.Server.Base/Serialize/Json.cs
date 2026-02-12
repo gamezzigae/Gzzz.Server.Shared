@@ -41,16 +41,6 @@ public static class Json
 		return json;
 	}
 
-	public static JsonDocument WriteDocument<TState>(TState state, Action<Utf8JsonWriter, TState> action)
-	{
-		var buffer = new ArrayBufferWriter<byte>();
-		using Utf8JsonWriter writer = new Utf8JsonWriter(buffer);
-		writer.WriteStartObject();
-		action(writer, state);
-		writer.WriteEndObject();
-		writer.Flush();
-		string json = DefaultConfig.Encoding.GetString(buffer.WrittenSpan);
-		return JsonDocument.Parse(json);
-	}
+	public static JsonDocument WriteDocument<TState>(TState state, Action<Utf8JsonWriter, TState> action) =>JsonDocument.Parse(Write<TState>(state, action));
 
 }
