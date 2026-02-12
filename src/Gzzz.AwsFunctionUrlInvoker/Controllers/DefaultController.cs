@@ -16,7 +16,7 @@ public class DefaultController
 	[AnonymousCommand("/__version__")]
 	public Task<JsonDocument> GetVersionAsync()
 	{
-		JsonDocument doc = Json.WriteDocument<object>(null, static (writer, _) =>
+		JsonDocument doc = JsonWriter.WriteDocument<object>(null, static (writer, _) =>
 		{
 			writer.WriteString("entry", Assembly.GetEntryAssembly().ToString());
 			writer.WriteString("executing", Assembly.GetExecutingAssembly().ToString());

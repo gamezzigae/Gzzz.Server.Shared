@@ -12,7 +12,7 @@ public class JsonWriterBenchmark
 	[Benchmark]
 	public void Case2()
 	{
-		_ = Json.Write(_item.Major, static (writer, id) =>
+		_ = JsonWriter.Write(_item.Major, static (writer, id) =>
 		{
 			writer.WriteNumber("Id", id);
 			writer.WriteString("Name", "Test");
@@ -26,7 +26,7 @@ public class JsonWriterBenchmark
 	[Benchmark]
 	public void Case3()
 	{
-		_ = Json.Write(_item, static (writer, item) =>
+		_ = JsonWriter.Write(_item, static (writer, item) =>
 		{
 			writer.WriteNumber("Id", item.Major);
 			writer.WriteString("Name", "Test");

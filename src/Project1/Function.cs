@@ -10,7 +10,7 @@ using Project1.Controllers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-Json.InitializeSerializerOptions(CustomJsonContext.Default.Options);
+DefaultConfig.Initialize(CustomJsonContext.Default.Options);
 
 await new FunctionHandler(
 	assemblies: [typeof(TestController).Assembly, typeof(SignController).Assembly],
