@@ -95,6 +95,8 @@ public class FunctionHandler
 			var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Access, request.Headers.AccessToken, context);
 			if (authenticationResult.IsSuccess == false)
 				return FunctionUrlResponseHelper.Error(401, authenticationResult.ErrorMessage, null, 0);
+
+
 		}
 		//
 		if (command.IsParameterRequired)

@@ -26,27 +26,6 @@ public class AuthenticationService
 		return _tokenService.EncodeToken(claims);
 	}
 
-
-
-	public class ValidateTokenResult
-	{
-		public ValidateTokenResult(bool success, string errorMessage)
-		{
-			IsSuccess = success;
-			ErrorMessage = errorMessage;
-		}
-		public bool IsSuccess { get; }
-		public string ErrorMessage { get; }
-
-		public static readonly Task<ValidateTokenResult> Success = Task.FromResult(new ValidateTokenResult(true, null));
-		public static readonly Task<ValidateTokenResult> NotPresent = Task.FromResult(new ValidateTokenResult(false, "not present"));
-		public static readonly Task<ValidateTokenResult> DecodeFail = Task.FromResult(new ValidateTokenResult(false, "decode fail"));
-		public static readonly Task<ValidateTokenResult> MismatchType = Task.FromResult(new ValidateTokenResult(false, "mismatch type"));
-		public static readonly Task<ValidateTokenResult> ExpiredToken = Task.FromResult(new ValidateTokenResult(false, "expired"));
-	}
-
-	
-
 	public virtual Task<ValidateTokenResult> ValidateTokenAsync(TokenType tokenType, string token, ApiContext context)
 	{
 		if (string.IsNullOrEmpty(token))
@@ -82,4 +61,21 @@ public class AuthenticationConfig
 	public uint AccessTokenLIfetime { get; set; }
 	public uint RefreshTokenLifetime { get; set; }
 	public string HashKey { get; set; }
+}
+
+public class ValidateTokenResult
+{
+	public ValidateTokenResult(bool success, string errorMessage)
+	{
+		IsSuccess = success;
+		ErrorMessage = errorMessage;
+	}
+	public bool IsSuccess { get; }
+	public string ErrorMessage { get; }
+
+	public static readonly Task<ValidateTokenResult> Success = Task.FromResult(new ValidateTokenResult(true, null));
+	public static readonly Task<ValidateTokenResult> NotPresent = Task.FromResult(new ValidateTokenResult(false, "not present"));
+	public static readonly Task<ValidateTokenResult> DecodeFail = Task.FromResult(new ValidateTokenResult(false, "decode fail"));
+	public static readonly Task<ValidateTokenResult> MismatchType = Task.FromResult(new ValidateTokenResult(false, "mismatch type"));
+	public static readonly Task<ValidateTokenResult> ExpiredToken = Task.FromResult(new ValidateTokenResult(false, "expired"));
 }

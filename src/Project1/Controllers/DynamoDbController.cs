@@ -20,30 +20,13 @@ public class DynamoDbController
 		_apiContext = apiContext;
 	}
 
-	[AnonymousCommand("/putitem")]
-	public async Task PutItemAsync(PutItemRequest request)
-	{
-		var attributeMap = new Dictionary<string, AttributeValue>()
-			.AddKeys(_partitionKey, request.Key)
-			.AddAttribute("Value", new AttributeValue(string.Empty.PadRight(request.Length,'A')));
-
-		await _dynamoDbService.PutItemAsync(attributeMap, _apiContext.RequestTime);
-	}
-
-	[AnonymousCommand("/getitem")]
-	public async Task<JsonDocument> GetItemAsync(PutItemRequest request)
-	{
-		var attributeMap = await _dynamoDbService.GetAttirubtesAsync(_partitionKey, request.Key);
-		var items = AttributeMap.ConvertTo<JsonDocument>(attributeMap);
-		return items;
-	}
 
 	[AnonymousCommand("/round-trip")]
 	public async Task<JsonDocument> RoundTripAsync(PutItemRequest request)
 	{
-		var attributeMap = await _dynamoDbService.GetAttirubtesAsync(_partitionKey, request.Key);
+		var attributeMap = await _dynamoDbService.GetAsync(_partitionKey, request.Key);
 		attributeMap["Value"].S = string.Empty.PadRight(request.Length, 'A');
-		await _dynamoDbService.PutItemAsync(attributeMap, _apiContext.RequestTime, attributeMap.GetUpdatedAt());
+		await _dynamoDbService.PutAsync(attributeMap, _apiContext.RequestTime);
 		var items = AttributeMap.ConvertTo<JsonDocument>(attributeMap);
 		return items;
 	}

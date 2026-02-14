@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace ConsoleApp1;
+namespace ConsoleApp1.Benchmarks;
 
 [MemoryDiagnoser]
 public class AuthenticationTokensSerializeBenchmark

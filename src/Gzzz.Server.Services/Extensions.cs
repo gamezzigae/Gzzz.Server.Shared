@@ -1,3 +1,4 @@
+using Amazon.DynamoDBv2;
 using Amazon.Runtime;
 using Gzzz.Db.DynamoDb;
 using Gzzz.Serialize;

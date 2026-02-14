@@ -5,7 +5,8 @@ namespace Gzzz.Server.Shared.Tests.DbTests;
 public class DynamoDbFixture : IAsyncLifetime
 {
 	static readonly AWSCredentials _awsCredentials = new BasicAWSCredentials("DUMMYACCESSKEYDUMMYY", "44nPdvh6gW+EXjh1P6jLXFzmmp4K2F1dUSQx7R4+");
-	readonly DynamoDbConfig _dynamoDbConfig = new DynamoDbConfig() { TableName = RandomX.GetRandomText(), ServiceURL = "http://localhost:8000" };
+
+	protected readonly DynamoDbConfig _dynamoDbConfig = new DynamoDbConfig() { TableName = RandomX.GetRandomText(), ServiceURL = "http://localhost:8000" };
 	protected readonly DynamoDbService _dynamoDbService;
 	public DynamoDbFixture()
 	{

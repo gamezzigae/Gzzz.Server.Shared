@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
-namespace ConsoleApp1;
+namespace ConsoleApp1.Benchmarks;
 
 [MemoryDiagnoser]
 public class JsonCompressBenchmark

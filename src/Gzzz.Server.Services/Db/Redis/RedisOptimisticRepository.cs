@@ -3,7 +3,7 @@ using StackExchange.Redis;
 
 namespace Gzzz.Db.Redis;
 
-public class RedisOptimisticRepository<T> : IOptimisticRepository<T>
+public class RedisOptimisticRepository<T>
 	where T : class
 {
 	readonly string _sortedSetKey;
