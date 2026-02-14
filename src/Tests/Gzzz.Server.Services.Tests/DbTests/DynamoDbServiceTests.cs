@@ -1,16 +1,38 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
+using Gzzz.Serialize;
 using Gzzz.Server.Shared.Tests.DbTests;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using Xunit.Sdk;
 
 namespace Gzzz.Server.Services.Tests.DbTests;
 
 public class DynamoDbServiceTests : DynamoDbFixture
 {
+
+	[Fact]
+	public void MemoryStreamSerializeTest()
+	{
+		JsonSerializerOptions jsonSerializerOptions = new();
+		DefaultConfig.Initialize(jsonSerializerOptions);
+
+		var bytes = new byte[128];
+		Random.Shared.NextBytes(bytes);
+		
+		var item = new AttributeValue() { B = new MemoryStream(bytes) };
+
+		var json = Json.Serialize(item);
+
+		var deserialized = Json.Deserialize<AttributeValue>(json);
+
+		Assert.True(item.B.ToArray().SequenceEqual(deserialized.B.ToArray()));
+	}
+
+
 	readonly string _pk = RandomX.GetRandomText();
 	readonly string _sk = RandomX.GetRandomText();
 	readonly DateTimeOffset _now = DateTimeOffset.UtcNow;
