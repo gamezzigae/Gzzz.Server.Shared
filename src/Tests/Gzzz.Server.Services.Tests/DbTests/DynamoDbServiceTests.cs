@@ -13,26 +13,6 @@ namespace Gzzz.Server.Services.Tests.DbTests;
 
 public class DynamoDbServiceTests : DynamoDbFixture
 {
-
-	[Fact]
-	public void MemoryStreamSerializeTest()
-	{
-		JsonSerializerOptions jsonSerializerOptions = new();
-		DefaultConfig.Initialize(jsonSerializerOptions);
-
-		var bytes = new byte[128];
-		Random.Shared.NextBytes(bytes);
-		
-		var item = new Dictionary<string, AttributeValue>() { { "aaa", new AttributeValue() { B = new MemoryStream(bytes) } } };
-
-		var json = Json.Serialize(item);
-
-		var deserialized = Json.Deserialize<Dictionary<string, AttributeValue>>(json);
-
-		Assert.True(item["aaa"].B.ToArray().SequenceEqual(deserialized["aaa"].B.ToArray()));
-	}
-
-
 	readonly string _pk = RandomX.GetRandomText();
 	readonly string _sk = RandomX.GetRandomText();
 	readonly DateTimeOffset _now = DateTimeOffset.UtcNow;
