@@ -23,13 +23,13 @@ public class DynamoDbServiceTests : DynamoDbFixture
 		var bytes = new byte[128];
 		Random.Shared.NextBytes(bytes);
 		
-		var item = new AttributeValue() { B = new MemoryStream(bytes) };
+		var item = new Dictionary<string, AttributeValue>() { { "aaa", new AttributeValue() { B = new MemoryStream(bytes) } } };
 
 		var json = Json.Serialize(item);
 
-		var deserialized = Json.Deserialize<AttributeValue>(json);
+		var deserialized = Json.Deserialize<Dictionary<string, AttributeValue>>(json);
 
-		Assert.True(item.B.ToArray().SequenceEqual(deserialized.B.ToArray()));
+		Assert.True(item["aaa"].B.ToArray().SequenceEqual(deserialized["aaa"].B.ToArray()));
 	}
 
 
