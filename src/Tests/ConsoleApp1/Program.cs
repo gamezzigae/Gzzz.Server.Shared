@@ -5,6 +5,7 @@ using BenchmarkDotNet.Running;
 using ConsoleApp1;
 using ConsoleApp1.Benchmarks;
 using Gzzz;
+using Gzzz.Authentication;
 using Gzzz.AwsFunctionUrlInvoker.Serializer;
 using Gzzz.AwsFunctionUrlInvoker.Services;
 using Gzzz.Db;
@@ -20,14 +21,66 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-DefaultConfig.Initialize(new JsonSerializerOptions());
-var b = new RedisDynamoDbAttributeSerializeBenchmark();
+var b = new TokenServiceBenchmark();
 
 
-Console.WriteLine(b.ToRedisValue1());
-Console.WriteLine(b.ToRedisValue2());
+Console.WriteLine(b.Encode1());
+Console.WriteLine(b.Encode2());
 
-BenchmarkRunner.Run<WraperClassBenchmark>();
+BenchmarkRunner.Run<TokenServiceBenchmark>();
+
+
+[MemoryDiagnoser]
+public class TokenServiceBenchmark
+{
+	readonly TokenService _tokenService;
+	readonly TokenService2 _tokenService2;
+	readonly TokenClaims _tokenClaims;
+	public TokenServiceBenchmark()
+	{
+		var config = new AuthenticationConfig()
+		{
+			AccessTokenLIfetime = 30,
+			RefreshTokenLifetime = 43200,
+			HashKey = "46LNjT9Bol95r05aEI/TKUsC/u8VvM4gnTZkGnZSMdIYi6hgoAKCo6cdRoJwmva77wB8BPNkfsX5xODEjDv98F=="
+		};
+
+		_tokenService = new (config);
+		_tokenService2  = new (config);
+
+		_tokenClaims = new TokenClaims((byte)TokenType.AccessTokenV1, DateTimeOffset.UtcNow, RandomX.GetRandomText());
+		_token1 = _tokenService.EncodeToken(_tokenClaims);
+		_token2 = _tokenService2.EncodeToken(_tokenClaims);
+	}
+	readonly string _token1,_token2;
+	[Benchmark]
+	public int Encode1()
+	{
+		var token = _tokenService.EncodeToken(_tokenClaims);
+		return token.Length;
+	}
+
+	[Benchmark]
+	public int Encode2()
+	{
+		var token = _tokenService2.EncodeToken(_tokenClaims);
+
+		return token.Length;
+	}
+
+	[Benchmark]
+	public void Decode1()
+	{
+		bool test = _tokenService.DecodeToken(_token1, out var temp);
+	}
+
+	[Benchmark]
+	public void Decode2()
+	{
+		bool test = _tokenService2.DecodeToken(_token2, out var temp);
+	}
+
+}
 
 [MemoryDiagnoser]
 public class WraperClassBenchmark

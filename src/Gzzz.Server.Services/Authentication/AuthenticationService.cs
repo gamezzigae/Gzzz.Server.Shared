@@ -16,13 +16,13 @@ public class AuthenticationService
 
 	public string CreateAccessToken(string userId, DateTimeOffset createdAt)
 	{
-		var claims = new TokenClaims((byte)TokenType.Access, createdAt.AddMinutes(_authenticationConfig.AccessTokenLIfetime), userId);
+		var claims = new TokenClaims((byte)TokenType.AccessTokenV1, createdAt.AddMinutes(_authenticationConfig.AccessTokenLIfetime), userId);
 		return _tokenService.EncodeToken(claims);
 	}
 
 	public string CreateRefreshToken(string userId, DateTimeOffset createdAt)
 	{
-		var claims = new TokenClaims((byte)TokenType.Refresh, createdAt.AddMinutes(_authenticationConfig.RefreshTokenLifetime), userId);
+		var claims = new TokenClaims((byte)TokenType.RefreshTokenV1, createdAt.AddMinutes(_authenticationConfig.RefreshTokenLifetime), userId);
 		return _tokenService.EncodeToken(claims);
 	}
 

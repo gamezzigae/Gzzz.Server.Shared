@@ -50,12 +50,12 @@ public class AuthenticationServiceTests
 	{
 		var accessToken = _authenticationService.CreateAccessToken(_userId, _now);
 		Assert.True(_tokenService.DecodeToken(accessToken, out var claims));
-		Assert.Equal(((byte)TokenType.Access), claims.Type);
+		Assert.Equal(((byte)TokenType.AccessTokenV1), claims.Type);
 		Assert.Equal(claims.UserId, (_userId));
 		Assert.Equal(claims.ExpireAt, (_now.AddMinutes(_authenticationConfig.AccessTokenLIfetime)));
 
 		var context = new ApiContext() { RequestTime = claims.ExpireAt }; //만료시간 딱 맞춰서
-		var result = await _authenticationService.ValidateTokenAsync(TokenType.Access, accessToken, context);
+		var result = await _authenticationService.ValidateTokenAsync(TokenType.AccessTokenV1, accessToken, context);
 		Assert.Equal(context.UserId, _userId);
 	}
 
@@ -67,7 +67,7 @@ public class AuthenticationServiceTests
 
 		//1ms만 늦어도 exception
 		var context = new ApiContext() { RequestTime = claims.ExpireAt.AddMilliseconds(1) };
-		var result = await _authenticationService.ValidateTokenAsync(TokenType.Access, accessToken, context);
+		var result = await _authenticationService.ValidateTokenAsync(TokenType.AccessTokenV1, accessToken, context);
 		Assert.False(result.IsSuccess);
 		Assert.Equal("expired", result.ErrorMessage);
 		Assert.Equal(context.UserId,_userId);
@@ -85,7 +85,7 @@ public class AuthenticationServiceTests
 		var refreshToken = _authenticationService.CreateRefreshToken(_userId, _now);
 
 		var context = new ApiContext() { RequestTime = _now };
-		var result =await _authenticationService.ValidateTokenAsync(TokenType.Access, refreshToken, context); //다른토큰이라 안됨
+		var result =await _authenticationService.ValidateTokenAsync(TokenType.AccessTokenV1, refreshToken, context); //다른토큰이라 안됨
 		Assert.Null(context.UserId);
 		Assert.Equal("mismatch type", result.ErrorMessage);
 	}

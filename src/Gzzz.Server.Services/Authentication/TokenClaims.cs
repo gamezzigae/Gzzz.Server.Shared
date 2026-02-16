@@ -1,9 +1,27 @@
+using MessagePack;
+
 namespace Gzzz.Authentication;
 
-public record TokenClaims(byte Type, DateTimeOffset ExpireAt, string UserId);
+[MessagePackObject]
+public class TokenClaims
+{
+	[Key(0)]
+    public byte Type { get; set; }
+	[Key(1)]
+	public DateTimeOffset ExpireAt { get; set; }
+	[Key(2)]
+	public string UserId { get; set; }
+
+    public TokenClaims(byte type, DateTimeOffset expireAt, string userId)
+    {
+        Type = type;
+        ExpireAt = expireAt;
+        UserId = userId;
+    }
+}
 
 public enum TokenType : byte
 {
-	Access = 10,
-	Refresh = 240,
+	AccessTokenV1 = 10,
+	RefreshTokenV1 = 240,
 }

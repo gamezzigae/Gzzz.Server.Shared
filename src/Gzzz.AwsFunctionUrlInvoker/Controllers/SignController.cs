@@ -46,7 +46,7 @@ public class SignController
 	[AnonymousCommand("/rtkn")]
 	public async Task<AuthenticationTokens> SignInByRefreshTokenAsync(string refreshToken)
 	{
-		var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Refresh, refreshToken, _apiContext);
+		var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.RefreshTokenV1, refreshToken, _apiContext);
 		if (authenticationResult.IsSuccess == false)
 		{
 			throw new HttpException(400, authenticationResult.ErrorMessage);
