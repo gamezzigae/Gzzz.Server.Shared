@@ -1,23 +1,17 @@
-using MessagePack;
-
 namespace Gzzz.Authentication;
 
-[MessagePackObject]
-public class TokenClaims
+public readonly struct TokenClaims
 {
-	[Key(0)]
-    public byte Type { get; set; }
-	[Key(1)]
-	public DateTimeOffset ExpireAt { get; set; }
-	[Key(2)]
-	public string UserId { get; set; }
+	public readonly byte Type;
+	public readonly DateTimeOffset ExpireAt;
+	public readonly string UserId;
 
-    public TokenClaims(byte type, DateTimeOffset expireAt, string userId)
-    {
-        Type = type;
-        ExpireAt = expireAt;
-        UserId = userId;
-    }
+	public TokenClaims(byte type, DateTimeOffset expireAt, string userId)
+	{
+		Type = type;
+		ExpireAt = expireAt;
+		UserId = userId;
+	}
 }
 
 public enum TokenType : byte
