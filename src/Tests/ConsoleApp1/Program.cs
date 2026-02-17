@@ -28,34 +28,19 @@ using System.Text.Json.Serialization;
 //Console.WriteLine(b.Encode1());
 //Console.WriteLine(b.Encode2());
 
-BenchmarkRunner.Run<SpanWriterTest>();
+BenchmarkRunner.Run<TokenServiceBenchmark>();
 
-[MemoryDiagnoser]
-public class SpanWriterTest
-{
-	readonly string _b64;
-	public SpanWriterTest()
-	{
-		_b64 = RandomX.GetRandomText();
-	}
 
-	[Benchmark]
-	public void Encode1()
-	{
-		Span<byte> result = stackalloc byte[256];
-		var writer = new SpanWriter(result);
-
-		writer.WriteBase64String(_b64);
-	}
-}
 
 [MemoryDiagnoser]
 public class TokenServiceBenchmark
 {
 	readonly TokenClaims _tokenClaims1;
-
 	readonly TokenService _tokenService1;
 	readonly string _token1;
+	readonly TokenClaims _tokenClaims2;
+	readonly TokenService _tokenService2;
+	readonly string _token2;
 
 	public TokenServiceBenchmark()
 	{
@@ -66,10 +51,15 @@ public class TokenServiceBenchmark
 			HashKey = "46LNjT9Bol95r05aEI/TKUsC/u8VvM4gnTZkGnZSMdIYi6hgoAKCo6cdRoJwmva77wB8BPNkfsX5xODEjDv98F=="
 		};
 
-		_tokenService1 = new(config);
 		var id = RandomX.GetRandomText();
+		_tokenService1 = new(config);
 		_tokenClaims1 = new((byte)TokenType.AccessTokenV1, DateTimeOffset.UtcNow, id);
 		_token1 = _tokenService1.EncodeToken(_tokenClaims1);
+
+
+		_tokenService2 = new(config);
+		_tokenClaims2 = new((byte)TokenType.AccessTokenV1, DateTimeOffset.UtcNow, id);
+		_token2 = _tokenService2.EncodeToken(_tokenClaims2);
 	}
 
 	[Benchmark]
@@ -78,17 +68,22 @@ public class TokenServiceBenchmark
 		var token = _tokenService1.EncodeToken(_tokenClaims1);
 		return token.Length;
 	}
-	//[Benchmark]
-	//public void Case1()
-	//{
-	//	var token = _tokenService1.EncodeToken(_tokenClaims1);
-	//}
-	//[Benchmark]
-	//public void Case2()
-	//{
-	//	var token = _tokenService2.EncodeToken(_tokenClaims2);
-	//}
-
+	[Benchmark]
+	public int Encode2()
+	{
+		var token = _tokenService2.EncodeToken(_tokenClaims2);
+		return token.Length;
+	}
+	[Benchmark]
+	public void Decode1()
+	{
+		_tokenService1.DecodeToken(_token1, out _);
+	}
+	[Benchmark]
+	public void Decode2()
+	{
+		_tokenService2.DecodeToken(_token2, out _);
+	}
 
 }
 
