@@ -21,21 +21,42 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-var b = new TokenServiceBenchmark();
 
 
-Console.WriteLine(b.Encode1());
-Console.WriteLine(b.Encode2());
+//var b = new TokenServiceBenchmark();
 
-BenchmarkRunner.Run<TokenServiceBenchmark>();
+//Console.WriteLine(b.Encode1());
+//Console.WriteLine(b.Encode2());
 
+BenchmarkRunner.Run<SpanWriterTest>();
+
+[MemoryDiagnoser]
+public class SpanWriterTest
+{
+	readonly string _b64;
+	public SpanWriterTest()
+	{
+		_b64 = RandomX.GetRandomText();
+	}
+
+	[Benchmark]
+	public void Encode1()
+	{
+		Span<byte> result = stackalloc byte[256];
+		var writer = new SpanWriter(result);
+
+		writer.WriteBase64String(_b64);
+	}
+}
 
 [MemoryDiagnoser]
 public class TokenServiceBenchmark
 {
-	readonly TokenService _tokenService;
-	readonly TokenService2 _tokenService2;
-	readonly TokenClaims _tokenClaims;
+	readonly TokenClaims _tokenClaims1;
+
+	readonly TokenService _tokenService1;
+	readonly string _token1;
+
 	public TokenServiceBenchmark()
 	{
 		var config = new AuthenticationConfig()
@@ -45,40 +66,29 @@ public class TokenServiceBenchmark
 			HashKey = "46LNjT9Bol95r05aEI/TKUsC/u8VvM4gnTZkGnZSMdIYi6hgoAKCo6cdRoJwmva77wB8BPNkfsX5xODEjDv98F=="
 		};
 
-		_tokenService = new (config);
-		_tokenService2  = new (config);
-
-		_tokenClaims = new TokenClaims((byte)TokenType.AccessTokenV1, DateTimeOffset.UtcNow, RandomX.GetRandomText());
-		_token1 = _tokenService.EncodeToken(_tokenClaims);
-		_token2 = _tokenService2.EncodeToken(_tokenClaims);
+		_tokenService1 = new(config);
+		var id = RandomX.GetRandomText();
+		_tokenClaims1 = new((byte)TokenType.AccessTokenV1, DateTimeOffset.UtcNow, id);
+		_token1 = _tokenService1.EncodeToken(_tokenClaims1);
 	}
-	readonly string _token1,_token2;
+
 	[Benchmark]
 	public int Encode1()
 	{
-		var token = _tokenService.EncodeToken(_tokenClaims);
+		var token = _tokenService1.EncodeToken(_tokenClaims1);
 		return token.Length;
 	}
+	//[Benchmark]
+	//public void Case1()
+	//{
+	//	var token = _tokenService1.EncodeToken(_tokenClaims1);
+	//}
+	//[Benchmark]
+	//public void Case2()
+	//{
+	//	var token = _tokenService2.EncodeToken(_tokenClaims2);
+	//}
 
-	[Benchmark]
-	public int Encode2()
-	{
-		var token = _tokenService2.EncodeToken(_tokenClaims);
-
-		return token.Length;
-	}
-
-	[Benchmark]
-	public void Decode1()
-	{
-		bool test = _tokenService.DecodeToken(_token1, out var temp);
-	}
-
-	[Benchmark]
-	public void Decode2()
-	{
-		bool test = _tokenService2.DecodeToken(_token2, out var temp);
-	}
 
 }
 
