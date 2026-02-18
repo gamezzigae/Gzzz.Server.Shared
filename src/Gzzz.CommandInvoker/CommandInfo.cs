@@ -12,7 +12,7 @@ public class CommandInfo
 	public Type ControllerType { get; }
 	public Type RequestType { get; }
 	public Type ResponseType { get; }
-	public Func<object, object> ResultGetter { get; }
+	public Func<object, object> GetResult { get; }
 	public Invoke<Task> Invoke { get; }
 	
 
@@ -36,7 +36,7 @@ public class CommandInfo
         {
             var resultInfo = returnType.GetProperty("Result");
 			ResponseType = resultInfo.PropertyType;
-			ResultGetter = PropertyAccessor.CreateGetter(resultInfo);
+			GetResult = FastPropertyGetter.Create(resultInfo);
 		}
 
 		ControllerType = methodInfo.ReflectedType;
@@ -72,9 +72,9 @@ public class CommandInfo
 
 		await task;
 
-		if (this.ResultGetter == null)
+		if (this.GetResult == null)
 			return null;
 
-		return this.ResultGetter(task);
+		return this.GetResult(task);
 	}
 }

@@ -2,6 +2,21 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Gzzz.CommandInvoker;
+
+public static class FastPropertyGetter
+{
+	public static Func<object, object> Create(PropertyInfo propertyInfo)
+	{
+		var targetParam = Expression.Parameter(typeof(object), "target");
+
+		var instance = Expression.Convert(targetParam, propertyInfo.DeclaringType!);
+		var property = Expression.Property(instance, propertyInfo);
+		var body = Expression.Convert(property, typeof(object));
+
+		return Expression.Lambda<Func<object, object>>(body, targetParam).Compile();
+	}
+}
+
 public static class PropertyAccessor
 {
 	public static Func<object, object> CreateGetter(PropertyInfo propertyInfo)
