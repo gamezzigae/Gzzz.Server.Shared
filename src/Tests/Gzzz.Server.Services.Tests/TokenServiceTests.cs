@@ -30,7 +30,7 @@ public class AuthenticationServiceTests
 	readonly AuthenticationConfig _authenticationConfig;
 	readonly TokenService _tokenService;
 	readonly DateTime _now = DateTime.UtcNow;
-	readonly string _userId = RandomX.CreateRandomBase64String(15);
+	readonly string _userId = RandomX.CreateRandomBase64String(18);
 	public AuthenticationServiceTests()
 	{
 		var services = new ServiceCollection()

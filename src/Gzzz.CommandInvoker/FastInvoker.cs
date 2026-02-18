@@ -8,8 +8,8 @@ public static class FastInvoker
     {
         var targetParam = Expression.Parameter(typeof(object), "target");
         var argsParam = Expression.Parameter(typeof(object[]), "args");
-
-        var callArgs = new Expression[methodInfo.GetParameters().Length];
+		
+		var callArgs = new Expression[methodInfo.GetParameters().Length];
         var parameters = methodInfo.GetParameters();
 
         for (int i = 0; i < parameters.Length; i++)
@@ -22,7 +22,7 @@ public static class FastInvoker
             callArgs[i] = cast;
         }
 
-        var instance = methodInfo.IsStatic ? null : Expression.Convert(targetParam, methodInfo.DeclaringType);
+		var instance = methodInfo.IsStatic ? null : Expression.Convert(targetParam, methodInfo.DeclaringType);
         var call = Expression.Call(instance, methodInfo, callArgs);
 
         Expression body = methodInfo.ReturnType == typeof(void)

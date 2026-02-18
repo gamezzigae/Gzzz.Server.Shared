@@ -1,4 +1,4 @@
-namespace Gzzz.Authentication;
+namespace Gzzz.Serialize;
 
 public ref struct SpanWriter
 {

@@ -8,6 +8,7 @@ using Gzzz;
 using Gzzz.Authentication;
 using Gzzz.AwsFunctionUrlInvoker.Serializer;
 using Gzzz.AwsFunctionUrlInvoker.Services;
+using Gzzz.CommandInvoker;
 using Gzzz.Db;
 using Gzzz.Db.DynamoDb;
 using Gzzz.Serialize;
@@ -16,21 +17,49 @@ using StackExchange.Redis;
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-
+var xx = new DispatchBenchmark();
+xx.DirectCall();
+xx.MethodInfoInvoke1();
+xx.MethodInfoInvoke2();
+xx.FastInvokerInvoke();
 
 //var b = new TokenServiceBenchmark();
 
 //Console.WriteLine(b.Encode1());
 //Console.WriteLine(b.Encode2());
+Console.WriteLine(	"ok");
+BenchmarkRunner.Run<DispatchBenchmark>();
 
-BenchmarkRunner.Run<TokenServiceBenchmark>();
+
+[MemoryDiagnoser]
+public class DispatchBenchmark
+{
+	static readonly DispatchBenchmark _instance = new();
+	readonly MethodInfo _methodInfo;
+	readonly Func<object, object[], int> _fastInvoker;
+	public DispatchBenchmark()
+	{
+		this._methodInfo = typeof(DispatchBenchmark).GetMethod("Test", BindingFlags.NonPublic | BindingFlags.Instance);
+		this._fastInvoker = FastInvoker.Create<int>(this._methodInfo);
+	}
+
+	[Benchmark] public int DirectCall() => _instance.Test();
+	[Benchmark] public void MethodInfoInvoke1() => _methodInfo.Invoke(_instance, null);
+	[Benchmark] public int MethodInfoInvoke2() => (int)_methodInfo.Invoke(_instance, null);
+	[Benchmark] public int FastInvokerInvoke() => _fastInvoker(_instance, null);
 
 
+	int Test()
+	{
+		return 1;
+	}
+}
 
 [MemoryDiagnoser]
 public class TokenServiceBenchmark
