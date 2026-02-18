@@ -1,21 +1,23 @@
-using Amazon.Runtime.Telemetry;
-using BenchmarkDotNet.Running;
-using ConsoleApp1;
-using ConsoleApp1.Benchmarks;
-using Gzzz.AwsFunctionUrlInvoker.Serializer;
-using Gzzz.AwsFunctionUrlInvoker.Services;
-using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 
-BenchmarkRunner.Run<DispatchBenchmark>();
+BenchmarkRunner.Run<JsonBenchmark2>();
+
+[MemoryDiagnoser]
+public class JsonBenchmark2
+{
+	readonly TokenClaims _item = new TokenClaims(9, DateTimeOffset.UtcNow, RandomX.GetRandomText());
+	[Benchmark]
+	public void WithObject()
+	{
+		Json.Serialize(_item);
+	}
+	[Benchmark]
+	public void WithGeneric()
+	{
+		JsonSerializer.Serialize<TokenClaims>(_item, DefaultConfig.JsonSerializerOptions);
+	}
+
+}
 
 
 

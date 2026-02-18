@@ -1,3 +1,4 @@
+using Gzzz.Serialize;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -55,7 +56,7 @@ public class CommandInfo
 	{
 		var controller = services.GetRequiredService(this.ControllerType);
 		var task = (Task)this.Invoke(controller, parameter == null ? Array.Empty<object>() : [parameter]);
-
+		
 		await task;
 
 		if (this.ResultGetter == null)

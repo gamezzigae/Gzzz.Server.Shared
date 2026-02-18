@@ -24,9 +24,11 @@ public static class DefaultConfig
 
 public static class Json
 {
-	public static string Serialize(object item) => JsonSerializer.Serialize(item, DefaultConfig.JsonSerializerOptions);
+	public static string Serialize<T>(T item) => JsonSerializer.Serialize<T>(item, DefaultConfig.JsonSerializerOptions);
 	public static byte[] SerializeBytes(object item) => JsonSerializer.SerializeToUtf8Bytes(item, DefaultConfig.JsonSerializerOptions);
 	public static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, DefaultConfig.JsonSerializerOptions);
+	public static string Serialize(object value, Type type) => JsonSerializer.Serialize(value, type, DefaultConfig.JsonSerializerOptions);
+	public static object Deserialize(string json, Type type) => JsonSerializer.Deserialize(json, type, DefaultConfig.JsonSerializerOptions);
 }
 
 public static class JsonWriter
