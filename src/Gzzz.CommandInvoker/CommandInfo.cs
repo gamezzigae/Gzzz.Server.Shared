@@ -52,11 +52,24 @@ public class CommandInfo
 		return (T)obj;
 	}
 
+
+	object[] _parameters = new object[1];
 	public async Task<object> InvokeAsync(IServiceProvider services, object parameter)
 	{
 		var controller = services.GetRequiredService(this.ControllerType);
-		var task = (Task)this.Invoke(controller, parameter == null ? Array.Empty<object>() : [parameter]);
-		
+
+		Task task;
+		if(IsParameterRequired)
+		{
+			_parameters[0] = parameter; //aws lambda에서만 유효하기 때문에 멀티스레딩 환경에서는 사용하면 안됩니다.
+			task = this.Invoke(controller, _parameters);
+			_parameters[0] = null;
+		}
+		else
+		{
+			task = this.Invoke(controller, Array.Empty<object>());
+		}
+
 		await task;
 
 		if (this.ResultGetter == null)
