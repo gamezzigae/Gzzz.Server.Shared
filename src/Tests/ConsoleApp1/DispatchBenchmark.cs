@@ -1,21 +1,46 @@
-using Amazon.Runtime.Telemetry;
-using BenchmarkDotNet.Running;
-using ConsoleApp1;
-using ConsoleApp1.Benchmarks;
-using Gzzz.AwsFunctionUrlInvoker.Serializer;
-using Gzzz.AwsFunctionUrlInvoker.Services;
-using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using BenchmarkDotNet.Attributes;
+using Gzzz.CommandInvoker;
+using System.Reflection;
+
+[MemoryDiagnoser]
+public class DispatchBenchmark
+{
+	static readonly DispatchBenchmark _instance = new();
+	readonly MethodInfo _methodInfo;
+	readonly Invoke<object> _fastInvoker1;
+	readonly MethodInvoker _methodInvoker;
+	readonly object _parameter = new object();
+	public DispatchBenchmark()
+	{
+		this._methodInfo = typeof(DispatchBenchmark).GetMethod("Test", BindingFlags.NonPublic | BindingFlags.Instance);
+		this._methodInvoker = MethodInvoker.Create(this._methodInfo);
+		this._fastInvoker1 = FastInvoker.Create<object>(this._methodInfo);
+	}
 
 
-BenchmarkRunner.Run<DispatchBenchmark>();
+	/*
+	 
+| Method               | Mean      | Error     | StdDev    | Gen0   | Allocated |
+|--------------------- |----------:|----------:|----------:|-------:|----------:|
+| MethodInfoInvoke2    | 15.550 ns | 0.2668 ns | 0.2495 ns | 0.0038 |      32 B |
+| NativeMethodInvoker2 |  6.988 ns | 0.1719 ns | 0.3143 ns |      - |         - |
+| FastInvokerInvoke2   |  4.522 ns | 0.1377 ns | 0.3555 ns | 0.0038 |      32 B |
+
+	 
+	 */
+
+
+	//[Benchmark] public int DirectCall() => _instance.Test(_parameter);
+	[Benchmark] public object MethodInfoInvoke2() => _methodInfo.Invoke(_instance, [_parameter]);
+	[Benchmark] public object NativeMethodInvoker2() => _methodInvoker.Invoke(_instance, _parameter);
+	[Benchmark] public object FastInvokerInvoke2() => _fastInvoker1(_instance, [_parameter]);
+
+
+	object Test(object p)
+	{
+		return p;
+	}
+}
 
 
 

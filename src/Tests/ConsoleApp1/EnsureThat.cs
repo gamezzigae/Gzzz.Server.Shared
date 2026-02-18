@@ -1,21 +1,88 @@
-using Amazon.Runtime.Telemetry;
-using BenchmarkDotNet.Running;
-using ConsoleApp1;
-using ConsoleApp1.Benchmarks;
-using Gzzz.AwsFunctionUrlInvoker.Serializer;
-using Gzzz.AwsFunctionUrlInvoker.Services;
-using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using BenchmarkDotNet.Attributes;
+using Gzzz;
+
+[MemoryDiagnoser]
+public class EnsureThat
+{
+	readonly string _referenceNotNull = RandomX.GetRandomText();
+	readonly string _referenceNull = null;
+
+	[Benchmark]
+	public void Case1Null()
+	{
+		try
+		{
+			if (_referenceNull == default)
+			{
+				throw new Exception("not null");
+			}
+		}
+		catch (Exception) { }
+	}
+
+	[Benchmark]
+	public void Case2Null()
+	{
+		try
+		{
+			IsNotDefault(_referenceNull, static () => throw new Exception("not null"));
+		}
+		catch (Exception) { }
+
+	}
 
 
-BenchmarkRunner.Run<DispatchBenchmark>();
+
+	[Benchmark]
+	public void Case3Null()
+	{
+		try
+		{
+			IsNotDefault(_referenceNull, static (item) => throw new Exception(item));
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	[Benchmark]
+	public void Case4Null()
+	{
+		try
+		{
+			IsNotDefault(_referenceNull, static (item) => throw new Exception("error:" + item));
+		}
+		catch (Exception)
+		{
+		}
+	}
+	[Benchmark]
+	public void Case5Null()
+	{
+		try
+		{
+			IsNotDefault(_referenceNull, () => throw new Exception("error:" + _referenceNull));
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	static void IsNotDefault<T>(T item, Action throwAction)
+	{
+		if (item.IsDefault())
+		{
+			throwAction();
+		}
+	}
+	static void IsNotDefault<T>(T item, Action<T> throwAction)
+	{
+		if (item.IsDefault())
+		{
+			throwAction(item);
+		}
+	}
+}
 
 
 

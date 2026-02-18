@@ -1,21 +1,55 @@
-using Amazon.Runtime.Telemetry;
-using BenchmarkDotNet.Running;
-using ConsoleApp1;
-using ConsoleApp1.Benchmarks;
-using Gzzz.AwsFunctionUrlInvoker.Serializer;
-using Gzzz.AwsFunctionUrlInvoker.Services;
-using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Amazon.DynamoDBv2.Model;
+using BenchmarkDotNet.Attributes;
+using Gzzz;
+using Gzzz.Db.DynamoDb;
+using Gzzz.Serialize;
+
+[MemoryDiagnoser]
+public class RedisDynamoDbAttributeSerializeBenchmark
+{
+
+	readonly Dictionary<string, AttributeValue> _attributeMap;
+	readonly byte[] _bytes = new byte[10000];
+	public RedisDynamoDbAttributeSerializeBenchmark()
+	{
+		_attributeMap = AttributeMap.New("User", RandomX.GetRandomText(), DateTimeOffset.UtcNow);
+		for(int i =0;i<100;i++)
+		{
+			_attributeMap.Add("k" + i, new AttributeValue(RandomX.GetRandomText()));
+			_attributeMap.Add("kk" + i, new AttributeValue() { N = RandomX.GetRandom().ToString() });
+		}
+		//Random.Shared.NextBytes(_bytes);
+		
+	}
 
 
-BenchmarkRunner.Run<DispatchBenchmark>();
+	[Benchmark]
+	public int ToRedisValue1()
+	{
+		var jsonBytes = Json.SerializeBytes(_attributeMap);
+		var compressed = Zstd.Compress(jsonBytes);
+		return compressed.Length;
+	}
+
+	[Benchmark]
+	public int ToRedisValue2()
+	{
+		var attributes = new Dictionary<string, AttributeValue>();
+
+		foreach (var (key, value) in _attributeMap)
+		{
+			if (key == DynamoDbKeys.PartitionKey || key == DynamoDbKeys.SortKey || key == DynamoDbKeys.UpdatedAt)
+				continue;
+
+			attributes.Add(key, value);
+		}
+
+		var jsonBytes = Json.SerializeBytes(attributes);
+		var compressed = Zstd.Compress(jsonBytes);
+		return compressed.Length;
+	}
+
+}
 
 
 

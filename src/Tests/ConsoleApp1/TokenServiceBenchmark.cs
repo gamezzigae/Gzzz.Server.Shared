@@ -1,21 +1,61 @@
-using Amazon.Runtime.Telemetry;
-using BenchmarkDotNet.Running;
-using ConsoleApp1;
-using ConsoleApp1.Benchmarks;
-using Gzzz.AwsFunctionUrlInvoker.Serializer;
-using Gzzz.AwsFunctionUrlInvoker.Services;
-using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using BenchmarkDotNet.Attributes;
+using Gzzz;
+using Gzzz.Authentication;
+
+[MemoryDiagnoser]
+public class TokenServiceBenchmark
+{
+	readonly TokenClaims _tokenClaims1;
+	readonly TokenService _tokenService1;
+	readonly string _token1;
+	readonly TokenClaims _tokenClaims2;
+	readonly TokenService _tokenService2;
+	readonly string _token2;
+
+	public TokenServiceBenchmark()
+	{
+		var config = new AuthenticationConfig()
+		{
+			AccessTokenLIfetime = 30,
+			RefreshTokenLifetime = 43200,
+			HashKey = "46LNjT9Bol95r05aEI/TKUsC/u8VvM4gnTZkGnZSMdIYi6hgoAKCo6cdRoJwmva77wB8BPNkfsX5xODEjDv98F=="
+		};
+
+		var id = RandomX.GetRandomText();
+		_tokenService1 = new(config);
+		_tokenClaims1 = new((byte)TokenType.AccessTokenV1, DateTimeOffset.UtcNow, id);
+		_token1 = _tokenService1.EncodeToken(_tokenClaims1);
 
 
-BenchmarkRunner.Run<DispatchBenchmark>();
+		_tokenService2 = new(config);
+		_tokenClaims2 = new((byte)TokenType.AccessTokenV1, DateTimeOffset.UtcNow, id);
+		_token2 = _tokenService2.EncodeToken(_tokenClaims2);
+	}
+
+	[Benchmark]
+	public int Encode1()
+	{
+		var token = _tokenService1.EncodeToken(_tokenClaims1);
+		return token.Length;
+	}
+	[Benchmark]
+	public int Encode2()
+	{
+		var token = _tokenService2.EncodeToken(_tokenClaims2);
+		return token.Length;
+	}
+	[Benchmark]
+	public void Decode1()
+	{
+		_tokenService1.DecodeToken(_token1, out _);
+	}
+	[Benchmark]
+	public void Decode2()
+	{
+		_tokenService2.DecodeToken(_token2, out _);
+	}
+
+}
 
 
 

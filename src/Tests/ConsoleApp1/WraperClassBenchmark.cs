@@ -1,21 +1,39 @@
-using Amazon.Runtime.Telemetry;
-using BenchmarkDotNet.Running;
-using ConsoleApp1;
-using ConsoleApp1.Benchmarks;
-using Gzzz.AwsFunctionUrlInvoker.Serializer;
-using Gzzz.AwsFunctionUrlInvoker.Services;
-using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Amazon.DynamoDBv2.Model;
+using BenchmarkDotNet.Attributes;
+using Gzzz;
+using Gzzz.Db;
+using Gzzz.Db.DynamoDb;
+
+[MemoryDiagnoser]
+public class WraperClassBenchmark
+{
+
+	readonly Dictionary<string, AttributeValue> _attributeMap;
+	public WraperClassBenchmark()
+	{
+		_attributeMap = AttributeMap.New("User", RandomX.GetRandomText(), DateTimeOffset.UtcNow);
+		for (int i = 0; i < 100; i++)
+		{
+			_attributeMap.Add("k" + i, new AttributeValue(RandomX.GetRandomText()));
+			_attributeMap.Add("kk" + i, new AttributeValue() { N = RandomX.GetRandom().ToString() });
+		}
+	}
 
 
-BenchmarkRunner.Run<DispatchBenchmark>();
+	[Benchmark]
+	public void Case1()
+	{
+		_attributeMap.ToString();
+	}
+
+	[Benchmark]
+	public void Case2()
+	{
+		var item = new DynamoDbRecord(false, _attributeMap);
+		item.ToString();
+	}
+
+}
 
 
 
