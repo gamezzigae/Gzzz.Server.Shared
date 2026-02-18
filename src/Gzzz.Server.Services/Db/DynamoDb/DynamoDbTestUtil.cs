@@ -10,7 +10,7 @@ public static class DynamoDbTestUtil
         if (dynamoDbConfig.ServiceURL == default)
             throw new Exception("테스트용 ServiceURL이 없습니다.");
         var tableName = db.TableName;
-		var dynamodb = db.GetClient();
+		var dynamodb = db.Client;
 		_ = await dynamodb.CreateTableAsync(
 			new CreateTableRequest()
 			{
@@ -55,7 +55,7 @@ public static class DynamoDbTestUtil
         if (dynamoDbConfig.ServiceURL == default)
             throw new Exception("테스트용 ServiceURL이 없습니다.");
         var tableName = db.TableName;
-        var dynamodb = db.GetClient();
+        var dynamodb = db.Client;
         try
         {
             _ = await dynamodb.DeleteTableAsync(tableName);

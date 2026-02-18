@@ -1,4 +1,9 @@
+using Amazon.Auth.AccessControlPolicy;
+using Gzzz.Serialize;
+using System.Buffers.Binary;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Gzzz.Authentication;
 
@@ -6,6 +11,7 @@ public class TokenService
 {
 	readonly HMACSHA256 _hmac;
 	readonly int _signatureLength;
+	readonly TimeSpan _offset;
 	public TokenService(AuthenticationConfig authenticationConfig)
 	{
 		var bytesKey = Convert.FromBase64String(authenticationConfig.HashKey);
@@ -16,9 +22,14 @@ public class TokenService
 	public string EncodeToken(TokenClaims claims)
 	{
 		Span<byte> result = stackalloc byte[256];
-		var payloadLength = CopyTo(claims, result.Slice(1)); //0은 length
+		var payloadLength = new SpanWriter(result.Slice(1))
+			.Write(claims.Type)
+			.Write(claims.ExpireAt.Ticks)
+			.WriteBase64String(claims.UserId)
+			.Position;
 
 		result[0] = (byte)payloadLength;
+
 		var payload = result.Slice(1, payloadLength);
 		SignTo(payload, result.Slice(1 + payloadLength));
 
@@ -28,9 +39,9 @@ public class TokenService
 	public bool DecodeToken(string token, out TokenClaims result)
 	{
 		Span<byte> tokenSpan = stackalloc byte[token.Length];
-		if(Convert.TryFromBase64String(token, tokenSpan, out var bytesWritten) == false)
+		if (Convert.TryFromBase64String(token, tokenSpan, out var bytesWritten) == false)
 		{
-			result = null;
+			result = default;
 			return false;
 		}
 
@@ -38,19 +49,19 @@ public class TokenService
 		//
 		var payloadLength = tokenSpan[0];
 		var payloadSpan = tokenSpan.Slice(1, payloadLength);
-		var tokenSignature = tokenSpan.Slice(1 + payloadLength);
+		var signatureSpan = tokenSpan.Slice(1 + payloadLength);
 		//
-		if (tokenSignature.Length != _signatureLength)
+		if (signatureSpan.Length != _signatureLength)
 		{
-			result = null!;
+			result = default;
 			return false;
 		}
 		Span<byte> computedSignature = stackalloc byte[_signatureLength];
 		SignTo(payloadSpan, computedSignature);
 		//
-		if (tokenSignature.SequenceEqual(computedSignature) == false)
+		if (signatureSpan.SequenceEqual(computedSignature) == false)
 		{
-			result = null!;
+			result = default;
 			return false;
 		}
 		result = FromSpan(payloadSpan);
@@ -63,24 +74,14 @@ public class TokenService
 			throw new InvalidOperationException("Hash computation failed");
 	}
 
-	TokenClaims FromSpan(Span<byte> span)=> new (
-		span[0],
-		DateTime.FromBinary(BitConverter.ToInt64(span.Slice(1))),
-		Convert.ToBase64String(span.Slice(9))
-	);
-	
-	int CopyTo(TokenClaims claims, Span<byte> span)
+	TokenClaims FromSpan(Span<byte> span)
 	{
-		var cursor = 0;
-		span[cursor++] = claims.Type;
-		WriteTo(BitConverter.GetBytes(claims.ExpireAt.LocalDateTime.ToBinary()), span, ref cursor);
-		WriteTo(Convert.FromBase64String(claims.UserId), span, ref cursor);
-		return cursor;
-	}
-	static void WriteTo(Span<byte> source, Span<byte> dest, ref int destCursor)
-	{
-		var length = source.Length;
-		source.CopyTo(dest.Slice(destCursor, length));
-		destCursor += length;
+		var reader = new SpanReader(span);
+
+		return new(
+			reader.ReadByte(),
+			reader.ReadDateTimeOffset(_offset),
+			reader.ReadBase64String()
+		);
 	}
 }

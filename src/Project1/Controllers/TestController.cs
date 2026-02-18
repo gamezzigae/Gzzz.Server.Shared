@@ -13,6 +13,7 @@ public class TestController
 
 	[AnonymousCommand("/int")]
 	public Task<int> GetUserInfoAsync() => Task.FromResult(Random.Shared.Next());
+
 }
 
 [Controller]

@@ -1,100 +1,189 @@
 using Amazon.DynamoDBv2;
-using Amazon.Runtime;
 using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
+using Amazon.Runtime.Internal;
+using Amazon.Runtime.Internal.Transform;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Gzzz.Db.DynamoDb;
 
-public record DynamoDbConfig(string TableName, string ServiceURL = null);
-
 public class DynamoDbService
 {
-	public AmazonDynamoDBClient GetClient() => _client;
-	protected readonly AmazonDynamoDBClient _client;
-	protected readonly DynamoDbConfig _dynamoDbConfig;
+	public readonly AmazonDynamoDBClient Client;
 	public readonly string TableName;
+	readonly ITextLogger _logger;
+	readonly ReturnConsumedCapacity _returnConsumedCapacity;
 
-	public DynamoDbService(AWSCredentials awsCredentials, DynamoDbConfig dynamoDbConfig)
+	public DynamoDbService(AWSCredentials awsCredentials, DynamoDbConfig dynamoDbConfig, ITextLogger logger)
 	{
-		this._dynamoDbConfig = dynamoDbConfig;
+		_logger = logger;
+		_returnConsumedCapacity = dynamoDbConfig.ReturnConsumedCapacity;
 		this.TableName = dynamoDbConfig.TableName;
-		this._client = dynamoDbConfig.ServiceURL == default
-		? new(awsCredentials)
-		: new(awsCredentials, new AmazonDynamoDBConfig() { ServiceURL = dynamoDbConfig.ServiceURL });
+
+		if(dynamoDbConfig.ServiceURL == default)
+		{
+			this.Client = new(awsCredentials);
+		}
+		else
+		{
+			this.Client = new(awsCredentials, new AmazonDynamoDBConfig() { ServiceURL = dynamoDbConfig.ServiceURL });
+		}
+
 	}
 
-
-	
-	public async Task<Dictionary<string, AttributeValue>> GetAttirubtesAsync(string partitionKey, string sortKey)
+	public async Task<Dictionary<string, AttributeValue>> GetAsync(string partitionKey, string sortKey, string projectionExpression = null)
 	{
-		var keys = AttributeMap.CreateKeys(partitionKey, sortKey);
+		var keys = new Dictionary<string, AttributeValue>()
+		{
+			{ DynamoDbKeys.PartitionKey, new(partitionKey) },
+			{ DynamoDbKeys.SortKey, new(sortKey) }
+		};
+
 		var request = new GetItemRequest()
 		{
 			TableName = this.TableName,
 			Key = keys,
+			ReturnConsumedCapacity = _returnConsumedCapacity,
+			ProjectionExpression = projectionExpression
 		};
-		var response = await _client.GetItemAsync(request);
-		if (response.IsItemSet == false)
-			return default;
 
-		return response.Item;
+		try
+		{
+			var response = await Client.GetItemAsync(request);
+
+			if (_returnConsumedCapacity != null)
+			{
+				_logger.Write($"{{\"rcu\":{response.ConsumedCapacity.CapacityUnits}}}");
+			}
+
+			if (response.IsItemSet == false)
+				return default;
+
+			return response.Item;
+		}
+		catch (Exception)
+		{
+			throw new HttpException(500, "dynamodb getitem error");
+		}
 	}
 
 
-	public async Task PutItemAsync(Dictionary<string, AttributeValue> attributeMap, DateTimeOffset now, DateTimeOffset updatedAt = default)
-    {
+	async Task PutItemAsync(PutItemRequest putItemRequest)
+	{
+		try
+		{
+			var response = await Client.PutItemAsync(putItemRequest);
+			if (_returnConsumedCapacity != null)
+			{
+				_logger.Write($"{{\"wcu\":{response.ConsumedCapacity.CapacityUnits}}}");
+			}
+		}
+		catch (ConditionalCheckFailedException ccfex) when (ccfex.Message == "The conditional request failed")
+		{
+			throw new HttpException(500, "condition error");
+		}
+	}
+
+	public async Task InsertAsync(Dictionary<string, AttributeValue> attributeMap)
+	{
+		var request = new PutItemRequest()
+		{
+			TableName = this.TableName,
+			Item = attributeMap,
+			ConditionExpression = "attribute_not_exists(PK) and attribute_not_exists(SK)",
+			ReturnConsumedCapacity = _returnConsumedCapacity,
+		};
+		await PutItemAsync(request);
+	}
+
+
+
+	public async Task PutAsync(Dictionary<string, AttributeValue> attributeMap, DateTimeOffset now)
+	{
         if (attributeMap.ContainsKey(DynamoDbKeys.PartitionKey) == false)
             throw new ArgumentException("attributeMap must contain a 'PK'");
-        if (attributeMap.ContainsKey(DynamoDbKeys.SortKey) == false)
-            throw new ArgumentException("attributeMap must contain a 'SK'");
+		if (attributeMap.ContainsKey(DynamoDbKeys.SortKey) == false)
+			throw new ArgumentException("attributeMap must contain a 'SK'");
+		if (attributeMap.TryGetValue(DynamoDbKeys.UpdatedAt, out var lastUpdatedAt) == false)
+			throw new ArgumentException("attributeMap must contain a 'UA'");
 
-		var nowUnixMs = now.ToUnixTimeMilliseconds();
-		var updatedAtUnixms = updatedAt.ToUnixTimeMilliseconds();
-		if (nowUnixMs <= updatedAtUnixms)
+		var newUpdatedAt = now.ToUnixTimeMilliseconds();
+		if (newUpdatedAt <= long.Parse(lastUpdatedAt.N))
 		{
-			throw new ArgumentException("dynamodb putitem time condition error");
+			throw new ArgumentException("dynamodb update item time condition error");
 		}
-		attributeMap.Add(DynamoDbKeys.UpdatedAt, new AttributeValue() { N = nowUnixMs.ToString() });
 
-		var condition = updatedAt == default ? DynamoDbCondition.Insert : DynamoDbCondition.Update;
+		attributeMap[DynamoDbKeys.UpdatedAt] = new AttributeValue() { N = newUpdatedAt.ToString() };
 		
         var request = new PutItemRequest()
 		{
 			TableName = this.TableName,
 			Item = attributeMap,
-			ConditionExpression = GetCondition(condition),
+			ConditionExpression = "UA=:ua",
+			ExpressionAttributeValues = new() { { ":ua", lastUpdatedAt } },
+			ReturnConsumedCapacity = _returnConsumedCapacity,
 		};
 
-		if (condition == DynamoDbCondition.Update)
-		{
-            request.ExpressionAttributeValues = new Dictionary<string, AttributeValue>()
-			{
-				{ ":uat", new () { N = updatedAtUnixms.ToString() } }
-			};
-		}
-
-		await _client.PutItemAsync(request);
-		attributeMap.Remove(DynamoDbKeys.UpdatedAt); //다시지워준다.
+		await PutItemAsync(request);
 	}
 
-	static string GetCondition(DynamoDbCondition condition) => condition switch
+	public async Task UpdateItemAsync(	Dictionary<string, AttributeValue> attributeMap, DateTimeOffset now)
 	{
-		DynamoDbCondition.Insert => "attribute_not_exists(PK) and attribute_not_exists(SK)",
-		DynamoDbCondition.Update => "attribute_exists(PK) and attribute_exists(SK) and UA = :uat",
-		//DynamoDbCondition.InsertOrUpdate => "TS = :uat or (attribute_not_exists(PK) and attribute_not_exists(SK))",
-		_ => throw new ArgumentOutOfRangeException("invalid DynamoDbCondition:" + condition.ToString())
-	};
-}
-public enum DynamoDbCondition
-{
-	Update,
-	Insert,
-	InsertOrUpdate,
-}
 
-public static class DynamoDbKeys
-{
-	public static readonly string PartitionKey = "PK";
-	public static readonly string SortKey = "SK";
-	public static readonly string UpdatedAt = "UA";
+		if (attributeMap.TryGetValue(DynamoDbKeys.PartitionKey, out var pk) == false)
+			throw new ArgumentException("attributeMap must contain a 'PK'");
+		if (attributeMap.TryGetValue(DynamoDbKeys.SortKey, out var sk) == false)
+			throw new ArgumentException("attributeMap must contain a 'SK'");
+		if (attributeMap.TryGetValue(DynamoDbKeys.UpdatedAt, out var lastUpdatedAt) == false)
+			throw new ArgumentException("attributeMap must contain a 'UA'");
 
+		var newUpdatedAt = now.ToUnixTimeMilliseconds();
+		if (newUpdatedAt <= long.Parse(lastUpdatedAt.N))
+		{
+			throw new ArgumentException("dynamodb update item time condition error");
+		}
+
+		var expressionAttributeNames = new Dictionary<string, string>(attributeMap.Count);
+		var expressionAttributeValues = new Dictionary<string, AttributeValue>(attributeMap.Count+1);
+		expressionAttributeValues.Add(":ua", lastUpdatedAt);
+
+		var sb = new StringBuilder("SET ");
+		int i = 0;
+		foreach (var (key, value) in attributeMap)
+		{
+			if (key == DynamoDbKeys.PartitionKey || key == DynamoDbKeys.SortKey)
+				continue;
+
+			i++;
+			var namePlaceholder = string.Concat("#k", i);
+			var valuePlaceholder = string.Concat(":v", i);
+
+			sb.Append(namePlaceholder);
+			sb.Append('=');
+			sb.Append(valuePlaceholder);
+			sb.Append(',');
+			expressionAttributeNames.Add(namePlaceholder, key);
+			expressionAttributeValues.Add(valuePlaceholder, value);
+		}
+		sb.Length--;
+
+		var request = new UpdateItemRequest
+		{
+			TableName = this.TableName,
+			Key = new Dictionary<string, AttributeValue>
+			{
+				["PK"] = pk,
+				["SK"] = sk
+			},
+			UpdateExpression = sb.ToString(),
+			ExpressionAttributeNames = expressionAttributeNames,
+			ExpressionAttributeValues = expressionAttributeValues,
+			ConditionExpression = "UA=:ua",
+		};
+
+		await Client.UpdateItemAsync(request);
+	}
 }

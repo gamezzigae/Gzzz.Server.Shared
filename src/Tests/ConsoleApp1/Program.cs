@@ -1,41 +1,56 @@
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
-using ConsoleApp1;
-using Gzzz;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Amazon.DynamoDBv2.Model;
+using Gzzz.CommandInvoker;
+using Gzzz.Controllers;
+using Gzzz.Db.DynamoDb;
+using System.Reflection;
 
-
-BenchmarkRunner.Run<DictionaryBenchmark>();
+BenchmarkRunner.Run<UseObjectPoolBenchmark>();
 
 [MemoryDiagnoser]
-public class DictionaryBenchmark
+public class UseObjectPoolBenchmark : CommandInvokerBenchmarkBase
 {
-	readonly Dictionary<int, int> _dictionary = new Dictionary<int, int>()
-	{
-		{1, 1}, {2, 2}, {3,3 }
-	};
-	public DictionaryBenchmark()
-	{
-
-	}
-
+	readonly object _parameter = new object();
 	[Benchmark]
-	public void Copy()
+	public async Task WithObjectPool()
 	{
-		var dic = new Dictionary<int, int>(_dictionary);
-		dic.Add(4, 4);
+		for(int i = 0; i < 100000; i++)
+		{
+			await _commandInfo.InvokeAsync(_serivces, _parameter);
+		}
+	}
+	[Benchmark] public async Task NoObjectPool()
+	{
+		for (int i = 0; i < 100000; i++)
+		{
+			await _commandInfo.InvokeAsync2(_serivces, _parameter);
+		}
+	}
+
+}
+
+public class CommandInvokerBenchmarkBase
+{
+	protected readonly TestController _controller = new TestController ();
+	protected readonly CommandInfo _commandInfo;
+	protected readonly IServiceProvider _serivces;
+	public CommandInvokerBenchmarkBase()
+	{
+		Assembly[] assem = [typeof(TestController).Assembly];
+
+		_serivces = new ServiceCollection()
+				.AddCommandInvokers(assem)
+				.BuildWithValidation();
+
+		var commands = _serivces.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
+		_commandInfo= commands["/test"];
+	}
+
+	[Controller(serviceLifetime: ServiceLifetime.Singleton)]
+	public class TestController
+	{
+		[Command("/test")]
+		public Task TestAsync(object _) => Task.CompletedTask;
 	}
 
 
-	[Benchmark]
-	public void AddRemove()
-	{
-		_dictionary.Add(4, 4);
-		_dictionary.Remove(4);
-	}
 }

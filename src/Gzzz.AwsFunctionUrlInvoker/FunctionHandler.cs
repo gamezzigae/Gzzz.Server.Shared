@@ -23,39 +23,35 @@ public class FunctionHandler
 	readonly IReadOnlyDictionary<string, CommandInfo> _commands;
 	readonly TimeService _timeService;
 	readonly IContextSerializer _contextSerializer;
-	readonly JsonLogger _logger;
+	readonly ITextLogger _logger;
 	readonly AuthenticationService _authenticationService;
 
 	bool _isColdStart = true;
-	public FunctionHandler(Assembly[] assemblies, JsonSerializerOptions jsonSerializerOptions, Action<IServiceCollection> configureServices)
+	public FunctionHandler(Assembly[] assemblies, Action<IServiceCollection> configureServices)
 	{
 		IServiceCollection serviceCollection= new ServiceCollection()
 			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
-			.AddSingleton<JsonLogger>()
+			.AddSingleton<ITextLogger, JsonLogger>()
 			.AddSingleton<IContextSerializer, JsonContextSerializer>()
 			.AddSingleton<TimeService>()
 			.AddScoped<ApiContext>()
+			.AddScoped<RequestInfo>(services=> (RequestInfo)services.GetRequiredService<ApiContext>())
 			//
 			.AddSingleton<AuthenticationService>()
 			.AddSingleton<TokenService>()
-			.AddEnvironmentObject<AuthenticationConfig>("ZZ_AUTHENTICATION_CONFIG", jsonSerializerOptions)
+			.AddEnvironmentObject<AuthenticationConfig>(AuthenticationConfig.EnvironmentVariableName)
 			//
 			.AddCommandInvokers(assemblies)
 		;
 
-		if (jsonSerializerOptions == null)
-			serviceCollection.AddSingleton<JsonSerializerOptions>(_ => null);
-		else
-			serviceCollection.AddSingleton(jsonSerializerOptions);
-
 
 		configureServices(serviceCollection);
-	
-		this.Services = serviceCollection.BuildServiceProvider(new ServiceProviderOptions() { ValidateOnBuild = true, ValidateScopes = true });
+
+		this.Services = serviceCollection.BuildWithValidation();
 		_commands = Services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
 		_timeService = Services.GetRequiredService<TimeService>();
 		_contextSerializer = Services.GetRequiredService<IContextSerializer>();
-		_logger = Services.GetRequiredService<JsonLogger>();
+		_logger = Services.GetRequiredService<ITextLogger>();
 		_authenticationService = Services.GetRequiredService<AuthenticationService>();
 	}
 
@@ -85,10 +81,7 @@ public class FunctionHandler
 		context.Elapsed = (int)(_timeService.GetNow() - context.RequestTime).TotalMilliseconds;
 
 		if (context.SkipLogging == false)
-			_logger.Write(context);
-
-		response.Headers.Add("elased", context.Elapsed.ToString());
-		response.Headers.Add("cold_start", context.IsColdStart.ToString());
+			_logger.WriteObject(context);
 		return response;
 	}
 
@@ -99,9 +92,11 @@ public class FunctionHandler
 										   //
 		if (command.IsAuthenticationRequired)
 		{
-			var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Access, request.Headers.AccessToken, context);
+			var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.AccessTokenV1, request.Headers.AccessToken, context);
 			if (authenticationResult.IsSuccess == false)
-				return FunctionUrlResponseHelper.Error(401, authenticationResult.ErrorMessage, 0);
+				return FunctionUrlResponseHelper.Error(401, authenticationResult.ErrorMessage, null, 0);
+
+
 		}
 		//
 		if (command.IsParameterRequired)
@@ -109,7 +104,7 @@ public class FunctionHandler
 			var requestBody = request.GetRequestBody();
 			try
 			{
-				context.RequestModel = _contextSerializer.Derialize(command.RequestType, requestBody);
+				context.RequestModel = _contextSerializer.Derialize(requestBody, command.RequestType);
 			}
 			catch (Exception)
 			{
@@ -121,21 +116,22 @@ public class FunctionHandler
 		try
 		{
 			context.ResponseModel = await command.InvokeAsync(services, context.RequestModel);
-			string deserializedResponseBody = _contextSerializer.Serialize(context.ResponseModel); //예외처리 하지 않는다.
+			string deserializedResponseBody = command.ResponseType != null ?
+				_contextSerializer.Serialize(context.ResponseModel, command.ResponseType)
+				: null;
 			context.TrimSuccess(command.LoggingType);
-
 			return FunctionUrlResponseHelper.Success(deserializedResponseBody);
 		}
 		catch (HttpException httpException)
 		{
 			context.ErrorCode = httpException.ErrorCode;
 			context.ErrorMessage = httpException.Message;
-			return FunctionUrlResponseHelper.Error(httpException.StatusCode, httpException.Message, httpException.ErrorCode);
+			return FunctionUrlResponseHelper.Error(httpException.StatusCode, httpException.Message, httpException.Message, httpException.ErrorCode);
 		}
 		catch (Exception ex)
 		{
 			context.Exception = ex.ToString();
-			return FunctionUrlResponseHelper.Error(500, ex.ToString(), 0); //release 전에는 감춰야함
+			return FunctionUrlResponseHelper.Error(500, "Unexpected Exception", ex.ToString(), 0); //release 전에는 감춰야함
 		}
 	}
 

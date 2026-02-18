@@ -11,17 +11,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace ConsoleApp1;
+namespace ConsoleApp1.Benchmarks;
 
 [MemoryDiagnoser]
 public class AuthenticationTokensSerializeBenchmark
 {
-	AuthenticationTokens _tokens = new AuthenticationTokens()
-	{
-		UserId = RandomX.CreateRandomBase64String(64),
-		AccessToken= RandomX.CreateRandomBase64String(128),
-		RefreshToken = RandomX.CreateRandomBase64String(128),
-	};
+	AuthenticationTokens _tokens = new (RandomX.CreateRandomBase64String(64), RandomX.CreateRandomBase64String(128), RandomX.CreateRandomBase64String(128));
 
 	[Benchmark]
 	public void JsonSerializerTest()

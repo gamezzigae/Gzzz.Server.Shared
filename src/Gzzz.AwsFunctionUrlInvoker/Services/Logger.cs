@@ -1,23 +1,17 @@
+using Gzzz.Serialize;
 using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Services;
-public class JsonLogger
+public class JsonLogger : ITextLogger
 {
-	readonly JsonSerializerOptions _jsonSerializerOptions;
-
-	public JsonLogger(JsonSerializerOptions jsonSerializerOptions)
-	{
-		_jsonSerializerOptions = jsonSerializerOptions;
-	}
-
-	public void Write(string message)
+	public virtual void Write(string message)
 	{
 		Amazon.Lambda.Core.LambdaLogger.Log(message);
 	}
-	public void Write(object obj)
+	public void WriteObject(object obj)
 	{
-		var json = JsonSerializer.Serialize(obj, _jsonSerializerOptions);
-		Amazon.Lambda.Core.LambdaLogger.Log(json);
+		var json = Json.Serialize(obj);
+		this.Write(json);
 	}
 }
 

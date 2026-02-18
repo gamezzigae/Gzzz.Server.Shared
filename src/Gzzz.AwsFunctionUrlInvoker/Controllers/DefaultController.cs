@@ -1,5 +1,9 @@
 using Gzzz.CommandInvoker;
 using Gzzz.Serialize;
+using System;
+using System.Buffers;
+using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -10,15 +14,33 @@ public class DefaultController
 {
 
 	[AnonymousCommand("/__version__")]
-	public async Task<JsonDocument> GetVersionAsync()
+	public Task<JsonDocument> GetVersionAsync()
 	{
-		var json = await File.ReadAllTextAsync("version.json", DefaultConfig.Encoding);
-		JsonDocument result = JsonSerializer.Deserialize<JsonDocument>(json, JsonDocumentContext.Default.Options);
-		return result;
-	}
-}
+		JsonDocument doc = JsonWriter.WriteDocument<object>(null, static (writer, _) =>
+		{
+			writer.WriteString("entry", Assembly.GetEntryAssembly().ToString());
+			writer.WriteString("executing", Assembly.GetExecutingAssembly().ToString());
+		});
 
-[JsonSerializable(typeof(JsonDocument))]
-public partial class JsonDocumentContext : JsonSerializerContext
-{
+		return Task.FromResult(doc);
+	}
+
+	[AnonymousCommand("/__422__")]
+	public Task Exception422Async()
+	{
+		throw new HttpException(422, "This is a test exception for 422 status code.", 0);
+	}
+
+
+	[AnonymousCommand("/__500__")]
+	public Task Exception500Async()
+	{
+		throw new HttpException(500, "This is a test exception for 500 status code.", 0);
+	}
+
+	[AnonymousCommand("/__ex__")]
+	public Task UnhandledExceptionAsync()
+	{
+		throw new Exception("unhandled exception");
+	}
 }

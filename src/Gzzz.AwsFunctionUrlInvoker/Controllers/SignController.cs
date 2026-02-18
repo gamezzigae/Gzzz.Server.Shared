@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Gzzz.Controllers;
 
-[Controller]
+[Controller("/s")]
 public class SignController
 {
 	readonly AuthenticationService _authenticationService;
@@ -25,28 +25,23 @@ public class SignController
 		var refreshToken = _authenticationService.CreateRefreshToken(userId, _apiContext.RequestTime);
 
 		await _accountScopedRepository.SetTokensAsync(accessToken, refreshToken);
-		return new AuthenticationTokens()
-		{
-			UserId = userId,
-			AccessToken = accessToken,
-			RefreshToken = refreshToken,
-		};
+		return new (userId, accessToken, refreshToken);
 	}
 
-	[AnonymousCommand("/sign/_____impersonate_____")]
+	[AnonymousCommand("/_____impersonate_____")]
 	public Task<AuthenticationTokens> ImpersonateSignInAsync(string userId)
 	{
 		return CreateTokensAsync(userId);
 	}
 
 
-	[AnonymousCommand("/sign/gst")]	public Task<AuthenticationTokens> GuestSignInAsync()=>CreateTokensAsync(RandomX.CreateRandomBase64String(18));
+	[AnonymousCommand("/gst")]	public Task<AuthenticationTokens> GuestSignInAsync()=>CreateTokensAsync(RandomX.CreateRandomBase64String(21));
 
 
-	[AnonymousCommand("/sign/rtkn")]
+	[AnonymousCommand("/rtkn")]
 	public async Task<AuthenticationTokens> SignInByRefreshTokenAsync(string refreshToken)
 	{
-		var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.Refresh, refreshToken, _apiContext);
+		var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.RefreshTokenV1, refreshToken, _apiContext);
 		if (authenticationResult.IsSuccess == false)
 		{
 			throw new HttpException(400, authenticationResult.ErrorMessage);
@@ -55,15 +50,8 @@ public class SignController
 		return await CreateTokensAsync(_apiContext.UserId);
 	}
 }
-
-public class AuthenticationTokens
-{
-	[JsonPropertyName("uid")]
-	public string UserId { get; set; }
-
-	[JsonPropertyName("atkn")]
-	public string AccessToken { get; set; }
-
-	[JsonPropertyName("rtkn")]
-	public string RefreshToken { get; set; }
-}
+public record AuthenticationTokens(
+	[property: JsonPropertyName("uid")] string UserId,
+	[property: JsonPropertyName("atkn")] string AccessToken,
+	[property: JsonPropertyName("rtkn")] string RefreshToken
+);

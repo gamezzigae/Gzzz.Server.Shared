@@ -18,4 +18,10 @@ public sealed class RedisService
 	public ITransaction CreateTransaction() => GetDatabase().CreateTransaction();
 }
 
-public record RedisConfig(string Endpoint, string User=null, string Password = null);
+public class RedisConfig
+{
+	public static readonly string EnvironmentVariableName = "ZZ_REDIS_CONFIG";
+	public string Endpoint { get; set; }
+	public string User { get; set; }
+	public string Password { get; set; }
+}

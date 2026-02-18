@@ -1,3 +1,4 @@
+using Gzzz.Serialize;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -10,8 +11,9 @@ public class CommandInfo
 	public bool IsParameterRequired { get; }
 	public Type ControllerType { get; }
 	public Type RequestType { get; }
+	public Type ResponseType { get; }
 	public Func<object, object> ResultGetter { get; }
-	public Func<object, object[], object> Invoker { get; }
+	public Invoke<Task> Invoke { get; }
 	
 
 	public CommandInfo(MethodInfo methodInfo, CommandAttribute commandAttribute)
@@ -33,6 +35,7 @@ public class CommandInfo
         if (returnType.IsGenericType) // Task<T>
         {
             var resultInfo = returnType.GetProperty("Result");
+			ResponseType = resultInfo.PropertyType;
 			ResultGetter = PropertyAccessor.CreateGetter(resultInfo);
 		}
 
@@ -40,7 +43,7 @@ public class CommandInfo
 		IsParameterRequired = parameters.Length > 0;
 		RequestType = IsParameterRequired ? parameters[0].ParameterType : null;
 
-		Invoker = FastInvoker.Create<Task>(methodInfo);
+		Invoke = FastInvoker.Create<Task>(methodInfo);
 	}
 
 	public async Task<T> InvokeAsync<T>(IServiceProvider services, object parameter)
@@ -52,8 +55,8 @@ public class CommandInfo
 	public async Task<object> InvokeAsync(IServiceProvider services, object parameter)
 	{
 		var controller = services.GetRequiredService(this.ControllerType);
-		var task = (Task)this.Invoker(controller, parameter == null ? Array.Empty<object>() : [parameter]);
-
+		var task = (Task)this.Invoke(controller, parameter == null ? Array.Empty<object>() : [parameter]);
+		
 		await task;
 
 		if (this.ResultGetter == null)

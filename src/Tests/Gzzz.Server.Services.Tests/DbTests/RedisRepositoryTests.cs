@@ -1,32 +1,11 @@
 using Gzzz.Db.Redis;
-using StackExchange.Redis;
 
 namespace Gzzz.Server.Shared.Tests.DbTests;
 
-public class TestRedisRepository : RedisOptimisticRepository<TestEntity>
+public class RedisRepositoryTests : RedisFixture
 {
-	static readonly RedisConfig _redisConfig = new RedisConfig("127.0.0.1,defaultDatabase=1,allowAdmin=true");
-	public TestRedisRepository() : base(new RedisService(_redisConfig), RandomX.GetRandomText())
-	{
-	}
-
-	public async Task FlushAsync()
-	{
-		var connectionMultiplexer = ConnectionMultiplexer.Connect(_redisConfig.Endpoint);
-		var endpoint = connectionMultiplexer.GetEndPoints()[0];
-		await connectionMultiplexer.GetServer(endpoint).FlushDatabaseAsync();
-	}
-}
-
-public class RedisRepositoryTests : IAsyncLifetime
-{
-	TestRedisRepository _repository = new TestRedisRepository();
 	readonly DateTimeOffset _now = DateTimeOffset.UtcNow;
 
-	
-	public async ValueTask InitializeAsync() =>await _repository.FlushAsync();
-	public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-	
 	[Fact]
 	public async Task InsertItemTestAsync()
 	{

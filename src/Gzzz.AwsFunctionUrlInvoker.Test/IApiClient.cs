@@ -12,12 +12,12 @@ public interface IApiClient
 
 	public async Task<AuthenticationTokens> GuestSignInAsync()
 	{
-		AuthenticationTokens = await RequestAsync<AuthenticationTokens>("/sign/gst", ApiOption.Anonymous);
+		AuthenticationTokens = await RequestAsync<AuthenticationTokens>("/s/gst", ApiOption.Anonymous);
 		return AuthenticationTokens;
 	}
 	public async Task<AuthenticationTokens> RefreshTokensAsync()
 	{
-		AuthenticationTokens = await RequestAsync<AuthenticationTokens>("/sign/rtkn", ApiOption.Anonymous, AuthenticationTokens.RefreshToken);
+		AuthenticationTokens = await RequestAsync<AuthenticationTokens>("/s/rtkn", ApiOption.Anonymous, AuthenticationTokens.RefreshToken);
 		return AuthenticationTokens;
 	}
 }
