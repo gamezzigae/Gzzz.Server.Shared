@@ -1,3 +1,4 @@
+using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -8,6 +9,8 @@ using Gzzz.AwsFunctionUrlInvoker.Models;
 using Gzzz.AwsFunctionUrlInvoker.Serializer;
 using Gzzz.AwsFunctionUrlInvoker.Services;
 using Gzzz.CommandInvoker;
+using Gzzz.Db.DynamoDb;
+using Gzzz.Services.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -37,6 +40,8 @@ public class FunctionHandler
 			.AddScoped<RequestInfo>(services=> (RequestInfo)services.GetRequiredService<ApiContext>())
 			//
 			.AddSingleton<IUserRepository, DefaultUserRepository>()
+			.AddSingleton<IUserAuthenciatedInfoUpdater, DefaultTokenUpdateService>()
+			
 			.AddSingleton<TokenService>()
 			.AddEnvironmentObject<TokenServiceConfig>(TokenServiceConfig.EnvironmentVariableName)
 			//
@@ -144,14 +149,4 @@ public static class ResponsePreset
 	public static readonly FunctionUrlResponse DeserializeFail = FunctionUrlResponseHelper.Error(400);
 
 
-}
-
-public interface IUserRepository
-{
-	Task LoadAsync(in TokenClaims claims);
-}
-
-public class DefaultUserRepository : IUserRepository
-{
-	public Task LoadAsync(in TokenClaims _)=>Task.CompletedTask;
 }

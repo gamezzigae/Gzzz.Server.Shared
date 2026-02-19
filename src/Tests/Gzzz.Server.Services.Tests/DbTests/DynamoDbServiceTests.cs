@@ -28,39 +28,6 @@ public class DynamoDbServiceTests : DynamoDbFixture
 
 
 	[Fact]
-	public async Task PartialUpdateTestAsync()
-	{
-		var a = RandomX.GetRandomText();
-		var b = RandomX.GetRandomText();	
-
-		var map = AttributeMap.New(_pk, _sk, _now);
-		map["a"] = new AttributeValue(a);
-		map["b"] = new AttributeValue(b);
-
-		await _dynamoDbService.InsertAsync(map);
-		{
-			var retrieved = await _dynamoDbService.GetAsync(_pk, _sk);
-			Assert.NotNull(retrieved);
-
-			Assert.Equal(a, retrieved["a"].S);
-			Assert.Equal(b, retrieved["b"].S);
-		}
-		map["a"].S = a + b;
-		map.Remove(b);
-		await _dynamoDbService.UpdateItemAsync(map, _now.AddMilliseconds(1));
-
-		{
-			var retrieved = await _dynamoDbService.GetAsync(_pk, _sk);
-			Assert.NotNull(retrieved);
-
-			Assert.Equal(a + b, retrieved["a"].S);
-			Assert.Equal(b, retrieved["b"].S);
-		}
-
-
-	}
-
-	[Fact]
 	public async Task InsertDuplicatedItemErrorAsync()
 	{
 		var map = AttributeMap.New(_pk, _sk, _now);

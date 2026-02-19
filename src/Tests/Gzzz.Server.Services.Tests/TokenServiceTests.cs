@@ -28,7 +28,7 @@ public class AuthenticationServiceTests
 {
 	readonly TokenServiceConfig _authenticationConfig;
 	readonly TokenService _tokenService;
-	readonly DateTime _now = DateTime.UtcNow;
+	readonly DateTime _now = DateTime.Now;
 	readonly string _userId = RandomX.CreateRandomBase64String(18);
 	public AuthenticationServiceTests()
 	{

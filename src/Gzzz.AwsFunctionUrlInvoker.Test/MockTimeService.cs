@@ -8,12 +8,12 @@ public class MockTimeService : TimeService
 	{
 		if (_now.IsNotDefault())
 			return _now.Value;
-		return DateTime.UtcNow;
+		return DateTime.Now;
 	}
 	public DateTimeOffset SetNow(DateTimeOffset time)
 	{
 		_now = time;
 		return time;
 	}
-	public DateTimeOffset SetNow() => this.SetNow(DateTimeOffset.UtcNow);
+	public DateTimeOffset SetNow() => this.SetNow(DateTimeOffset.Now);
 }

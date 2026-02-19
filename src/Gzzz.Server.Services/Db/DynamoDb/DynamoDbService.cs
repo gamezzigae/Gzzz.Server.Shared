@@ -3,6 +3,7 @@ using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal;
 using Amazon.Runtime.Internal.Transform;
+using Gzzz.Services.Authentication;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
@@ -130,60 +131,5 @@ public class DynamoDbService
 		await PutItemAsync(request);
 	}
 
-	public async Task UpdateItemAsync(	Dictionary<string, AttributeValue> attributeMap, DateTimeOffset now)
-	{
 
-		if (attributeMap.TryGetValue(DynamoDbKeys.PartitionKey, out var pk) == false)
-			throw new ArgumentException("attributeMap must contain a 'PK'");
-		if (attributeMap.TryGetValue(DynamoDbKeys.SortKey, out var sk) == false)
-			throw new ArgumentException("attributeMap must contain a 'SK'");
-		if (attributeMap.TryGetValue(DynamoDbKeys.UpdatedAt, out var lastUpdatedAt) == false)
-			throw new ArgumentException("attributeMap must contain a 'UA'");
-
-		var newUpdatedAt = now.ToUnixTimeMilliseconds();
-		if (newUpdatedAt <= long.Parse(lastUpdatedAt.N))
-		{
-			throw new ArgumentException("dynamodb update item time condition error");
-		}
-
-		var expressionAttributeNames = new Dictionary<string, string>(attributeMap.Count);
-		var expressionAttributeValues = new Dictionary<string, AttributeValue>(attributeMap.Count+1);
-		expressionAttributeValues.Add(":ua", lastUpdatedAt);
-
-		var sb = new StringBuilder("SET ");
-		int i = 0;
-		foreach (var (key, value) in attributeMap)
-		{
-			if (key == DynamoDbKeys.PartitionKey || key == DynamoDbKeys.SortKey)
-				continue;
-
-			i++;
-			var namePlaceholder = string.Concat("#k", i);
-			var valuePlaceholder = string.Concat(":v", i);
-
-			sb.Append(namePlaceholder);
-			sb.Append('=');
-			sb.Append(valuePlaceholder);
-			sb.Append(',');
-			expressionAttributeNames.Add(namePlaceholder, key);
-			expressionAttributeValues.Add(valuePlaceholder, value);
-		}
-		sb.Length--;
-
-		var request = new UpdateItemRequest
-		{
-			TableName = this.TableName,
-			Key = new Dictionary<string, AttributeValue>
-			{
-				["PK"] = pk,
-				["SK"] = sk
-			},
-			UpdateExpression = sb.ToString(),
-			ExpressionAttributeNames = expressionAttributeNames,
-			ExpressionAttributeValues = expressionAttributeValues,
-			ConditionExpression = "UA=:ua",
-		};
-
-		await Client.UpdateItemAsync(request);
-	}
 }

@@ -5,6 +5,7 @@ using Gzzz.AwsFunctionUrlInvoker.Serializer;
 using Gzzz.Controllers;
 using Gzzz.Db.DynamoDb;
 using Gzzz.Serialize;
+using Gzzz.Services.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Project1.Controllers;
 using System.Text.Json;
@@ -16,6 +17,7 @@ await new FunctionHandler(
 	assemblies: [typeof(TestController).Assembly, typeof(SignController).Assembly],
 	services => services
 		.AddSingleton<IContextSerializer, JsonContextSerializer>()
+		.AddSingleton<IUserAuthenciatedInfoUpdater, DynamoDbAuthenciatedInfoUpdater>()
 		.AddDynamoDbService()
 		.AddAwsFallbackCredentials()
 	)

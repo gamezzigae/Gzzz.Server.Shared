@@ -1,6 +1,7 @@
 using Gzzz.Authentication;
 using Gzzz.AwsFunctionUrlInvoker;
 using Gzzz.CommandInvoker;
+using Gzzz.Services.Authentication;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
@@ -10,13 +11,13 @@ namespace Gzzz.Controllers;
 public class SignController
 {
 	readonly TokenService _authenticationService;
-	readonly IUserRepository _userRepository;
+	readonly IUserAuthenciatedInfoUpdater _userAuthenciatedInfoUpdater;
 	readonly ApiContext _apiContext;
 
-	public SignController(TokenService authenticationService, IUserRepository userRepository, ApiContext apiContext)
+	public SignController(TokenService authenticationService, IUserAuthenciatedInfoUpdater userAuthenciatedInfoUpdater, ApiContext apiContext)
 	{
 		_authenticationService = authenticationService;
-		_userRepository = userRepository;
+		_userAuthenciatedInfoUpdater = userAuthenciatedInfoUpdater;
 		_apiContext = apiContext;
 	}
 
@@ -24,6 +25,8 @@ public class SignController
 	{
 		var accessToken = _authenticationService.CreateAccessToken(userId, _apiContext.RequestTime);
 		var refreshToken = _authenticationService.CreateRefreshToken(userId, _apiContext.RequestTime);
+
+		await _userAuthenciatedInfoUpdater.UpdateAuthenticatedInfoAsync(userId, _apiContext.RequestTime);
 
 		return new (userId, accessToken, refreshToken);
 	}
@@ -35,7 +38,13 @@ public class SignController
 	}
 
 
-	[AnonymousCommand("/gst")]	public Task<AuthenticationTokens> GuestSignInAsync()=>CreateTokensAsync(RandomX.CreateRandomBase64String(21));
+	[AnonymousCommand("/gst")]
+	public Task<AuthenticationTokens> GuestSignInAsync()
+	{
+		var result = CreateTokensAsync(RandomX.CreateRandomBase64String(21));
+
+		return result;
+	}
 
 
 	[AnonymousCommand("/rtkn")]
@@ -47,6 +56,7 @@ public class SignController
 			throw new HttpException(400, authenticationResult.ErrorMessage);
 		}
 
+		
 		return await CreateTokensAsync(_apiContext.UserId);
 	}
 }

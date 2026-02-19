@@ -11,7 +11,7 @@ public class TokenService
 {
 	readonly HMACSHA256 _hmac;
 	readonly int _signatureLength;
-	readonly TimeSpan _offset;
+	readonly TimeSpan _offset=TimeSpan.FromHours(9);
 	readonly TokenServiceConfig _authenticationConfig;
 
 	public TokenService(TokenServiceConfig authenticationConfig)
