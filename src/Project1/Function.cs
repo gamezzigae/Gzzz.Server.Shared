@@ -1,3 +1,4 @@
+using Amazon.DynamoDBv2.Model;
 using Gzzz;
 using Gzzz.Authentication;
 using Gzzz.AwsFunctionUrlInvoker;
@@ -18,6 +19,7 @@ await new FunctionHandler(
 	services => services
 		.AddSingleton<IContextSerializer, JsonContextSerializer>()
 		.AddSingleton<IUserAuthenciatedInfoUpdater, DynamoDbAuthenciatedInfoUpdater>()
+		.AddSingleton<IUserRepository, DynamoDbUserRepositoryBase>()
 		.AddDynamoDbService()
 		.AddAwsFallbackCredentials()
 	)
@@ -26,6 +28,7 @@ await new FunctionHandler(
 
 
 [JsonSerializable(typeof(Dictionary<string, object>))]
+[JsonSerializable(typeof(Dictionary<string, AttributeValue>))]
 [JsonSerializable(typeof(int))]
 [JsonSerializable(typeof(object))]
 [JsonSerializable(typeof(JsonDocument))]
@@ -33,7 +36,6 @@ await new FunctionHandler(
 //
 [JsonSerializable(typeof(DateTimeOffset))]
 [JsonSerializable(typeof(ApiContext))]
-[JsonSerializable(typeof(PutItemRequest))]
 //
 [JsonSerializable(typeof(TokenServiceConfig))]
 [JsonSerializable(typeof(AuthenticationTokens))]

@@ -1,3 +1,5 @@
+using Gzzz.Authentication;
+
 namespace Gzzz.CommandInvoker.Tests;
 public class SignControllerTests : AwsFunctionUrlInvokerFixture
 {
@@ -50,8 +52,7 @@ public class SignControllerTests : AwsFunctionUrlInvokerFixture
 		_mockTimeService.SetNow(DateTime.MaxValue); //좀 더 정밀한 시간을 넣어주는게 좋다
 		
 		var exception= await Assert.ThrowsAsync<HttpException>(_client.RefreshTokensAsync);
-		Assert.Equal(400, exception.StatusCode); //401은 인증성공시
-		Assert.Equal(0, exception.ErrorCode);
-		Assert.Equal("expired", exception.Message);
+		Assert.Equal(401, exception.StatusCode); //401은 인증성공시
+		Assert.Equal((int)UnauthorizedErrorCode.ExpiredToken, exception.ErrorCode);
 	}
 }

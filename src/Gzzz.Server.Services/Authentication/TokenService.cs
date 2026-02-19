@@ -57,10 +57,12 @@ public class TokenService
 		{
 			TokenType.AccessTokenV1 => _authenticationConfig.AccessTokenLifetime,
 			TokenType.RefreshTokenV1 => _authenticationConfig.RefreshTokenLifetime,
-			_ => TimeSpan.Zero
+			_ => throw new HttpException(500, "invalid expected token type")
 		};
+
 		if (context.RequestTime > claims.CreatedAt.Add(expireAt))
 		{
+			Console.WriteLine(	$"{context.RequestTime:O} // {claims.CreatedAt.Add(expireAt):O}");
 			return DecodeTokenResult.ExpiredToken;
 		}
 

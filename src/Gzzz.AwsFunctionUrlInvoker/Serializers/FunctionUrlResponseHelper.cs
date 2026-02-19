@@ -24,6 +24,24 @@ public static class FunctionUrlResponseHelper
 		};
 	}
 
+	public static FunctionUrlResponse Error(int statusCode, int errorCode)
+	{
+		var result = new FunctionUrlResponse
+		{
+			StatusCode = statusCode,
+			Headers = new Dictionary<string, string>
+			{
+				{ _contentTypeHeader },
+			},
+		};
+
+		if (errorCode > 0)
+		{
+			result.Headers.Add("zz-ec", errorCode.ToString());
+		}
+		return result;
+	}
+
 	public static FunctionUrlResponse Error(int statusCode, string message, string body, int errorCode)
 	{
 		var result = new FunctionUrlResponse

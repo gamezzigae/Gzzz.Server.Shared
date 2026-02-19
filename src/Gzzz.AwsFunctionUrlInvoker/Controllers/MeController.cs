@@ -1,5 +1,7 @@
+using Amazon.DynamoDBv2.Model;
 using Gzzz.CommandInvoker;
 using Gzzz.Serialize;
+using Gzzz.Services.Authentication;
 using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Controllers;
@@ -7,23 +9,16 @@ namespace Gzzz.AwsFunctionUrlInvoker.Controllers;
 [Controller]
 public class MeController
 {
-	readonly RequestInfo _requestInfo;
+	readonly IUserRepository _userRepository;
 
-	public MeController(RequestInfo requestInfo)
+	public MeController(IUserRepository userRepository)
 	{
-		_requestInfo = requestInfo;
+		_userRepository = userRepository;
 	}
 
-	[AnonymousCommand("/__me__")]
-	public Task<RequestInfo> GetRequestInfoAsync()
+	[Command("/__me__")]
+	public Task<Dictionary<string, AttributeValue>> GetRequestInfoAsync()
 	{
-		var result = new RequestInfo()
-		{
-			Ip = _requestInfo.Ip,
-			UserId = _requestInfo.UserId,
-			RequestTime = _requestInfo.RequestTime,	
-		};
-
-		return Task.FromResult(result);
+		return Task.FromResult(_userRepository.AttributeMap);
 	}
 }

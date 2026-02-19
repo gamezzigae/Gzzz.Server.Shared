@@ -7,3 +7,9 @@ public static class DynamoDbKeys
 	public static readonly string UpdatedAt = "UA";
 	public static readonly string AuthenticatedAt = "AA";
 }
+
+public static class DynamoDbTable
+{
+	public static readonly string User = "User";
+
+}

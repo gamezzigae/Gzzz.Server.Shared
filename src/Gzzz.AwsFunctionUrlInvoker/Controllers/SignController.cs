@@ -53,9 +53,8 @@ public class SignController
 		var authenticationResult = _authenticationService.ValidateToken(TokenType.RefreshTokenV1, refreshToken, _apiContext, out _);
 		if (authenticationResult.IsSuccess == false)
 		{
-			throw new HttpException(400, authenticationResult.ErrorMessage);
+			throw new HttpException(401, string.Empty, (int)authenticationResult.ErrorCode);
 		}
-
 		
 		return await CreateTokensAsync(_apiContext.UserId);
 	}

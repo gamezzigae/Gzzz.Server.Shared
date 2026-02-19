@@ -1,6 +1,7 @@
 using Amazon.DynamoDBv2;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Gzzz.Authentication;
 
@@ -9,24 +10,35 @@ namespace Gzzz.Authentication;
 public class TokenServiceConfig
 {
 	public static readonly string EnvironmentVariableName = "ZZ_AUTHENTICATION_CONFIG";
-	public TimeSpan AccessTokenLifetime { get; set; }
-	public TimeSpan RefreshTokenLifetime { get; set; }
-	public string HashKey { get; set; }
+
+	[JsonRequired] public TimeSpan AccessTokenLifetime { get; set; }
+	[JsonRequired] public TimeSpan RefreshTokenLifetime { get; set; }
+	[JsonRequired] public string HashKey { get; set; }
 }
 
 public class DecodeTokenResult
 {
-	public DecodeTokenResult(bool success, string errorMessage)
+	public DecodeTokenResult(bool success, UnauthorizedErrorCode errorCode)
 	{
 		IsSuccess = success;
-		ErrorMessage = errorMessage;
+		ErrorCode = errorCode;
 	}
 	public bool IsSuccess { get; }
-	public string ErrorMessage { get; }
+	public UnauthorizedErrorCode ErrorCode { get; }
 
-	public static readonly DecodeTokenResult Success = (new DecodeTokenResult(true, null));
-	public static readonly DecodeTokenResult NotPresent = (new DecodeTokenResult(false, "not present"));
-	public static readonly DecodeTokenResult DecodeFail = (new DecodeTokenResult(false, "decode fail"));
-	public static readonly DecodeTokenResult MismatchType = (new DecodeTokenResult(false, "mismatch type"));
-	public static readonly DecodeTokenResult ExpiredToken = (new DecodeTokenResult(false, "expired"));
+	public static readonly DecodeTokenResult Success = new DecodeTokenResult(true, 0);
+	public static readonly DecodeTokenResult NotPresent = new DecodeTokenResult(false, UnauthorizedErrorCode.NotPresent);
+	public static readonly DecodeTokenResult DecodeFail = new DecodeTokenResult(false, UnauthorizedErrorCode.DecodeFail);
+	public static readonly DecodeTokenResult MismatchType = new DecodeTokenResult(false, UnauthorizedErrorCode.MismatchType);
+	public static readonly DecodeTokenResult ExpiredToken = new DecodeTokenResult(false, UnauthorizedErrorCode.ExpiredToken);
+}
+
+public enum UnauthorizedErrorCode
+{
+	None,
+	NotPresent = 401_1,
+	DecodeFail = 401_2,
+	MismatchType = 401_3,
+	ExpiredToken = 401_4,
+	DiscardedAuthentication = 401_5
 }

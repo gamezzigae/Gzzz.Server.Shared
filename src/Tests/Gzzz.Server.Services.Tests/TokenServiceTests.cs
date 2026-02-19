@@ -65,7 +65,7 @@ public class AuthenticationServiceTests
 		var context = new ApiContext() { RequestTime = claims.CreatedAt.Add(_authenticationConfig.AccessTokenLifetime).AddMicroseconds(1) };
 		var result = _tokenService.ValidateToken(TokenType.AccessTokenV1, accessToken, context, out _);
 		Assert.False(result.IsSuccess);
-		Assert.Equal("expired", result.ErrorMessage);
+		Assert.Equal(UnauthorizedErrorCode.ExpiredToken, result.ErrorCode);
 		Assert.Equal(context.UserId,_userId);
 	}
 	[Fact]
@@ -83,6 +83,6 @@ public class AuthenticationServiceTests
 		var context = new ApiContext() { RequestTime = _now };
 		var result =_tokenService.ValidateToken(TokenType.AccessTokenV1, refreshToken, context, out _); //다른토큰이라 안됨
 		Assert.Equal(_userId, context.UserId); //타입이 달라도 userId는 뽑아내긴 함
-		Assert.Equal("mismatch type", result.ErrorMessage);
+		Assert.Equal(UnauthorizedErrorCode.MismatchType, result.ErrorCode);
 	}
 }

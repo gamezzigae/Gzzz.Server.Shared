@@ -27,7 +27,7 @@ public class DynamoDbAuthenciatedInfoUpdater : IUserAuthenciatedInfoUpdater
 			TableName = _dynamoDbService.TableName,
 			Key = new Dictionary<string, AttributeValue>
 			{
-				[DynamoDbKeys.PartitionKey] = new AttributeValue("User"),
+				[DynamoDbKeys.PartitionKey] = new AttributeValue(DynamoDbTable.User),
 				[DynamoDbKeys.SortKey] = _cachedUserId
 			},
 			UpdateExpression = "SET UA=:t,AA=:t",

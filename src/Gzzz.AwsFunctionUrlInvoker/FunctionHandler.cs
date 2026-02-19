@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker;
@@ -94,32 +95,29 @@ public class FunctionHandler
 		if (_commands.TryGetValue(request.RequestContext.Http.Path, out var command) == false)
 			return ResponsePreset.NotFound;//로그를 남길까 말까~
 										   //
+		TokenClaims claims = default; //어차피 stackalloc이 안되니깐 그냥 struct로 만들어서 씀
 		if (command.IsAuthenticationRequired)
 		{
-			var decodeTokenResult = _tokenService.ValidateToken(TokenType.AccessTokenV1, request.Headers.AccessToken, context, out var claims);
+			var decodeTokenResult = _tokenService.ValidateToken(TokenType.AccessTokenV1, request.Headers.AccessToken, context, out claims);
 			if (decodeTokenResult.IsSuccess == false)
-				return FunctionUrlResponseHelper.Error(401, decodeTokenResult.ErrorMessage, null, 0);
-
-			var userRepository = services.GetRequiredService<IUserRepository>();
-			await userRepository.LoadAsync(claims);
+				return FunctionUrlResponseHelper.Error(401, (int)decodeTokenResult.ErrorCode);
 		}
-		//
-		if (command.IsParameterRequired)
-		{
-			var requestBody = request.GetRequestBody();
-			try
-			{
-				context.RequestModel = _contextSerializer.Derialize(requestBody, command.RequestType);
-			}
-			catch (Exception)
-			{
-				context.RequestRaw = requestBody;
-				return ResponsePreset.DeserializeFail;
-			}
-		}
-		//
 		try
 		{
+			if (command.IsParameterRequired)
+			{
+				var requestBody = request.GetRequestBody();
+				context.RequestRaw = requestBody;
+				context.RequestModel = _contextSerializer.Derialize(requestBody, command.RequestType);
+				context.RequestRaw = null;
+			}
+
+			//db 연산을 하기 때문에 최후 순위로 미룸
+			if (command.IsAuthenticationRequired
+				&& await services.GetRequiredService<IUserRepository>().LoadAsync(claims.UserId, claims.CreatedAt) == false) 
+			{
+			}
+
 			context.ResponseModel = await command.InvokeAsync(services, context.RequestModel);
 			string deserializedResponseBody = command.ResponseType != null ?
 				_contextSerializer.Serialize(context.ResponseModel, command.ResponseType)
@@ -133,13 +131,16 @@ public class FunctionHandler
 			context.ErrorMessage = httpException.Message;
 			return FunctionUrlResponseHelper.Error(httpException.StatusCode, httpException.Message, httpException.Message, httpException.ErrorCode);
 		}
+		catch (JsonException)
+		{
+			return ResponsePreset.DeserializeFail;
+		}
 		catch (Exception ex)
 		{
 			context.Exception = ex.ToString();
 			return FunctionUrlResponseHelper.Error(500, "Unexpected Exception", ex.ToString(), 0); //release 전에는 감춰야함
 		}
 	}
-
 }
 
 
@@ -147,6 +148,5 @@ public static class ResponsePreset
 {
 	public static readonly FunctionUrlResponse NotFound = FunctionUrlResponseHelper.Error(404);
 	public static readonly FunctionUrlResponse DeserializeFail = FunctionUrlResponseHelper.Error(400);
-
-
+	public static readonly FunctionUrlResponse DiscardedAuthentication = FunctionUrlResponseHelper.Error(401, (int)UnauthorizedErrorCode.DiscardedAuthentication);
 }

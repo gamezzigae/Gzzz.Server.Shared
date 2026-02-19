@@ -28,16 +28,16 @@ public class ApiLogTests : AwsFunctionUrlInvokerFixture
 		Assert.Equal(expectedResponse, ((JsonElement)log.ResponseModel).GetString());
 	}
 
-	[Fact]
-	public async Task RequestInfoTest()
-	{
-		var now = base._mockTimeService.SetNow();
-		var path = "/__me__";
-		var response = await _client.RequestAsync<RequestInfo>(path, ApiOption.Anonymous);
+	//[Fact]
+	//public async Task RequestInfoTest()
+	//{
+	//	var now = base._mockTimeService.SetNow();
+	//	var path = "/__me__";
+	//	var response = await _client.RequestAsync<RequestInfo>(path, ApiOption.Anonymous);
 
-		Assert.Equal(now, response.RequestTime);
-		Assert.Equal(_mockApiClient.Ip, response.Ip);
-	}
+	//	Assert.Equal(now, response.RequestTime);
+	//	Assert.Equal(_mockApiClient.Ip, response.Ip);
+	//}
 
 	[Fact]
 	public async Task NotFoundErrorTestAsync()
