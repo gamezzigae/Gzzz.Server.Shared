@@ -23,8 +23,8 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 		EnvironmentX.SetObject(TokenServiceConfig.EnvironmentVariableName, new TokenServiceConfig()
 		{
 			HashKey = "abc12312",
-			AccessTokenLIfetime = 1000,
-			RefreshTokenLifetime = 3000,
+			AccessTokenLifetime = TimeSpan.FromSeconds(10),
+			RefreshTokenLifetime = TimeSpan.FromSeconds(255),
 		});
 
 		_functionHandler = new FunctionHandler(

@@ -33,7 +33,7 @@ public class AuthenticationServiceTests
 	public AuthenticationServiceTests()
 	{
 		var services = new ServiceCollection()
-			.AddSingleton(new TokenServiceConfig() { AccessTokenLIfetime = 15, RefreshTokenLifetime = 255, HashKey = RandomX.CreateRandomBase64String(256) })
+			.AddSingleton(new TokenServiceConfig() { AccessTokenLifetime = TimeSpan.FromSeconds(15), RefreshTokenLifetime = TimeSpan.FromSeconds(255), HashKey = RandomX.CreateRandomBase64String(256) })
 			.AddSingleton<TokenService>()
 			.BuildWithValidation();
 
@@ -47,10 +47,10 @@ public class AuthenticationServiceTests
 		var accessToken = _tokenService.CreateAccessToken(_userId, _now);
 		Assert.True(_tokenService.DecodeToken(accessToken, out var claims));
 		Assert.Equal(((byte)TokenType.AccessTokenV1), claims.Type);
-		Assert.Equal(claims.UserId, (_userId));
-		Assert.Equal(claims.ExpireAt, (_now.AddMinutes(_authenticationConfig.AccessTokenLIfetime)));
+		Assert.Equal(claims.UserId, _userId);
+		Assert.Equal(claims.CreatedAt, _now);
 
-		var context = new ApiContext() { RequestTime = claims.ExpireAt }; //만료시간 딱 맞춰서
+		var context = new ApiContext() { RequestTime = claims.CreatedAt }; //만료시간 딱 맞춰서
 		var result = _tokenService.ValidateToken(TokenType.AccessTokenV1, accessToken, context, out _);
 		Assert.Equal(context.UserId, _userId);
 	}
@@ -62,7 +62,7 @@ public class AuthenticationServiceTests
 		Assert.True(_tokenService.DecodeToken(accessToken, out var claims));
 
 		//1ms만 늦어도 exception
-		var context = new ApiContext() { RequestTime = claims.ExpireAt.AddMilliseconds(1) };
+		var context = new ApiContext() { RequestTime = claims.CreatedAt.Add(_authenticationConfig.AccessTokenLifetime).AddMicroseconds(1) };
 		var result = _tokenService.ValidateToken(TokenType.AccessTokenV1, accessToken, context, out _);
 		Assert.False(result.IsSuccess);
 		Assert.Equal("expired", result.ErrorMessage);

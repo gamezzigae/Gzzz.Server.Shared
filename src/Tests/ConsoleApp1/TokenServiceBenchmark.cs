@@ -16,8 +16,8 @@ public class TokenServiceBenchmark
 	{
 		var config = new TokenServiceConfig()
 		{
-			AccessTokenLIfetime = 30,
-			RefreshTokenLifetime = 43200,
+			AccessTokenLifetime = TimeSpan.Zero,
+			RefreshTokenLifetime = TimeSpan.Zero,
 			HashKey = "46LNjT9Bol95r05aEI/TKUsC/u8VvM4gnTZkGnZSMdIYi6hgoAKCo6cdRoJwmva77wB8BPNkfsX5xODEjDv98F=="
 		};
 

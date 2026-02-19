@@ -25,13 +25,13 @@ public class TokenService
 
 	public string CreateAccessToken(string userId, DateTimeOffset createdAt)
 	{
-		var claims = new TokenClaims((byte)TokenType.AccessTokenV1, createdAt.AddMinutes(_authenticationConfig.AccessTokenLIfetime), userId);
+		var claims = new TokenClaims((byte)TokenType.AccessTokenV1, createdAt, userId);
 		return EncodeToken(claims);
 	}
 
 	public string CreateRefreshToken(string userId, DateTimeOffset createdAt)
 	{
-		var claims = new TokenClaims((byte)TokenType.RefreshTokenV1, createdAt.AddMinutes(_authenticationConfig.RefreshTokenLifetime), userId);
+		var claims = new TokenClaims((byte)TokenType.RefreshTokenV1, createdAt, userId);
 		return EncodeToken(claims);
 	}
 	public DecodeTokenResult ValidateToken(TokenType tokenType, string token, ApiContext context, out TokenClaims claims)
@@ -53,7 +53,13 @@ public class TokenService
 			return DecodeTokenResult.MismatchType;
 		}
 
-		if (context.RequestTime > claims.ExpireAt)
+		TimeSpan expireAt = tokenType switch
+		{
+			TokenType.AccessTokenV1 => _authenticationConfig.AccessTokenLifetime,
+			TokenType.RefreshTokenV1 => _authenticationConfig.RefreshTokenLifetime,
+			_ => TimeSpan.Zero
+		};
+		if (context.RequestTime > claims.CreatedAt.Add(expireAt))
 		{
 			return DecodeTokenResult.ExpiredToken;
 		}
@@ -67,7 +73,7 @@ public class TokenService
 		Span<byte> result = stackalloc byte[256];
 		var payloadLength = new SpanWriter(result.Slice(1))
 			.Write(claims.Type)
-			.Write(claims.ExpireAt.Ticks)
+			.Write(claims.CreatedAt.Ticks)
 			.WriteBase64String(claims.UserId)
 			.Position;
 

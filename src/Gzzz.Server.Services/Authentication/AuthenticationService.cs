@@ -9,8 +9,8 @@ namespace Gzzz.Authentication;
 public class TokenServiceConfig
 {
 	public static readonly string EnvironmentVariableName = "ZZ_AUTHENTICATION_CONFIG";
-	public uint AccessTokenLIfetime { get; set; }
-	public uint RefreshTokenLifetime { get; set; }
+	public TimeSpan AccessTokenLifetime { get; set; }
+	public TimeSpan RefreshTokenLifetime { get; set; }
 	public string HashKey { get; set; }
 }
 

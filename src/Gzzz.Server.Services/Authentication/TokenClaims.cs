@@ -3,13 +3,13 @@ namespace Gzzz.Authentication;
 public readonly struct TokenClaims
 {
 	public readonly byte Type;
-	public readonly DateTimeOffset ExpireAt;
+	public readonly DateTimeOffset CreatedAt;
 	public readonly string UserId;
 
 	public TokenClaims(byte type, DateTimeOffset expireAt, string userId)
 	{
 		Type = type;
-		ExpireAt = expireAt;
+		CreatedAt = expireAt;
 		UserId = userId;
 	}
 }
