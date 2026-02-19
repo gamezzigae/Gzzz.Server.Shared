@@ -14,7 +14,7 @@ public class TokenServiceBenchmark
 
 	public TokenServiceBenchmark()
 	{
-		var config = new AuthenticationConfig()
+		var config = new TokenServiceConfig()
 		{
 			AccessTokenLIfetime = 30,
 			RefreshTokenLifetime = 43200,

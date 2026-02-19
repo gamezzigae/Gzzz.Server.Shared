@@ -20,7 +20,7 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 
 	public AwsFunctionUrlInvokerFixtureBase(ITestOutputHelper testLogger)
 	{
-		EnvironmentX.SetObject(AuthenticationConfig.EnvironmentVariableName, new AuthenticationConfig()
+		EnvironmentX.SetObject(TokenServiceConfig.EnvironmentVariableName, new TokenServiceConfig()
 		{
 			HashKey = "abc12312",
 			AccessTokenLIfetime = 1000,

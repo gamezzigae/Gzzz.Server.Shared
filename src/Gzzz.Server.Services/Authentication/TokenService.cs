@@ -12,12 +12,55 @@ public class TokenService
 	readonly HMACSHA256 _hmac;
 	readonly int _signatureLength;
 	readonly TimeSpan _offset;
-	public TokenService(AuthenticationConfig authenticationConfig)
+	readonly TokenServiceConfig _authenticationConfig;
+
+	public TokenService(TokenServiceConfig authenticationConfig)
 	{
 		var bytesKey = Convert.FromBase64String(authenticationConfig.HashKey);
 		_hmac = new HMACSHA256(bytesKey);
 		_signatureLength = _hmac.HashSize / 8;
+		_authenticationConfig = authenticationConfig;
 	}
+
+
+	public string CreateAccessToken(string userId, DateTimeOffset createdAt)
+	{
+		var claims = new TokenClaims((byte)TokenType.AccessTokenV1, createdAt.AddMinutes(_authenticationConfig.AccessTokenLIfetime), userId);
+		return EncodeToken(claims);
+	}
+
+	public string CreateRefreshToken(string userId, DateTimeOffset createdAt)
+	{
+		var claims = new TokenClaims((byte)TokenType.RefreshTokenV1, createdAt.AddMinutes(_authenticationConfig.RefreshTokenLifetime), userId);
+		return EncodeToken(claims);
+	}
+	public DecodeTokenResult ValidateToken(TokenType tokenType, string token, ApiContext context, out TokenClaims claims)
+	{
+		if (string.IsNullOrEmpty(token))
+		{
+			claims = default;
+			return DecodeTokenResult.NotPresent;
+		}
+
+		if (DecodeToken(token, out claims) == false)
+		{
+			return DecodeTokenResult.DecodeFail;
+		}
+		context.UserId = claims.UserId;
+
+		if (claims.Type != (byte)tokenType)
+		{
+			return DecodeTokenResult.MismatchType;
+		}
+
+		if (context.RequestTime > claims.ExpireAt)
+		{
+			return DecodeTokenResult.ExpiredToken;
+		}
+
+		return DecodeTokenResult.Success;
+	}
+
 
 	public string EncodeToken(TokenClaims claims)
 	{

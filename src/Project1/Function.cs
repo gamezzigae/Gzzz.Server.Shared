@@ -33,7 +33,7 @@ await new FunctionHandler(
 [JsonSerializable(typeof(ApiContext))]
 [JsonSerializable(typeof(PutItemRequest))]
 //
-[JsonSerializable(typeof(AuthenticationConfig))]
+[JsonSerializable(typeof(TokenServiceConfig))]
 [JsonSerializable(typeof(AuthenticationTokens))]
 
 public partial class CustomJsonContext : JsonSerializerContext

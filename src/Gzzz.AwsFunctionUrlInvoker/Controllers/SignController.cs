@@ -1,4 +1,5 @@
 using Gzzz.Authentication;
+using Gzzz.AwsFunctionUrlInvoker;
 using Gzzz.CommandInvoker;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
@@ -8,14 +9,14 @@ namespace Gzzz.Controllers;
 [Controller("/s")]
 public class SignController
 {
-	readonly AuthenticationService _authenticationService;
-	readonly IAccountScopedRepository _accountScopedRepository;
+	readonly TokenService _authenticationService;
+	readonly IUserRepository _userRepository;
 	readonly ApiContext _apiContext;
 
-	public SignController(AuthenticationService authenticationService, IAccountScopedRepository accountScopedRepository, ApiContext apiContext)
+	public SignController(TokenService authenticationService, IUserRepository userRepository, ApiContext apiContext)
 	{
 		_authenticationService = authenticationService;
-		_accountScopedRepository = accountScopedRepository;
+		_userRepository = userRepository;
 		_apiContext = apiContext;
 	}
 
@@ -24,7 +25,6 @@ public class SignController
 		var accessToken = _authenticationService.CreateAccessToken(userId, _apiContext.RequestTime);
 		var refreshToken = _authenticationService.CreateRefreshToken(userId, _apiContext.RequestTime);
 
-		await _accountScopedRepository.SetTokensAsync(accessToken, refreshToken);
 		return new (userId, accessToken, refreshToken);
 	}
 
@@ -41,7 +41,7 @@ public class SignController
 	[AnonymousCommand("/rtkn")]
 	public async Task<AuthenticationTokens> SignInByRefreshTokenAsync(string refreshToken)
 	{
-		var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.RefreshTokenV1, refreshToken, _apiContext);
+		var authenticationResult = _authenticationService.ValidateToken(TokenType.RefreshTokenV1, refreshToken, _apiContext, out _);
 		if (authenticationResult.IsSuccess == false)
 		{
 			throw new HttpException(400, authenticationResult.ErrorMessage);

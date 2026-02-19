@@ -24,22 +24,21 @@ public class FunctionHandler
 	readonly TimeService _timeService;
 	readonly IContextSerializer _contextSerializer;
 	readonly ITextLogger _logger;
-	readonly AuthenticationService _authenticationService;
+	readonly TokenService _tokenService;
 
 	bool _isColdStart = true;
 	public FunctionHandler(Assembly[] assemblies, Action<IServiceCollection> configureServices)
 	{
 		IServiceCollection serviceCollection= new ServiceCollection()
-			.AddSingleton<IAccountScopedRepository, DefaultAccountScopedRepository>()
 			.AddSingleton<ITextLogger, JsonLogger>()
 			.AddSingleton<IContextSerializer, JsonContextSerializer>()
 			.AddSingleton<TimeService>()
 			.AddScoped<ApiContext>()
 			.AddScoped<RequestInfo>(services=> (RequestInfo)services.GetRequiredService<ApiContext>())
 			//
-			.AddSingleton<AuthenticationService>()
+			.AddSingleton<IUserRepository, DefaultUserRepository>()
 			.AddSingleton<TokenService>()
-			.AddEnvironmentObject<AuthenticationConfig>(AuthenticationConfig.EnvironmentVariableName)
+			.AddEnvironmentObject<TokenServiceConfig>(TokenServiceConfig.EnvironmentVariableName)
 			//
 			.AddCommandInvokers(assemblies)
 		;
@@ -50,9 +49,9 @@ public class FunctionHandler
 		this.Services = serviceCollection.BuildWithValidation();
 		_commands = Services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>();
 		_timeService = Services.GetRequiredService<TimeService>();
+		_tokenService = Services.GetRequiredService<TokenService>();
 		_contextSerializer = Services.GetRequiredService<IContextSerializer>();
 		_logger = Services.GetRequiredService<ITextLogger>();
-		_authenticationService = Services.GetRequiredService<AuthenticationService>();
 	}
 
 
@@ -92,11 +91,12 @@ public class FunctionHandler
 										   //
 		if (command.IsAuthenticationRequired)
 		{
-			var authenticationResult = await _authenticationService.ValidateTokenAsync(TokenType.AccessTokenV1, request.Headers.AccessToken, context);
-			if (authenticationResult.IsSuccess == false)
-				return FunctionUrlResponseHelper.Error(401, authenticationResult.ErrorMessage, null, 0);
+			var decodeTokenResult = _tokenService.ValidateToken(TokenType.AccessTokenV1, request.Headers.AccessToken, context, out var claims);
+			if (decodeTokenResult.IsSuccess == false)
+				return FunctionUrlResponseHelper.Error(401, decodeTokenResult.ErrorMessage, null, 0);
 
-
+			var userRepository = services.GetRequiredService<IUserRepository>();
+			await userRepository.LoadAsync(claims);
 		}
 		//
 		if (command.IsParameterRequired)
@@ -144,4 +144,14 @@ public static class ResponsePreset
 	public static readonly FunctionUrlResponse DeserializeFail = FunctionUrlResponseHelper.Error(400);
 
 
+}
+
+public interface IUserRepository
+{
+	Task LoadAsync(in TokenClaims claims);
+}
+
+public class DefaultUserRepository : IUserRepository
+{
+	public Task LoadAsync(in TokenClaims _)=>Task.CompletedTask;
 }
