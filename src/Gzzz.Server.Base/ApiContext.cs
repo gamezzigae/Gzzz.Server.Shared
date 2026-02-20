@@ -4,13 +4,16 @@ namespace Gzzz;
 
 public class RequestInfo
 {
+	[JsonPropertyOrder(100)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("uid")]
 	public string UserId { get; set; }
 
+	[JsonPropertyOrder(101)]
 	[JsonPropertyName("ip")]
 	public string Ip { get; set; }
 
+	[JsonPropertyOrder(102)]
 	[JsonPropertyName("t")]
 	public DateTimeOffset RequestTime { get; set; }
 }
@@ -22,29 +25,35 @@ public class ApiContext : RequestInfo
 	public bool IsColdStart { get; set; }
 
 
-	[JsonPropertyName("typ")]
-	public string Subject { get; } = "API";
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	[JsonPropertyName("reqPath")]
+	public string RequestPath { get; set; }
 
 
+	[JsonPropertyOrder(0)]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	[JsonPropertyName("api")]
+	public string API { get; set; }
 
-	[JsonPropertyName("path")]
-	public string Path { get; set; }
 
-
+	[JsonPropertyOrder(10)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("req")]
 	public object RequestModel { get; set; }
 
+	[JsonPropertyOrder(11)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("res")]
 	public object ResponseModel { get; set; }
 
-	[JsonPropertyName("status")]
+	[JsonPropertyOrder(1)]
+	[JsonPropertyName("s")]
 	public int Status { get; set; }
 
+	[JsonPropertyOrder(103)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	[JsonPropertyName("elapsed")]
-	public int Elapsed { get; set; }
+	[JsonPropertyName("d")]
+	public int Duration { get; set; }
 
 
 	//
@@ -54,14 +63,19 @@ public class ApiContext : RequestInfo
 	public string RequestRaw { get; set; }
 
 	//
+	[JsonPropertyOrder(8)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("ecode")]
 	public int ErrorCode { get; set; }
 
+
+	[JsonPropertyOrder(9)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("emsg")]
 	public string ErrorMessage { get; set; }
 
+
+	[JsonPropertyOrder(7)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	[JsonPropertyName("exception")]
 	public string Exception { get; set; }

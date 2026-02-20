@@ -40,6 +40,6 @@ public class DynamoDbAuthenciatedInfoUpdater : IUserAuthenciatedInfoUpdater
 		_cachedUserId.S = userId;
 		_cachedTime.N = createdAt.Ticks.ToString();
 
-		await _dynamoDbService.Client.UpdateItemAsync(_cachedRequest);
+		await _dynamoDbService.UpdateItemAsync(_cachedRequest);
 	}
 }

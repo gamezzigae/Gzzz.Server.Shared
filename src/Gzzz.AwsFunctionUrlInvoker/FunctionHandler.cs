@@ -78,12 +78,13 @@ public class FunctionHandler
 		}
 		context.Ip = request.RequestContext.Http.SourceIp;
 		context.RequestTime = _timeService.GetNow();
-		context.Path = request.RequestContext.Http.Path;
+		context.API = request.RequestContext.Http.Path;
 
 		FunctionUrlResponse response = await HandleAsync(scope.ServiceProvider, request, context);
 
 		context.Status = response.StatusCode;
-		context.Elapsed = (int)(_timeService.GetNow() - context.RequestTime).TotalMilliseconds;
+		context.Duration = (int)(_timeService.GetNow() - context.RequestTime).TotalMilliseconds;
+		//threshold 적용해서 일정수치 이하면 아예 기록하지 않는것도 고려해볼만함
 
 		if (context.SkipLogging == false)
 			_logger.WriteObject(context);
@@ -93,7 +94,11 @@ public class FunctionHandler
 	public async Task<FunctionUrlResponse> HandleAsync(IServiceProvider services, FunctionUrlRequest request, ApiContext context)
 	{
 		if (_commands.TryGetValue(request.RequestContext.Http.Path, out var command) == false)
+		{
+			context.RequestPath = context.API;
+			context.API = null;
 			return ResponsePreset.NotFound;//로그를 남길까 말까~
+		}
 										   //
 		TokenClaims claims = default; //어차피 stackalloc이 안되니깐 그냥 struct로 만들어서 씀
 		if (command.IsAuthenticationRequired)
@@ -116,6 +121,7 @@ public class FunctionHandler
 			if (command.IsAuthenticationRequired
 				&& await services.GetRequiredService<IUserRepository>().LoadAsync(claims.UserId, claims.CreatedAt) == false) 
 			{
+				return ResponsePreset. DiscardedAuthentication;
 			}
 
 			context.ResponseModel = await command.InvokeAsync(services, context.RequestModel);

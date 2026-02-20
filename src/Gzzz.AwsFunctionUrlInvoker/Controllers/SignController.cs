@@ -38,7 +38,7 @@ public class SignController
 	}
 
 
-	[AnonymousCommand("/gst")]
+	[AnonymousCommand("/gst", LoggingType.TrimResponseBody)]
 	public Task<AuthenticationTokens> GuestSignInAsync()
 	{
 		var result = CreateTokensAsync(RandomX.CreateRandomBase64String(21));
@@ -47,7 +47,7 @@ public class SignController
 	}
 
 
-	[AnonymousCommand("/rtkn")]
+	[AnonymousCommand("/rtkn", LoggingType.TrimResponseBody)]
 	public async Task<AuthenticationTokens> SignInByRefreshTokenAsync(string refreshToken)
 	{
 		var authenticationResult = _authenticationService.ValidateToken(TokenType.RefreshTokenV1, refreshToken, _apiContext, out _);

@@ -22,22 +22,12 @@ public class ApiLogTests : AwsFunctionUrlInvokerFixture
 
 		var log = _mockJsonLogger.DequeueApiLog();
 
-		Assert.Equal(path, log.Path);
+		Assert.Equal(path, log.API);
+		Assert.Null(log.RequestPath);
 		Assert.Equal(200, log.Status);
 		Assert.Equal(now, log.RequestTime);
 		Assert.Equal(expectedResponse, ((JsonElement)log.ResponseModel).GetString());
 	}
-
-	//[Fact]
-	//public async Task RequestInfoTest()
-	//{
-	//	var now = base._mockTimeService.SetNow();
-	//	var path = "/__me__";
-	//	var response = await _client.RequestAsync<RequestInfo>(path, ApiOption.Anonymous);
-
-	//	Assert.Equal(now, response.RequestTime);
-	//	Assert.Equal(_mockApiClient.Ip, response.Ip);
-	//}
 
 	[Fact]
 	public async Task NotFoundErrorTestAsync()
@@ -51,7 +41,8 @@ public class ApiLogTests : AwsFunctionUrlInvokerFixture
 		Assert.Equal(0, exception.ErrorCode);
 
 		var log = _mockJsonLogger.DequeueApiLog();
-		Assert.Equal(path, log.Path);
+		Assert.Equal(path, log.RequestPath);
+		Assert.Null(log.API);
 		Assert.Equal(404, log.Status);
 	}
 

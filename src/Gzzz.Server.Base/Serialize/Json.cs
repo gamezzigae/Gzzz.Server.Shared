@@ -18,6 +18,7 @@ public static class DefaultConfig
 		if (JsonSerializerOptions != default)
 			throw new InvalidOperationException("JsonSerializerOptions는 한번만 초기화 가능합니다");
 		JsonSerializerOptions = jsonSerializerOptions;
+		JsonSerializerOptions.MakeReadOnly();
 	}
 
 }

@@ -25,7 +25,12 @@ public class SignControllerTests : AwsFunctionUrlInvokerFixture
 
 		Assert.Equal(response.AccessToken, _client.AuthenticationTokens.AccessToken);
 		Assert.Equal(response.RefreshToken, _client.AuthenticationTokens.RefreshToken);
+
+		var apiLog = _mockJsonLogger.DequeueApiLog();
+		Assert.Null(apiLog.ResponseModel);
 	}
+
+	
 
 	[Fact]
 	public async Task RefreshSignTestAsync()
