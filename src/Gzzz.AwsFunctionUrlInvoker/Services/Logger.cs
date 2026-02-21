@@ -1,4 +1,5 @@
 using Gzzz.Serialize;
+using System.Buffers;
 using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Services;
@@ -13,6 +14,20 @@ public class JsonLogger : ITextLogger
 		var json = Json.Serialize(obj);
 		this.Write(json);
 	}
+
+	public void Write<TState>(TState state, Action<Utf8JsonWriter, TState> action)
+	{
+		var buffer = new ArrayBufferWriter<byte>();
+		using Utf8JsonWriter writer = new Utf8JsonWriter(buffer);
+		writer.WriteStartObject();
+		action(writer, state);
+		writer.WriteEndObject();
+		writer.Flush();
+
+		//var stdout = Console.OpenStandardOutput();
+		//stdout.Write(buffer.WrittenSpan);
+	}
+
 }
 
 /*
