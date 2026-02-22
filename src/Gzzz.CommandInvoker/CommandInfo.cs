@@ -1,6 +1,7 @@
 using Gzzz.Serialize;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Gzzz.CommandInvoker;
 
@@ -14,7 +15,8 @@ public class CommandInfo
 	public Type ResponseType { get; }
 	public Func<object, object> GetResult { get; }
 	public Invoke<Task> Invoke { get; }
-	
+
+	public Type[] ParameterTypes { get; }
 
 	public CommandInfo(MethodInfo methodInfo, CommandAttribute commandAttribute)
 	{
@@ -22,12 +24,16 @@ public class CommandInfo
 		this.LoggingType= commandAttribute.LoggingType;
 		var parameters = methodInfo.GetParameters();
 
-        if(parameters.Length > 1)
-        {   
-            throw new Exception("Command는 최대 1개의 파라미터만 허용합니다.");
-        }
+		this.ParameterTypes = parameters
+			.Select(item => item.GetCustomAttribute<FromServiceAttribute>() == null ? null : item.ParameterType)
+			.ToArray();
 
-        var returnType = methodInfo.ReturnType;
+		if(ParameterTypes.Count(type=>type==null)> 1)
+		{
+			throw new Exception("암시적 body parameter는 1개까지만 가능합니다.");
+		}
+
+		var returnType = methodInfo.ReturnType;
         if (returnType.IsAssignableTo(typeof(Task)) == false)
         {
             throw new Exception("Task/Task<T> 비동기 함수만 지원합니다.");
@@ -53,17 +59,20 @@ public class CommandInfo
 	}
 
 
-	object[] _parameters = new object[1];
 	public async Task<object> InvokeAsync(IServiceProvider services, object parameter)
 	{
 		var controller = services.GetRequiredService(this.ControllerType);
 
 		Task task;
-		if(IsParameterRequired)
+		if (IsParameterRequired)
 		{
-			_parameters[0] = parameter; //aws lambda에서만 유효하기 때문에 멀티스레딩 환경에서는 사용하면 안됩니다.
-			task = this.Invoke(controller, _parameters);
-			_parameters[0] = null;
+			var parameters = new object[this.ParameterTypes.Length];
+			for (int i = 0; i < this.ParameterTypes.Length; i++)
+			{
+				var parameterType = this.ParameterTypes[i];
+				parameters[i] = parameterType == null ? parameter : services.GetRequiredService(parameterType);
+			}
+			task = this.Invoke(controller, parameters);
 		}
 		else
 		{
@@ -77,4 +86,18 @@ public class CommandInfo
 
 		return this.GetResult(task);
 	}
+}
+
+public class FromBodyAttribute : Attribute
+{
+}
+public class FromServiceAttribute : Attribute
+{
+}
+
+public enum ParameterBindingType
+{
+	None,
+	FromBody,
+	FromService,
 }
