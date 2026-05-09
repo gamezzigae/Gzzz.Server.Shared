@@ -18,6 +18,7 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 
 	protected abstract void ConfigureServices(IServiceCollection services);
 
+	public static readonly string InternalIp = "unit.test.i.p";
 	public AwsFunctionUrlInvokerFixtureBase(ITestOutputHelper testLogger)
 	{
 		EnvironmentX.SetObject(TokenServiceConfig.EnvironmentVariableName, new TokenServiceConfig()
@@ -26,6 +27,7 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 			AccessTokenLifetime = TimeSpan.FromSeconds(10),
 			RefreshTokenLifetime = TimeSpan.FromSeconds(255),
 		});
+		EnvironmentX.SetValue(InternalIpService.EnvironmentVariableName, InternalIp);
 
 		_functionHandler = new FunctionHandler(
 			GetAssemblies(),
@@ -49,6 +51,7 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 		var client = CreateEmptyClient();
 		var tokens = await client.RequestAsync<AuthenticationTokens>("/s/_____impersonate_____", ApiOption.Anonymous, userId);
 		client.AuthenticationTokens = tokens;
+		
 		return client;
 	}
 

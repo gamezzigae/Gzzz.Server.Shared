@@ -41,9 +41,10 @@ public class FunctionHandler
 			.AddScoped<RequestInfo>(services=> (RequestInfo)services.GetRequiredService<ApiContext>())
 			//
 			.AddSingleton<IUserRepository, DefaultUserRepository>()
-			.AddSingleton<IUserAuthenciatedInfoUpdater, DefaultTokenUpdateService>()
+			.AddSingleton<IUserAuthenticatedInfoUpdater, DefaultTokenUpdateService>()
 			
 			.AddSingleton<TokenService>()
+			.AddSingleton<InternalIpService>()
 			.AddEnvironmentObject<TokenServiceConfig>(TokenServiceConfig.EnvironmentVariableName)
 			//
 			.AddCommandInvokers(assemblies)

@@ -11,6 +11,8 @@ public class TestController
 	}
 	[Command("/echo")]
 	public Task<string> GetStringAsync(string message) => Task.FromResult(message);
+	[Command("/servicefirst")]
+	public Task<string> GetServiceFirstAsync([FromService] RequestInfo requestInfo, string message) => Task.FromResult(message);
 	[AnonymousCommand("/hello")]
 	public Task<string> GetStringAsync() => Task.FromResult("world");
 	[Command("/nothing")]

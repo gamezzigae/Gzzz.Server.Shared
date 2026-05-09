@@ -19,7 +19,7 @@ public class MockApiClient : IApiClient
 	{
 		this._functionHandler = functionHandler;
 		_logger = logger;
-		this.Ip = "128.1.2.3";
+		this.Ip = "unit.test.i.p";
 	}
 
 	public async Task<T> RequestAsync<T>(string path, ApiOption apiOption, object requestBody= null)

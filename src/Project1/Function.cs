@@ -18,7 +18,7 @@ await new FunctionHandler(
 	assemblies: [typeof(TestController).Assembly, typeof(SignController).Assembly],
 	services => services
 		.AddSingleton<IContextSerializer, JsonContextSerializer>()
-		.AddSingleton<IUserAuthenciatedInfoUpdater, DynamoDbAuthenciatedInfoUpdater>()
+		.AddSingleton<IUserAuthenticatedInfoUpdater, DynamoDbAuthenticatedInfoUpdater>()
 		.AddSingleton<IUserRepository, DynamoDbUserRepositoryBase>()
 		.AddDynamoDbService()
 		.AddAwsFallbackCredentials()

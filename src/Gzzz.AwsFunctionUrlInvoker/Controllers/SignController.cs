@@ -32,8 +32,12 @@ public class SignController
 	}
 
 	[AnonymousCommand("/_____impersonate_____")]
-	public Task<AuthenticationTokens> ImpersonateSignInAsync(string userId)
+	public Task<AuthenticationTokens> ImpersonateSignInAsync([FromService] InternalIpService internalIpService, string userId)
 	{
+		if(internalIpService.IsAllowed(_apiContext.Ip) == false)
+		{
+			throw new HttpException(404, "xx");
+		}
 		return CreateTokensAsync(userId);
 	}
 

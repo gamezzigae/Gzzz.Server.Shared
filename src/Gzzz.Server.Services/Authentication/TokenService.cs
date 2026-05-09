@@ -9,8 +9,8 @@ namespace Gzzz.Authentication;
 
 public class TokenService
 {
-	static readonly int MaxTokenTextLength = 512;
-	static readonly int MinPayloadLength = 10; // type(1) + createdAt ticks(8) + userId byte length(1)
+	static readonly int _maxTokenTextLength = 512;
+	static readonly int _minPayloadLength = 10; // type(1) + createdAt ticks(8) + userId byte length(1)
 	readonly HMACSHA256 _hmac;
 	readonly int _signatureLength;
 	readonly TimeSpan _offset=TimeSpan.FromHours(9);
@@ -92,7 +92,7 @@ public class TokenService
 	public bool DecodeToken(string token, out TokenClaims result)
 	{
 		result = default;
-		if (string.IsNullOrEmpty(token) || token.Length > MaxTokenTextLength)
+		if (string.IsNullOrEmpty(token) || token.Length > _maxTokenTextLength)
 			return false;
 
 		Span<byte> tokenSpan = stackalloc byte[token.Length];
@@ -107,7 +107,7 @@ public class TokenService
 			return false;
 
 		var payloadLength = tokenSpan[0];
-		if (payloadLength < MinPayloadLength)
+		if (payloadLength < _minPayloadLength)
 			return false;
 
 		var tokenLength = 1 + payloadLength + _signatureLength;

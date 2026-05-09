@@ -12,12 +12,12 @@ public class DefaultTokenUpdateService : IUserAuthenticatedInfoUpdater
 	Task IUserAuthenticatedInfoUpdater.UpdateAuthenticatedInfoAsync(string userId, DateTimeOffset createdAt) => Task.CompletedTask;
 }
 
-public class DynamoDbAuthenciatedInfoUpdater : IUserAuthenticatedInfoUpdater
+public class DynamoDbAuthenticatedInfoUpdater : IUserAuthenticatedInfoUpdater
 {
 	readonly DynamoDbService _dynamoDbService;
 	readonly UpdateItemRequest _cachedRequest;
 	readonly AttributeValue _cachedUserId, _cachedTime;
-	public DynamoDbAuthenciatedInfoUpdater(DynamoDbService dynamoDbService)
+	public DynamoDbAuthenticatedInfoUpdater(DynamoDbService dynamoDbService)
 	{
 		_dynamoDbService = dynamoDbService;
 		_cachedUserId = new();

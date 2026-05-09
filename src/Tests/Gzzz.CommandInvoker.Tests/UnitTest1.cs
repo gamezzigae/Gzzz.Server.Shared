@@ -25,6 +25,16 @@ public class Tests
 	}
 
 	[Fact]
+	public async Task ServiceFirstParameterTestAsync()
+	{
+		using var services = Setup("/test/servicefirst", out var command);
+		var message = "Hello, World!";
+		var echo = await command.InvokeAsync<string>(services, message);
+		Assert.Equal(typeof(string), command.RequestType);
+		Assert.Equal(message, echo);
+	}
+
+	[Fact]
 	public async Task NoParameterTestAsync()
 	{
 		using var services = Setup("/test/hello", out var command);

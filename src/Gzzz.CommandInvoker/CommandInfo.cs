@@ -17,6 +17,7 @@ public class CommandInfo
 	public Invoke<Task> Invoke { get; }
 
 	public Type[] ParameterTypes { get; }
+	public int BodyParameterIndex { get; }
 
 	public CommandInfo(MethodInfo methodInfo, CommandAttribute commandAttribute)
 	{
@@ -32,6 +33,7 @@ public class CommandInfo
 		{
 			throw new Exception("암시적 body parameter는 1개까지만 가능합니다.");
 		}
+		BodyParameterIndex = Array.FindIndex(ParameterTypes, type=>type==null);
 
 		var returnType = methodInfo.ReturnType;
         if (returnType.IsAssignableTo(typeof(Task)) == false)
@@ -46,8 +48,8 @@ public class CommandInfo
 		}
 
 		ControllerType = methodInfo.ReflectedType;
-		IsParameterRequired = parameters.Length > 0;
-		RequestType = IsParameterRequired ? parameters[0].ParameterType : null;
+		IsParameterRequired = BodyParameterIndex >= 0;
+		RequestType = IsParameterRequired ? parameters[BodyParameterIndex].ParameterType : null;
 
 		Invoke = FastInvoker.Create<Task>(methodInfo);
 	}
@@ -64,7 +66,7 @@ public class CommandInfo
 		var controller = services.GetRequiredService(this.ControllerType);
 
 		Task task;
-		if (IsParameterRequired)
+		if (ParameterTypes.Length > 0)
 		{
 			var parameters = new object[this.ParameterTypes.Length];
 			for (int i = 0; i < this.ParameterTypes.Length; i++)

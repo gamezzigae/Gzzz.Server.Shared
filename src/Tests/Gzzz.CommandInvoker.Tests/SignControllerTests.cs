@@ -16,6 +16,7 @@ public class SignControllerTests : AwsFunctionUrlInvokerFixture
 	{
 		var userId = RandomX.GetRandomText(64);
 		var client =await CreateSignedClientAsync(userId);
+		
 		Assert.Equal(client.AuthenticationTokens.UserId, userId);
 	}
 	[Fact]
