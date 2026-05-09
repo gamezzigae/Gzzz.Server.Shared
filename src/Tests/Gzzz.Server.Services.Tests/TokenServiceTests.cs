@@ -75,6 +75,21 @@ public class AuthenticationServiceTests
 		Assert.False(_tokenService.DecodeToken(accessToken, out var claims));
 	}
 
+	[Theory]
+	[InlineData("")]
+	[InlineData("AA==")]
+	[InlineData("AQIDBA==")]
+	public void MalformedTokenTest(string token)
+	{
+		Assert.False(_tokenService.DecodeToken(token, out _));
+	}
+
+	[Fact]
+	public void TooLongTokenTest()
+	{
+		Assert.False(_tokenService.DecodeToken(new string('A', 513), out _));
+	}
+
 	[Fact]
 	public async Task InvalidTokenTypeTestAsync()
 	{

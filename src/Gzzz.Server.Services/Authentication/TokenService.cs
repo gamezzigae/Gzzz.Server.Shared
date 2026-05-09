@@ -9,6 +9,8 @@ namespace Gzzz.Authentication;
 
 public class TokenService
 {
+	static readonly int MaxTokenTextLength = 512;
+	static readonly int MinPayloadLength = 10; // type(1) + createdAt ticks(8) + userId byte length(1)
 	readonly HMACSHA256 _hmac;
 	readonly int _signatureLength;
 	readonly TimeSpan _offset=TimeSpan.FromHours(9);
@@ -89,22 +91,34 @@ public class TokenService
 
 	public bool DecodeToken(string token, out TokenClaims result)
 	{
+		result = default;
+		if (string.IsNullOrEmpty(token) || token.Length > MaxTokenTextLength)
+			return false;
+
 		Span<byte> tokenSpan = stackalloc byte[token.Length];
 		if (Convert.TryFromBase64String(token, tokenSpan, out var bytesWritten) == false)
 		{
-			result = default;
 			return false;
 		}
 
 		tokenSpan = tokenSpan.Slice(0, bytesWritten);
 		//
+		if (tokenSpan.Length < 1 + _signatureLength)
+			return false;
+
 		var payloadLength = tokenSpan[0];
+		if (payloadLength < MinPayloadLength)
+			return false;
+
+		var tokenLength = 1 + payloadLength + _signatureLength;
+		if (tokenSpan.Length != tokenLength)
+			return false;
+
 		var payloadSpan = tokenSpan.Slice(1, payloadLength);
 		var signatureSpan = tokenSpan.Slice(1 + payloadLength);
 		//
 		if (signatureSpan.Length != _signatureLength)
 		{
-			result = default;
 			return false;
 		}
 		Span<byte> computedSignature = stackalloc byte[_signatureLength];
@@ -112,7 +126,6 @@ public class TokenService
 		//
 		if (signatureSpan.SequenceEqual(computedSignature) == false)
 		{
-			result = default;
 			return false;
 		}
 		result = FromSpan(payloadSpan);
