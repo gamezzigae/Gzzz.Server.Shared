@@ -3,16 +3,16 @@ using Gzzz.Db.DynamoDb;
 
 namespace Gzzz.Services.Authentication;
 
-public interface IUserAuthenciatedInfoUpdater
+public interface IUserAuthenticatedInfoUpdater
 {
 	Task UpdateAuthenticatedInfoAsync(string userId, DateTimeOffset createdAt);
 }
-public class DefaultTokenUpdateService : IUserAuthenciatedInfoUpdater
+public class DefaultTokenUpdateService : IUserAuthenticatedInfoUpdater
 {
-	Task IUserAuthenciatedInfoUpdater.UpdateAuthenticatedInfoAsync(string userId, DateTimeOffset createdAt) => Task.CompletedTask;
+	Task IUserAuthenticatedInfoUpdater.UpdateAuthenticatedInfoAsync(string userId, DateTimeOffset createdAt) => Task.CompletedTask;
 }
 
-public class DynamoDbAuthenciatedInfoUpdater : IUserAuthenciatedInfoUpdater
+public class DynamoDbAuthenciatedInfoUpdater : IUserAuthenticatedInfoUpdater
 {
 	readonly DynamoDbService _dynamoDbService;
 	readonly UpdateItemRequest _cachedRequest;

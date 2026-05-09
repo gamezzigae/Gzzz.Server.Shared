@@ -11,13 +11,13 @@ namespace Gzzz.Controllers;
 public class SignController
 {
 	readonly TokenService _authenticationService;
-	readonly IUserAuthenciatedInfoUpdater _userAuthenciatedInfoUpdater;
+	readonly IUserAuthenticatedInfoUpdater _userAuthenticatedInfoUpdater;
 	readonly ApiContext _apiContext;
 
-	public SignController(TokenService authenticationService, IUserAuthenciatedInfoUpdater userAuthenciatedInfoUpdater, ApiContext apiContext)
+	public SignController(TokenService authenticationService, IUserAuthenticatedInfoUpdater userAuthenciatedInfoUpdater, ApiContext apiContext)
 	{
 		_authenticationService = authenticationService;
-		_userAuthenciatedInfoUpdater = userAuthenciatedInfoUpdater;
+		_userAuthenticatedInfoUpdater = userAuthenciatedInfoUpdater;
 		_apiContext = apiContext;
 	}
 
@@ -26,7 +26,7 @@ public class SignController
 		var accessToken = _authenticationService.CreateAccessToken(userId, _apiContext.RequestTime);
 		var refreshToken = _authenticationService.CreateRefreshToken(userId, _apiContext.RequestTime);
 
-		await _userAuthenciatedInfoUpdater.UpdateAuthenticatedInfoAsync(userId, _apiContext.RequestTime);
+		await _userAuthenticatedInfoUpdater.UpdateAuthenticatedInfoAsync(userId, _apiContext.RequestTime);
 
 		return new (userId, accessToken, refreshToken);
 	}
