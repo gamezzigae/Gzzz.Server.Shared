@@ -2,7 +2,7 @@ namespace Gzzz;
 
 public class InternalIpService
 {
-	public static readonly string EnvironmentVariableName = "INTERNAL_IP_LIST";
+	public static readonly string EnvironmentVariableName = "ZZ_INTERNAL_IP_LIST";
 
 	readonly HashSet<string> _allowedIps;
 

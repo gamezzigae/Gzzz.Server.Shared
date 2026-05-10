@@ -36,7 +36,7 @@ public class SignController
 	{
 		if(internalIpService.IsAllowed(_apiContext.Ip) == false)
 		{
-			throw new HttpException(404, "xx");
+			throw new HttpException(404, "");
 		}
 		return CreateTokensAsync(userId);
 	}
