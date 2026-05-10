@@ -64,7 +64,6 @@ public class TokenService
 
 		if (context.RequestTime > claims.CreatedAt.Add(expireAt))
 		{
-			Console.WriteLine(	$"{context.RequestTime:O} // {claims.CreatedAt.Add(expireAt):O}");
 			return DecodeTokenResult.ExpiredToken;
 		}
 
