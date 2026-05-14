@@ -119,10 +119,21 @@ public class FunctionHandler
 			}
 
 			//db 연산을 하기 때문에 최후 순위로 미룸
-			if (command.IsAuthenticationRequired
-				&& await services.GetRequiredService<IUserRepository>().LoadAsync(claims.UserId, claims.CreatedAt) == false) 
+			if (command.IsAuthenticationRequired)
 			{
-				return ResponsePreset. DiscardedAuthentication;
+				var userRepository = services.GetRequiredService<IUserRepository>();
+				if (await userRepository.LoadAsync(claims.UserId, claims.CreatedAt) == false) 
+				{
+					return ResponsePreset.DiscardedAuthentication;
+				}
+				var currentRequestId = request.Headers.RequestId;
+				var lastRequestId = userRepository.AttributeMap[DynamoDbKeys.LastRequestId].S;
+				if(currentRequestId == lastRequestId)//멱등성처리
+				{
+					return FunctionUrlResponseHelper.Success(userRepository.AttributeMap[DynamoDbKeys.LastIdempotencyResponse].S);
+				}
+
+				userRepository.AttributeMap[DynamoDbKeys.LastRequestId].S = currentRequestId;
 			}
 
 			context.ResponseModel = await command.InvokeAsync(services, context.RequestModel);

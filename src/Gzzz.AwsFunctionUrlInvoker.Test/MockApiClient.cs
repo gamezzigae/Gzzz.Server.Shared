@@ -31,7 +31,7 @@ public class MockApiClient : IApiClient
 			Headers = new FunctionUrlHeaders()
 			{
 				AccessToken = apiOption == ApiOption.Anonymous ? default : client.GetAccessToken(),
-				RequestId = apiOption == ApiOption.Idempotency ? RequestId.ToString() : default
+				RequestId = apiOption == ApiOption.Idempotency ? (++RequestId).ToString() : default
 			},
 			RequestContext = new RequestContext()
 			{

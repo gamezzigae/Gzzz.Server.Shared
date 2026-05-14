@@ -1,10 +1,11 @@
 using Amazon.DynamoDBv2.Model;
 using Gzzz.Db.DynamoDb;
+using MessagePack.Resolvers;
 namespace Gzzz.Services.Authentication;
 public interface IUserRepository
 {
 	public Dictionary<string, AttributeValue> AttributeMap { get; }
-	Task<bool> LoadAsync(string userId, DateTimeOffset authenticatedAt);
+	Task<bool>LoadAsync(string userId, DateTimeOffset authenticatedAt);
 }
 public class DefaultUserRepository : IUserRepository
 {

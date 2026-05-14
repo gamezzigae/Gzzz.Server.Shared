@@ -25,3 +25,13 @@ public class AnonymousCommandAttribute : CommandAttribute
 	{
 	}
 }
+
+
+
+[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+public class IdempotencyCommandAttribute : CommandAttribute
+{
+	public IdempotencyCommandAttribute(string path = "", LoggingType loggingType = LoggingType.Detailed) : base(path, loggingType)
+	{
+	}
+}
