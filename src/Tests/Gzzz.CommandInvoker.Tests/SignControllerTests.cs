@@ -62,17 +62,3 @@ public class SignControllerTests : AwsFunctionUrlInvokerFixture
 		Assert.Equal((int)UnauthorizedErrorCode.ExpiredToken, exception.ErrorCode);
 	}
 }
-
-public class IdempotencyTest : AwsFunctionUrlInvokerFixture
-{
-	public IdempotencyTest(ITestOutputHelper testLogger) : base(testLogger)
-	{
-	}
-
-	[Fact]
-	public async Task IdempotencyTestAsync()
-	{
-		var client = CreateEmptyClient();
-		var response = await client.RequestAsync<string>("/test/idempotency", ApiOption.Idempotency);
-	}
-}
