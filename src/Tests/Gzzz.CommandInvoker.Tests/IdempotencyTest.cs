@@ -9,7 +9,7 @@ public class IdempotencyTest : AwsFunctionUrlInvokerFixture
 	[Fact]
 	public async Task IdempotencyTestAsync()
 	{
-		var client = CreateEmptyClient();
+		var client = await CreateSignedClientAsync(RandomX.GetRandomText());
 		var response = await client.RequestAsync<string>("/test/idempotency", ApiOption.Idempotency);
 	}
 }

@@ -1,13 +1,17 @@
+using Amazon.Runtime;
 using Gzzz.Authentication;
 using Gzzz.AwsFunctionUrlInvoker;
 using Gzzz.AwsFunctionUrlInvoker.Services;
 using Gzzz.Client;
+using Gzzz.Db.DynamoDb;
+using Gzzz.Services.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Test;
 
-public abstract class AwsFunctionUrlInvokerFixtureBase
+[Collection("Sequential")]
+public abstract class AwsFunctionUrlInvokerFixtureBase : IAsyncLifetime
 {
 	protected readonly FunctionHandler _functionHandler;
 	protected readonly MockJsonLogger _mockJsonLogger;
@@ -21,6 +25,9 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 	public static readonly string InternalIp = "unit.test.i.p";
 	public AwsFunctionUrlInvokerFixtureBase(ITestOutputHelper testLogger)
 	{
+		EnvironmentX.SetObject(DynamoDbConfig.EnvironmentVariableName,
+			new DynamoDbConfig() { TableName = RandomX.GetRandomText(255), ServiceURL = "http://localhost:8000" });
+
 		EnvironmentX.SetObject(TokenServiceConfig.EnvironmentVariableName, new TokenServiceConfig()
 		{
 			HashKey = "abc12312",
@@ -33,6 +40,9 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 			GetAssemblies(),
 			services => {
 				services
+				.AddSingleton<AWSCredentials>(new BasicAWSCredentials("DUMMYACCESSKEYDUMMYY", "44nPdvh6gW+EXjh1P6jLXFzmmp4K2F1dUSQx7R4+"))
+				.AddDynamoDbService().AddScoped<IUserRepository, DynamoDbUserRepositoryBase>()
+
 				.AddSingleton<TimeService, MockTimeService>()
 				.AddSingleton<ITextLogger, MockJsonLogger>();
 
@@ -57,4 +67,13 @@ public abstract class AwsFunctionUrlInvokerFixtureBase
 
 	public T GetService<T>() => _functionHandler.Services.GetRequiredService<T>();
 	public TImplementation GetRequiredService<TService, TImplementation>() where TImplementation : TService => (TImplementation)GetService<TService>();
+
+	public async ValueTask InitializeAsync()
+	{
+		await DynamoDbTestUtil.CreateTableAsync(GetService<DynamoDbService>(), GetService<DynamoDbConfig>());
+	}
+	public async ValueTask DisposeAsync()
+	{
+		await DynamoDbTestUtil.DeleteTableAsync(GetService<DynamoDbService>(), GetService<DynamoDbConfig>());
+	}
 }

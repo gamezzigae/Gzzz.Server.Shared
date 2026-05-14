@@ -24,7 +24,7 @@ public static class RandomX
 
         var span = _characters.AsSpan();
 
-        foreach (var c in Enumerable.Range(0, size).Select(i => Random.Shared.Next(0, _characters.Length)))
+        foreach (var c in Enumerable.Range(0, size).Select(i => new Random().Next(0, _characters.Length)))
         {
             builder.Append(_characters[c]);
         }
