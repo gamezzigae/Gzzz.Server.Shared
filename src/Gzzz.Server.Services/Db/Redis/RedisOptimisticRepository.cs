@@ -31,7 +31,7 @@ public class RedisOptimisticRepository<T>
 
 	public async Task<Dictionary<string, OptimisticRecord<T>>> GetExpiredItemsAsync(DateTimeOffset expireAt, int take = 10)
 	{
-		var maxTimestamp = expireAt.Ticks;
+		var maxTimestamp = expireAt.UtcTicks;
 		var db = _redisService.GetDatabase();
 		var sortedSetEntries = await db.SortedSetRangeByScoreWithScoresAsync(
 			key: _sortedSetKey,
@@ -61,8 +61,8 @@ public class RedisOptimisticRepository<T>
 	
 	public async Task PutItemAsync(string key, T item, DateTimeOffset now, DateTimeOffset updatedAt = default)
 	{
-		var nowUnixMs = now.Ticks;
-		var updatedAtUnixMs = updatedAt.Ticks;
+		var nowUnixMs = now.UtcTicks;
+		var updatedAtUnixMs = updatedAt.UtcTicks;
 		if (nowUnixMs <= updatedAtUnixMs)
 		{
 			throw new RedisPutException("time condition error");

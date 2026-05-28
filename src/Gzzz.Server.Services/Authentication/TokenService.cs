@@ -13,7 +13,7 @@ public class TokenService
 	static readonly int _minPayloadLength = 10; // type(1) + createdAt ticks(8) + userId byte length(1)
 	readonly HMACSHA256 _hmac;
 	readonly int _signatureLength;
-	readonly TimeSpan _offset=TimeSpan.FromHours(9);
+	readonly TimeSpan _offset=TimeSpan.FromHours(0);
 	readonly TokenServiceConfig _authenticationConfig;
 
 	public TokenService(TokenServiceConfig authenticationConfig)
@@ -76,7 +76,7 @@ public class TokenService
 		Span<byte> result = stackalloc byte[256];
 		var payloadLength = new SpanWriter(result.Slice(1))
 			.Write(claims.Type)
-			.Write(claims.CreatedAt.Ticks)
+			.Write(claims.CreatedAt.UtcTicks)
 			.WriteBase64String(claims.UserId)
 			.Position;
 

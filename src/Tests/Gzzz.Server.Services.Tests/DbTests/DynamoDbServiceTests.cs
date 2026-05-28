@@ -55,7 +55,7 @@ public class DynamoDbServiceTests : DynamoDbFixture
 		var retrieved = await _dynamoDbService.GetAsync(_pk, _sk);
 		Assert.True(retrieved.TryGetValue(newKey, out var value));
 		Assert.Equal(newValue, value.S);
-		Assert.Equal(_now.AddMilliseconds(1).Ticks.ToString(), retrieved[DynamoDbKeys.UpdatedAt].N);
+		Assert.Equal(_now.AddMilliseconds(1).UtcTicks.ToString(), retrieved[DynamoDbKeys.UpdatedAt].N);
 	}
 
 	[Fact]
