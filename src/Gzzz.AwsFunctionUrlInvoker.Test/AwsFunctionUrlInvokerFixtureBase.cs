@@ -42,7 +42,7 @@ public abstract class AwsFunctionUrlInvokerFixtureBase : IAsyncLifetime
 				services
 				.AddSingleton<AWSCredentials>(new BasicAWSCredentials("DUMMYACCESSKEYDUMMYY", "44nPdvh6gW+EXjh1P6jLXFzmmp4K2F1dUSQx7R4+"))
 				.AddDynamoDbService().AddScoped<IUserRepository, DynamoDbUserRepositoryBase>()
-
+				.AddSingleton<IUserAuthenticatedInfoUpdater, DynamoDbAuthenticatedInfoUpdater>()
 				.AddSingleton<TimeService, MockTimeService>()
 				.AddSingleton<ITextLogger, MockJsonLogger>();
 
@@ -52,6 +52,7 @@ public abstract class AwsFunctionUrlInvokerFixtureBase : IAsyncLifetime
 		_mockJsonLogger = GetRequiredService<ITextLogger, MockJsonLogger>();
 		_mockTimeService = GetRequiredService<TimeService, MockTimeService>();
 		_testLogger = testLogger;
+
 	}
 
 	public IApiClient CreateEmptyClient() => new MockApiClient(this._functionHandler, _testLogger);
