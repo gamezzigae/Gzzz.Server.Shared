@@ -7,9 +7,24 @@ public class IdempotencyTest : AwsFunctionUrlInvokerFixture
 	}
 
 	[Fact]
-	public async Task IdempotencyTestAsync()
+	public async Task IdempotencyTest1Async()
 	{
 		var client = await CreateSignedClientAsync(RandomX.GetRandomText());
-		var response = await client.RequestAsync<string>("/test/idempotency", ApiOption.Idempotency);
+		var response1 = await client.RequestAsync<string>("/test/idempotency", ApiOption.Idempotency);
+		var response2 = await client.RequestAsync<string>("/test/idempotency", ApiOption.Idempotency);
+		var response3 = await client.RequestAsync<string>("/test/idempotency", ApiOption.Idempotency);
+
+		Assert.Equal(response1, response2);
+		Assert.Equal(response1, response3);
+	}
+	[Fact]
+	public async Task IdempotencyTest2Async()
+	{
+		var client = await CreateSignedClientAsync(RandomX.GetRandomText());
+		var response1 = await client.RequestAsync<string>("/test/idempotency", ApiOption.Idempotency);
+		client.NextRequestId();
+		var response2 = await client.RequestAsync<string>("/test/idempotency", ApiOption.Idempotency);
+
+		Assert.NotEqual(response1, response2);
 	}
 }

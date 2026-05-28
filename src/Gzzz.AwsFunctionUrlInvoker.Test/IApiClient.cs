@@ -4,6 +4,8 @@ namespace Gzzz.Client;
 
 public interface IApiClient
 {
+	void NextRequestId();
+
 	Task<T> RequestAsync<T>(string path, ApiOption apiOption= ApiOption.Authenticated, object requestBody = null);
 
 	public AuthenticationTokens AuthenticationTokens { get; set; }

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Test;
 
-public class MockApiClient : IApiClient	
+public class MockApiClient : IApiClient
 {
 	readonly FunctionHandler _functionHandler;
 	readonly ITestOutputHelper _logger;
@@ -25,13 +25,14 @@ public class MockApiClient : IApiClient
 	public async Task<T> RequestAsync<T>(string path, ApiOption apiOption, object requestBody= null)
 	{
 		IApiClient client = this;
+
 		var request = new FunctionUrlRequest()
 		{
 			RawPath = path,
 			Headers = new FunctionUrlHeaders()
 			{
 				AccessToken = apiOption == ApiOption.Anonymous ? default : client.GetAccessToken(),
-				RequestId = apiOption == ApiOption.Idempotency ? (++RequestId).ToString() : default
+				RequestId = apiOption == ApiOption.Idempotency ? RequestId.ToString() : default
 			},
 			RequestContext = new RequestContext()
 			{
@@ -55,4 +56,5 @@ public class MockApiClient : IApiClient
 		return result;
 	}
 
+	public void NextRequestId() => this.RequestId++;
 }
