@@ -6,10 +6,12 @@ namespace Gzzz.CommandInvoker.Tests;
 public class TestController
 {
 	readonly RequestInfo _requestInfo;
+	readonly IUserRepository _userRepository;
 
-	public TestController(RequestInfo requestInfo)
+	public TestController(RequestInfo requestInfo, IUserRepository userRepository)
 	{
 		_requestInfo = requestInfo;
+		_userRepository = userRepository;
 	}
 	[Command("/echo")]
 	public Task<string> GetStringAsync(string message) => Task.FromResult(message);
@@ -32,14 +34,14 @@ public class TestController
 		return Task.FromResult(RandomX.GetRandomText());
 	}
 
-	//[UpdateCommand("/save")]
-	//public async Task SaveAsync(string content)
-	//{
-	//	_userRepository.AttributeMap["content"] = new(content);
-	//}
-	//[Command("/load")]
-	//public async Task<string> LoadAsync()
-	//{
-	//	return _userRepository.AttributeMap["content"].ToString();
-	//}
+	[UpdateCommand("/save")]
+	public async Task SaveAsync(string content)
+	{
+		_userRepository.AttributeMap["content"] = new(content);
+	}
+	[Command("/load")]
+	public async Task<string> LoadAsync()
+	{
+		return _userRepository.AttributeMap["content"].ToString();
+	}
 }

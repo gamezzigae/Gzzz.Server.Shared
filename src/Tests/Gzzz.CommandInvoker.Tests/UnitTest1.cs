@@ -1,3 +1,4 @@
+using Gzzz.Services.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gzzz.CommandInvoker.Tests;
@@ -10,6 +11,7 @@ public class Tests
 		var services = new ServiceCollection()
 			.AddCommandInvokers(typeof(TestController).Assembly)
 			.AddScoped<RequestInfo>()
+			.AddSingleton<IUserRepository, DefaultUserRepository>()
 			.BuildServiceProvider();
 		command = services.GetRequiredService<IReadOnlyDictionary<string, CommandInfo>>()[path];
 		return services; ;

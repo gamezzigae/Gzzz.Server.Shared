@@ -48,11 +48,11 @@ public class MockApiClient : IApiClient
 			var errorMessage = response.Headers.GetValueOrDefault("zz-em");
 			int.TryParse(response.Headers.GetValueOrDefault("zz-ec"), out var errorCode);
 
-			_logger.WriteLine($"API Error {response.StatusCode} - {errorCode}: {errorMessage}");	
+			_logger.WriteLine($"API Error {response.StatusCode} - {errorCode}: {errorMessage}\n{response.Body}");	
 			throw new HttpException(response.StatusCode, errorMessage, errorCode);
 		}
 
-		var result = JsonSerializer.Deserialize<T>(response.Body);
+		var result = response.Body == null ? default(T) : JsonSerializer.Deserialize<T>(response.Body);
 		return result;
 	}
 

@@ -23,8 +23,8 @@ public class CommandInfo
 	public CommandInfo(MethodInfo methodInfo, CommandAttribute commandAttribute)
 	{
 		this.IsAuthenticationRequired = (commandAttribute is AnonymousCommandAttribute) == false;
-		this.LoggingType= commandAttribute.LoggingType;
 		this.UseUpdate = commandAttribute.UseUpdate;
+		this.LoggingType= commandAttribute.LoggingType;
 		var parameters = methodInfo.GetParameters();
 
 		this.ParameterTypes = parameters

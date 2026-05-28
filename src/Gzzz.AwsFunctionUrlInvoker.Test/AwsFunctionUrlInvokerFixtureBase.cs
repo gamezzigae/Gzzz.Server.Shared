@@ -43,6 +43,7 @@ public abstract class AwsFunctionUrlInvokerFixtureBase : IAsyncLifetime
 				.AddSingleton<AWSCredentials>(new BasicAWSCredentials("DUMMYACCESSKEYDUMMYY", "44nPdvh6gW+EXjh1P6jLXFzmmp4K2F1dUSQx7R4+"))
 				.AddDynamoDbService().AddScoped<IUserRepository, DynamoDbUserRepositoryBase>()
 				.AddSingleton<IUserAuthenticatedInfoUpdater, DynamoDbAuthenticatedInfoUpdater>()
+				.AddSingleton<IUserRepository,DynamoDbUserRepositoryBase>()
 				.AddSingleton<TimeService, MockTimeService>()
 				.AddSingleton<ITextLogger, MockJsonLogger>();
 

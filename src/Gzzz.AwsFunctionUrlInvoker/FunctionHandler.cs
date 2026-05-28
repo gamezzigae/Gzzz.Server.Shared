@@ -101,14 +101,8 @@ public class FunctionHandler
 			context.API = null;
 			return ResponsePreset.NotFound;//로그를 남길까 말까~
 		}
-										   //
-		TokenClaims claims = default; //어차피 stackalloc이 안되니깐 그냥 struct로 만들어서 씀
-		if (command.IsAuthenticationRequired)
-		{
-			var decodeTokenResult = _tokenService.ValidateToken(TokenType.AccessTokenV1, request.Headers.AccessToken, context, out claims);
-			if (decodeTokenResult.IsSuccess == false)
-				return FunctionUrlResponseHelper.Error(401, (int)decodeTokenResult.ErrorCode);
-		}
+								
+
 		try
 		{
 			if (command.IsParameterRequired)
@@ -122,6 +116,9 @@ public class FunctionHandler
 			//db 연산을 하기 때문에 최후 순위로 미룸
 			if (command.IsAuthenticationRequired)
 			{
+				var decodeTokenResult = _tokenService.ValidateToken(TokenType.AccessTokenV1, request.Headers.AccessToken, context, out var claims);
+				if (decodeTokenResult.IsSuccess == false)
+					return FunctionUrlResponseHelper.Error(401, (int)decodeTokenResult.ErrorCode);
 				var userRepository = services.GetRequiredService<IUserRepository>();
 				if (await userRepository.LoadAsync(claims.UserId, claims.CreatedAt) == false) 
 				{
