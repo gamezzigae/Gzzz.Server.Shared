@@ -27,7 +27,7 @@ public class TestController
 	public Task GetRequestInfoAsync() => Task.CompletedTask;
 
 	[UpdateCommand("/idempotency")]
-	public Task<string> IdempotencyTestAsync([FromService]IUserRepository userRepository)
+	public Task<string> IdempotencyTestAsync()
 	{
 		return Task.FromResult(RandomX.GetRandomText());
 	}
