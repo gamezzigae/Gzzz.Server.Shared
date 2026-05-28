@@ -31,7 +31,8 @@ public static class DynamoDbTestUtil
 
     public static async Task WaitTableCreation(AmazonDynamoDBClient dynamodb, string tableName)
     {
-        for (int i = 0; i < 10; i++)
+
+		for (int i = 0; i < 10; i++)
         {
             try
             {

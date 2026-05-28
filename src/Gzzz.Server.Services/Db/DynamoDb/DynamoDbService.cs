@@ -111,10 +111,10 @@ public class DynamoDbService
 		if (attributeMap.TryGetValue(DynamoDbKeys.UpdatedAt, out var lastUpdatedAt) == false)
 			throw new ArgumentException("attributeMap must contain a 'UA'");
 
-		var newUpdatedAt = now.ToUnixTimeMilliseconds();
+		var newUpdatedAt = now.Ticks;
 		if (newUpdatedAt <= long.Parse(lastUpdatedAt.N))
 		{
-			throw new ArgumentException("dynamodb update item time condition error");
+			throw new ArgumentException("dynamodb put item time condition error");
 		}
 
 		attributeMap[DynamoDbKeys.UpdatedAt] = new AttributeValue() { N = newUpdatedAt.ToString() };
@@ -152,7 +152,7 @@ public class DynamoDbService
 		if (attributeMap.TryGetValue(DynamoDbKeys.UpdatedAt, out var lastUpdatedAt) == false)
 			throw new ArgumentException("attributeMap must contain a 'UA'");
 
-		var newUpdatedAt = now.ToUnixTimeMilliseconds();
+		var newUpdatedAt = now.Ticks;
 		if (newUpdatedAt <= long.Parse(lastUpdatedAt.N))
 		{
 			throw new ArgumentException("dynamodb update item time condition error");

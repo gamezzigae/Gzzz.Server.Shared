@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker.Test;
 
-public class MockApiClient : IApiClient	
+public class MockApiClient : IApiClient
 {
 	readonly FunctionHandler _functionHandler;
 	readonly ITestOutputHelper _logger;
@@ -25,6 +25,7 @@ public class MockApiClient : IApiClient
 	public async Task<T> RequestAsync<T>(string path, ApiOption apiOption, object requestBody= null)
 	{
 		IApiClient client = this;
+
 		var request = new FunctionUrlRequest()
 		{
 			RawPath = path,
@@ -55,4 +56,5 @@ public class MockApiClient : IApiClient
 		return result;
 	}
 
+	public void NextRequestId() => this.RequestId++;
 }

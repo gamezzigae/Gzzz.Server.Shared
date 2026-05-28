@@ -20,6 +20,7 @@ using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker;
 
+
 public class FunctionHandler
 {
 
@@ -119,10 +120,21 @@ public class FunctionHandler
 			}
 
 			//db 연산을 하기 때문에 최후 순위로 미룸
-			if (command.IsAuthenticationRequired
-				&& await services.GetRequiredService<IUserRepository>().LoadAsync(claims.UserId, claims.CreatedAt) == false) 
+			if (command.IsAuthenticationRequired)
 			{
-				return ResponsePreset. DiscardedAuthentication;
+				var userRepository = services.GetRequiredService<IUserRepository>();
+				if (await userRepository.LoadAsync(claims.UserId, claims.CreatedAt) == false) 
+				{
+					return ResponsePreset.DiscardedAuthentication;
+				}
+				var currentRequestId = request.Headers.RequestId;
+				var lastRequestId = userRepository.AttributeMap[DynamoDbKeys.LastRequestId].S;
+				if(currentRequestId == lastRequestId)//멱등성처리
+				{
+					return FunctionUrlResponseHelper.Success(userRepository.AttributeMap[DynamoDbKeys.LastIdempotencyResponse].S);
+				}
+
+				userRepository.AttributeMap[DynamoDbKeys.LastRequestId].S = currentRequestId; //업데이트 안하면 어차피 적용안됨
 			}
 
 			context.ResponseModel = await command.InvokeAsync(services, context.RequestModel);
@@ -130,6 +142,14 @@ public class FunctionHandler
 				_contextSerializer.Serialize(context.ResponseModel, command.ResponseType)
 				: null;
 			context.TrimSuccess(command.LoggingType);
+
+			if(command.UseUpdate)
+			{
+				var userRepository = services.GetRequiredService<IUserRepository>();
+				userRepository.AttributeMap[DynamoDbKeys.LastIdempotencyResponse].S = deserializedResponseBody;
+				await userRepository.CommitAsync(context.RequestTime);
+			}
+
 			return FunctionUrlResponseHelper.Success(deserializedResponseBody);
 		}
 		catch (HttpException httpException)
