@@ -32,4 +32,14 @@ public class TestController
 		return Task.FromResult(RandomX.GetRandomText());
 	}
 
+	//[UpdateCommand("/save")]
+	//public async Task SaveAsync(string content)
+	//{
+	//	_userRepository.AttributeMap["content"] = new(content);
+	//}
+	//[Command("/load")]
+	//public async Task<string> LoadAsync()
+	//{
+	//	return _userRepository.AttributeMap["content"].ToString();
+	//}
 }

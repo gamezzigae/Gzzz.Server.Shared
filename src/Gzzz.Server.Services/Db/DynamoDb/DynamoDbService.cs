@@ -170,8 +170,8 @@ public class DynamoDbService
 				continue;
 
 			i++;
-			var namePlaceholder = string.Concat("#k", i);
-			var valuePlaceholder = string.Concat(":v", i);
+			var namePlaceholder = string.Concat("#k", key);
+			var valuePlaceholder = string.Concat(":v", key);
 
 			sb.Append(namePlaceholder);
 			sb.Append('=');

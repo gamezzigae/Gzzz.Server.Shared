@@ -146,7 +146,7 @@ public class FunctionHandler
 			if(command.UseUpdate)
 			{
 				var userRepository = services.GetRequiredService<IUserRepository>();
-				userRepository.AttributeMap[DynamoDbKeys.LastIdempotencyResponse].S = deserializedResponseBody;
+				userRepository.AttributeMap[DynamoDbKeys.LastIdempotencyResponse].S = deserializedResponseBody ?? "null";
 				await userRepository.CommitAsync(context.RequestTime);
 			}
 
