@@ -20,8 +20,8 @@ public static class AttributeMap
 
 		result.Add(DynamoDbKeys.PartitionKey, new AttributeValue(partitionKey));
 		result.Add(DynamoDbKeys.SortKey, new AttributeValue(sortKey));
-		result.Add(DynamoDbKeys.UpdatedAt, new AttributeValue() { N = now.ToUnixTimeMilliseconds().ToString() });
-		result.Add(DynamoDbKeys.AuthenticatedAt, new AttributeValue() { N = now.ToUnixTimeMilliseconds().ToString() });
+		result.Add(DynamoDbKeys.UpdatedAt, new AttributeValue() { N = now.Ticks.ToString() });
+		result.Add(DynamoDbKeys.AuthenticatedAt, new AttributeValue() { N = now.Ticks.ToString() });
 
 		return result;
 	}

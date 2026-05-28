@@ -10,6 +10,7 @@ public class CommandInfo
 	public LoggingType LoggingType { get; set; }
 	public bool IsAuthenticationRequired { get; }
 	public bool IsParameterRequired { get; }
+	public bool UseUpdate { get; }
 	public Type ControllerType { get; }
 	public Type RequestType { get; }
 	public Type ResponseType { get; }
@@ -23,6 +24,7 @@ public class CommandInfo
 	{
 		this.IsAuthenticationRequired = (commandAttribute is AnonymousCommandAttribute) == false;
 		this.LoggingType= commandAttribute.LoggingType;
+		this.UseUpdate = commandAttribute.UseUpdate;
 		var parameters = methodInfo.GetParameters();
 
 		this.ParameterTypes = parameters

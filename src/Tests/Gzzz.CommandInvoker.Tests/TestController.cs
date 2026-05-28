@@ -1,3 +1,5 @@
+using Gzzz.Services.Authentication;
+
 namespace Gzzz.CommandInvoker.Tests;
 
 [Controller("test")]
@@ -24,6 +26,10 @@ public class TestController
 	[AnonymousCommand("/requestinfo")]
 	public Task GetRequestInfoAsync() => Task.CompletedTask;
 
-	[IdempotencyCommand("/idempotency")]
-	public Task IdempotencyTestAsync()=>Task.FromResult(RandomX.GetRandomText());
+	[UpdateCommand("/idempotency")]
+	public Task<string> IdempotencyTestAsync([FromService]IUserRepository userRepository)
+	{
+		return Task.FromResult(RandomX.GetRandomText());
+	}
+
 }

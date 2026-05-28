@@ -1,62 +1,64 @@
-using Gzzz.Db.Redis;
+//레디스 일단 안씀
 
-namespace Gzzz.Server.Shared.Tests.DbTests;
+//using Gzzz.Db.Redis;
 
-public class RedisRepositoryTests : RedisFixture
-{
-	readonly DateTimeOffset _now = DateTimeOffset.UtcNow;
+//namespace Gzzz.Server.Shared.Tests.DbTests;
 
-	[Fact]
-	public async Task InsertItemTestAsync()
-	{
-		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
-		await _repository.PutItemAsync(item.UserId, item, _now);
-		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId);
-		Assert.NotEqual(default, retrievedItem);
-		AssertX.JsonEquals(item, retrievedItem.Value);
-		Assert.True(retrievedItem.IsFromCache);
-		Assert.Equal(retrievedItem.UpdatedAt.ToUnixTimeMilliseconds(), (_now.ToUnixTimeMilliseconds()));
-	}
+//public class RedisRepositoryTests : RedisFixture
+//{
+//	readonly DateTimeOffset _now = DateTimeOffset.UtcNow;
 
-	[Fact]
-	public async Task InsertDuplicatedItemTestAsync()
-	{
-		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
-		var now = DateTimeOffset.UtcNow;
-		await _repository.PutItemAsync(item.UserId, item, now);
-		var exception = Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now));
-	}
+//	[Fact]
+//	public async Task InsertItemTestAsync()
+//	{
+//		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
+//		await _repository.PutItemAsync(item.UserId, item, _now);
+//		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId);
+//		Assert.NotEqual(default, retrievedItem);
+//		AssertX.JsonEquals(item, retrievedItem.Value);
+//		Assert.True(retrievedItem.IsFromCache);
+//		Assert.Equal(retrievedItem.UpdatedAt.Ticks, (_now.Ticks));
+//	}
 
-	[Fact]
-	public async Task UpdateItemTestAsync()
-	{
-		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
-		await _repository.PutItemAsync(item.UserId, item, _now);
+//	[Fact]
+//	public async Task InsertDuplicatedItemTestAsync()
+//	{
+//		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
+//		var now = DateTimeOffset.UtcNow;
+//		await _repository.PutItemAsync(item.UserId, item, now);
+//		var exception = Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now));
+//	}
 
-		var nextLevel = RandomX.GetRandom();
-		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId);
-		item.Level = nextLevel;
-		await _repository.PutItemAsync(item.UserId, item, _now.AddMilliseconds(1), retrievedItem.UpdatedAt);
+//	[Fact]
+//	public async Task UpdateItemTestAsync()
+//	{
+//		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
+//		await _repository.PutItemAsync(item.UserId, item, _now);
 
-		var retrievedItem2 = await _repository.GetItemOrDefaultAsync(item.UserId);
+//		var nextLevel = RandomX.GetRandom();
+//		var retrievedItem = await _repository.GetItemOrDefaultAsync(item.UserId);
+//		item.Level = nextLevel;
+//		await _repository.PutItemAsync(item.UserId, item, _now.AddMilliseconds(1), retrievedItem.UpdatedAt);
 
-		Assert.NotEqual(default, retrievedItem2);
-		AssertX.JsonEquals(item, retrievedItem2.Value);
-		Assert.True(retrievedItem2.IsFromCache);
-		Assert.Equal(retrievedItem2.UpdatedAt.ToUnixTimeMilliseconds(), (_now.AddMilliseconds(1).ToUnixTimeMilliseconds()));
-		Assert.Equal(retrievedItem2.Value.Level, (nextLevel));
-	}
+//		var retrievedItem2 = await _repository.GetItemOrDefaultAsync(item.UserId);
 
-
-	[Fact]
-	public async Task UpdateItemTimeStampErrorTestAsync()
-	{
-		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
-		var now = DateTimeOffset.Now;
-		await _repository.PutItemAsync(item.UserId, item, now);
-		await Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, now));
-		//Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, now+1)); //뭐였는지 모르겠음
-	}
+//		Assert.NotEqual(default, retrievedItem2);
+//		AssertX.JsonEquals(item, retrievedItem2.Value);
+//		Assert.True(retrievedItem2.IsFromCache);
+//		Assert.Equal(retrievedItem2.UpdatedAt.Ticks, (_now.AddMilliseconds(1).Ticks));
+//		Assert.Equal(retrievedItem2.Value.Level, (nextLevel));
+//	}
 
 
-}
+//	[Fact]
+//	public async Task UpdateItemTimeStampErrorTestAsync()
+//	{
+//		var item = new TestEntity { UserId = RandomX.GetRandomText(), Level = RandomX.GetRandom() };
+//		var now = DateTimeOffset.Now;
+//		await _repository.PutItemAsync(item.UserId, item, now);
+//		await Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, now));
+//		//Assert.ThrowsAsync<RedisPutException>(() => _repository.PutItemAsync(item.UserId, item, now, now+1)); //뭐였는지 모르겠음
+//	}
+
+
+//}

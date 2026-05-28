@@ -134,7 +134,7 @@ public class FunctionHandler
 					return FunctionUrlResponseHelper.Success(userRepository.AttributeMap[DynamoDbKeys.LastIdempotencyResponse].S);
 				}
 
-				userRepository.AttributeMap[DynamoDbKeys.LastRequestId].S = currentRequestId;
+				userRepository.AttributeMap[DynamoDbKeys.LastRequestId].S = currentRequestId; //업데이트 안하면 어차피 적용안됨
 			}
 
 			context.ResponseModel = await command.InvokeAsync(services, context.RequestModel);
@@ -142,6 +142,14 @@ public class FunctionHandler
 				_contextSerializer.Serialize(context.ResponseModel, command.ResponseType)
 				: null;
 			context.TrimSuccess(command.LoggingType);
+
+			if(command.UseUpdate)
+			{
+				var userRepository = services.GetRequiredService<IUserRepository>();
+				userRepository.AttributeMap[DynamoDbKeys.LastIdempotencyResponse].S = deserializedResponseBody;
+				await userRepository.CommitAsync(context.RequestTime);
+			}
+
 			return FunctionUrlResponseHelper.Success(deserializedResponseBody);
 		}
 		catch (HttpException httpException)
