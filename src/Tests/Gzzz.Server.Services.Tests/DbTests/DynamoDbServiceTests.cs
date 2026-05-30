@@ -55,7 +55,7 @@ public class DynamoDbServiceTests : DynamoDbFixture
 		var retrieved = await _dynamoDbService.GetAsync(_pk, _sk);
 		Assert.True(retrieved.TryGetValue(newKey, out var value));
 		Assert.Equal(newValue, value.S);
-		Assert.Equal(_now.AddMilliseconds(1).ToLong().ToString(), retrieved[DynamoDbKeys.UpdatedAt].N);
+		Assert.Equal(_now.AddMilliseconds(1).ToLongTime().ToString(), retrieved[DynamoDbKeys.UpdatedAt].N);
 	}
 
 	[Fact]
@@ -74,7 +74,7 @@ public class DynamoDbServiceTests : DynamoDbFixture
 	[InlineData(999)] //milliseconds 단위를 벗어나지 못함
 	public async Task UpdateItemUpdatedAtErrorAsync(int microSeconds)
 	{
-		var now = DateTimeOffset.FromUnixTimeMilliseconds(DateTimeOffset.Now.ToLong());
+		var now = DateTimeOffset.FromUnixTimeMilliseconds(DateTimeOffset.Now.ToLongTime());
 		var map = AttributeMap.New(_pk, _sk, now);
 		await _dynamoDbService.InsertAsync(map);
 		var item = await _dynamoDbService.GetAsync(_pk, _sk);

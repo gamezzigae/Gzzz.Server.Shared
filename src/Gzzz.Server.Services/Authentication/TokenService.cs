@@ -77,7 +77,7 @@ public class TokenService
 		Span<byte> result = stackalloc byte[256];
 		var payloadLength = new SpanWriter(result.Slice(1))
 			.Write(claims.Type)
-			.Write(claims.CreatedAt.ToLong())
+			.Write(claims.CreatedAt.ToLongTime())
 			.WriteBase64String(claims.UserId)
 			.Position;
 

@@ -48,7 +48,7 @@ public class AuthenticationServiceTests
 		Assert.True(_tokenService.DecodeToken(accessToken, out var claims));
 		Assert.Equal(((byte)TokenType.AccessTokenV1), claims.Type);
 		Assert.Equal(claims.UserId, _userId);
-		Assert.Equal(claims.CreatedAt.ToLong(), _now.ToLong());
+		Assert.Equal(claims.CreatedAt.ToLongTime(), _now.ToLongTime());
 
 		var context = new ApiContext() { RequestTime = claims.CreatedAt }; //만료시간 딱 맞춰서
 		var result = _tokenService.ValidateToken(TokenType.AccessTokenV1, accessToken, context, out _);

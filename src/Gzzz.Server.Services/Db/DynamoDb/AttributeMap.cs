@@ -20,8 +20,8 @@ public static class AttributeMap
 
 		result.Add(DynamoDbKeys.PartitionKey, new AttributeValue(partitionKey));
 		result.Add(DynamoDbKeys.SortKey, new AttributeValue(sortKey));
-		result.Add(DynamoDbKeys.UpdatedAt, new AttributeValue() { N = now.ToLong().ToString() });
-		result.Add(DynamoDbKeys.AuthenticatedAt, new AttributeValue() { N = now.ToLong().ToString() });
+		result.Add(DynamoDbKeys.UpdatedAt, new AttributeValue() { N = now.ToLongTime().ToString() });
+		result.Add(DynamoDbKeys.AuthenticatedAt, new AttributeValue() { N = now.ToLongTime().ToString() });
 
 		return result;
 	}
@@ -40,5 +40,5 @@ public static class AttributeMap
 		return Json.Deserialize<T>(json);
 	}
 
-	public static long ToLong(this DateTimeOffset dateTimeOffset) => dateTimeOffset.ToUniversalTime().ToUnixTimeMilliseconds();
+	public static long ToLongTime(this DateTimeOffset dateTimeOffset) => dateTimeOffset.ToUniversalTime().ToUnixTimeMilliseconds();
 }

@@ -15,7 +15,7 @@ public class RedisRepositoryTests : RedisFixture
 		Assert.NotEqual(default, retrievedItem);
 		AssertX.JsonEquals(item, retrievedItem.Value);
 		Assert.True(retrievedItem.IsFromCache);
-		Assert.Equal(retrievedItem.UpdatedAt.ToLong(), _now.ToLong());
+		Assert.Equal(retrievedItem.UpdatedAt.ToLongTime(), _now.ToLongTime());
 	}
 
 	[Fact]
@@ -43,7 +43,7 @@ public class RedisRepositoryTests : RedisFixture
 		Assert.NotEqual(default, retrievedItem2);
 		AssertX.JsonEquals(item, retrievedItem2.Value);
 		Assert.True(retrievedItem2.IsFromCache);
-		Assert.Equal(retrievedItem2.UpdatedAt.ToLong(), _now.AddMilliseconds(1).ToLong());
+		Assert.Equal(retrievedItem2.UpdatedAt.ToLongTime(), _now.AddMilliseconds(1).ToLongTime());
 		Assert.Equal(retrievedItem2.Value.Level, (nextLevel));
 	}
 
