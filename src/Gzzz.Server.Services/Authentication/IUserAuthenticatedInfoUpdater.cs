@@ -37,7 +37,7 @@ public class DynamoDbAuthenticatedInfoUpdater : IUserAuthenticatedInfoUpdater
 			UpdateExpression = "SET UA=:t,AA=:t,LRID=:e,LRES=:e",
 			ExpressionAttributeValues = new Dictionary<string, AttributeValue>()
 			{
-				{ ":t", new AttributeValue { N = createdAt.UtcTicks.ToString() } },
+				{ ":t", new AttributeValue { N = createdAt.ToLong().ToString() } },
 				{ ":e", _emptyValue },
 
 			},

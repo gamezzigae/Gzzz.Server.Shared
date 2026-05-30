@@ -55,7 +55,7 @@ public class DynamoDbServiceTests : DynamoDbFixture
 		var retrieved = await _dynamoDbService.GetAsync(_pk, _sk);
 		Assert.True(retrieved.TryGetValue(newKey, out var value));
 		Assert.Equal(newValue, value.S);
-		Assert.Equal(_now.AddMilliseconds(1).UtcTicks.ToString(), retrieved[DynamoDbKeys.UpdatedAt].N);
+		Assert.Equal(_now.AddMilliseconds(1).ToLong().ToString(), retrieved[DynamoDbKeys.UpdatedAt].N);
 	}
 
 	[Fact]
@@ -68,20 +68,20 @@ public class DynamoDbServiceTests : DynamoDbFixture
 	}
 
 	//Ticks를 사용하면서 ms 단위의 예외처리 테스트 비활성화
-	//[Theory]
-	//[InlineData(0)]
-	//[InlineData(-1000)]
-	//[InlineData(999)] //milliseconds 단위를 벗어나지 못함
-	//public async Task UpdateItemUpdatedAtErrorAsync(int microSeconds)
-	//{
-	//	var now = DateTimeOffset.FromUnixTimeMilliseconds(DateTime.UtcNow.Ticks);
-	//	var map = AttributeMap.New(_pk, _sk, now);
-	//	await _dynamoDbService.InsertAsync(map);
-	//	var item = await _dynamoDbService.GetAsync(_pk, _sk);
+	[Theory]
+	[InlineData(0)]
+	[InlineData(-1000)]
+	[InlineData(999)] //milliseconds 단위를 벗어나지 못함
+	public async Task UpdateItemUpdatedAtErrorAsync(int microSeconds)
+	{
+		var now = DateTimeOffset.FromUnixTimeMilliseconds(DateTimeOffset.Now.ToLong());
+		var map = AttributeMap.New(_pk, _sk, now);
+		await _dynamoDbService.InsertAsync(map);
+		var item = await _dynamoDbService.GetAsync(_pk, _sk);
 
-	//	var exception = await Assert.ThrowsAsync<ArgumentException>(() => _dynamoDbService.PutAsync(item, now.AddMicroseconds(microSeconds)));
-	//	Assert.Equal("dynamodb put item time condition error", exception.Message);
-	//}
+		var exception = await Assert.ThrowsAsync<ArgumentException>(() => _dynamoDbService.PutAsync(item, now.AddMicroseconds(microSeconds)));
+		Assert.Equal("dynamodb put item time condition error", exception.Message);
+	}
 
 	[Fact]
 	public async Task PartialUpdateTestAsync()
@@ -103,6 +103,7 @@ public class DynamoDbServiceTests : DynamoDbFixture
 		}
 		map["a"].S = a + b;
 		map.Remove(b);
+
 		await _dynamoDbService.UpdateItemAsync(map, _now.AddMilliseconds(1));
 
 		{

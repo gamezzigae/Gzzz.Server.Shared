@@ -1,4 +1,5 @@
 using Amazon.Auth.AccessControlPolicy;
+using Gzzz.Db.DynamoDb;
 using Gzzz.Serialize;
 using System.Buffers.Binary;
 using System.Security.Claims;
@@ -76,7 +77,7 @@ public class TokenService
 		Span<byte> result = stackalloc byte[256];
 		var payloadLength = new SpanWriter(result.Slice(1))
 			.Write(claims.Type)
-			.Write(claims.CreatedAt.UtcTicks)
+			.Write(claims.CreatedAt.ToLong())
 			.WriteBase64String(claims.UserId)
 			.Position;
 
@@ -141,10 +142,14 @@ public class TokenService
 	{
 		var reader = new SpanReader(span);
 
+		var type = reader.ReadByte();
+		var unixMilliseconds = reader.ReadInt64();
+		var userId = reader.ReadBase64String();
+
 		return new(
-			reader.ReadByte(),
-			reader.ReadDateTimeOffset(_offset),
-			reader.ReadBase64String()
+			type,
+			DateTimeOffset.FromUnixTimeMilliseconds(unixMilliseconds),
+			userId
 		);
 	}
 }
