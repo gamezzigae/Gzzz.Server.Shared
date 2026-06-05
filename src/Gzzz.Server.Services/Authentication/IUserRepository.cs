@@ -1,6 +1,5 @@
 using Amazon.DynamoDBv2.Model;
 using Gzzz.Db.DynamoDb;
-using MessagePack.Resolvers;
 namespace Gzzz.Services.Authentication;
 public interface IUserRepository
 {

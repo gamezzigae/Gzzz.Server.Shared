@@ -3,7 +3,6 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Runtime.Internal;
-using Gzzz;
 using Gzzz.Authentication;
 using Gzzz.AwsFunctionUrlInvoker.Models;
 using Gzzz.AwsFunctionUrlInvoker.Serializer;
@@ -12,10 +11,7 @@ using Gzzz.CommandInvoker;
 using Gzzz.Db.DynamoDb;
 using Gzzz.Services.Authentication;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Security.Claims;
 using System.Text.Json;
 
 namespace Gzzz.AwsFunctionUrlInvoker;
@@ -39,7 +35,7 @@ public class FunctionHandler
 			.AddSingleton<IContextSerializer, JsonContextSerializer>()
 			.AddSingleton<TimeService>()
 			.AddScoped<ApiContext>()
-			.AddScoped<RequestInfo>(services=> (RequestInfo)services.GetRequiredService<ApiContext>())
+			.AddScoped<RequestInfo>(services=> services.GetRequiredService<ApiContext>())
 			//
 			.AddSingleton<IUserRepository, DefaultUserRepository>()
 			.AddSingleton<IUserAuthenticatedInfoUpdater, DefaultTokenUpdateService>()
