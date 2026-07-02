@@ -1,6 +1,5 @@
 using Amazon.DynamoDBv2.Model;
 using Gzzz.Db.DynamoDb;
-using MessagePack.Resolvers;
 namespace Gzzz.Services.Authentication;
 public interface IUserRepository
 {
@@ -29,7 +28,7 @@ public class DynamoDbUserRepositoryBase : IUserRepository
 	public async Task<bool> LoadAsync(string userId, DateTimeOffset authenticatedAt)
 	{
 		this.AttributeMap = await _dynamoDbService.GetAsync(DynamoDbTable.User, userId);
-		return authenticatedAt.UtcTicks.ToString() == AttributeMap[DynamoDbKeys.AuthenticatedAt].N;
+		return authenticatedAt.ToLongTime().ToString() == AttributeMap[DynamoDbKeys.AuthenticatedAt].N;
 	}
 
 	public async Task CommitAsync(DateTimeOffset now)

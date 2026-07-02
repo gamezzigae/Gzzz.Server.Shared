@@ -1,4 +1,4 @@
-name: Gzzz.AwsFunctionUrlInvoker Deployment
+name: github package 배포
 
 on:
   push:
