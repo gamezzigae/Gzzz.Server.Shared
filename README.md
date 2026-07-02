@@ -1,4 +1,10 @@
-# GGZZ.Server.Shared
+[![github package 배포](https://github.com/gamezzigae/Gzzz.Server.Shared/actions/workflows/Gzzz.AwsFunctionUrlInvoker%20Deployment.yml/badge.svg?branch=main)](https://github.com/gamezzigae/Gzzz.Server.Shared/actions/workflows/Gzzz.AwsFunctionUrlInvoker%20Deployment.yml)
+[![unit test](https://github.com/gamezzigae/Gzzz.Server.Shared/actions/workflows/Gzzz.AwsFunctionUrlInvoker.Test%20Deployment.yml/badge.svg?branch=develop)](https://github.com/gamezzigae/Gzzz.Server.Shared/actions/workflows/Gzzz.AwsFunctionUrlInvoker.Test%20Deployment.yml)
+[![샘플ARM서버배포](https://github.com/gamezzigae/Gzzz.Server.Shared/actions/workflows/DeployARM64SampleServer.yml/badge.svg?branch=main)](https://github.com/gamezzigae/Gzzz.Server.Shared/actions/workflows/DeployARM64SampleServer.yml)
+[![샘플X86_64서버배포](https://github.com/gamezzigae/Gzzz.Server.Shared/actions/workflows/DeployX86_64SampleServer.yml/badge.svg?branch=main)](https://github.com/gamezzigae/Gzzz.Server.Shared/actions/workflows/DeployX86_64SampleServer.yml)
+
+
+# Gzzz.Server.Shared
 aws lambda nativeAoT : aws lambda의 단점을 보완하고 최적의 서비스를 사용하기 위해 개발한 프로젝트
 
 ## 왜 AWS Lambda?
