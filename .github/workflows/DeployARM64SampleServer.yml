@@ -8,7 +8,7 @@ env:
     aws_region: ap-northeast-1
     function_name: test3
     dotnet_version: "10"
-    discord_webhook: "https://discord.com/api/webhooks/1287816366123909133/0VEcUTlumPJEJvrBQCrnlxwhG60pM0OIYW8vtyubLnL3bS6tzWTrVhXH3HWyezlCs_4y"
+    discord_webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
     FIXTURE_INITIALIZE_DELAY: "200"
   
 jobs:
