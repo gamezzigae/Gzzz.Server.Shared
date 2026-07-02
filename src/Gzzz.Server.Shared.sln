@@ -20,7 +20,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gzzz.AwsFunctionUrlInvoker"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gzzz.CommandInvoker", "Gzzz.CommandInvoker\Gzzz.CommandInvoker.csproj", "{3308E5AC-7260-FB32-E317-7E815254E629}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "Tests\ConsoleApp1\ConsoleApp1.csproj", "{4B6917F4-00A7-F2AA-BB00-881058DF489B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Tests\ConsoleApp1\Benchmarks.csproj", "{4B6917F4-00A7-F2AA-BB00-881058DF489B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project1", "Project1\Project1.csproj", "{836E8338-EB20-C0C5-33B3-EB9D83DFD68E}"
 EndProject
