@@ -122,6 +122,11 @@ public class TokenService
 			return false;
 		}
 		Span<byte> computedSignature = stackalloc byte[_signatureLength];
+		Memory<byte> computedSignature2 = new Memory<byte>([1,2,3]);
+		foreach (var c in computedSignature2.Span)
+		{
+
+		}
 		SignTo(payloadSpan, computedSignature);
 		//
 		if (signatureSpan.SequenceEqual(computedSignature) == false)
